@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
+import { submitScore } from '../lib/scores';
 import { shuffle } from '../utils/shuffle';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
@@ -59,6 +60,8 @@ export default function GameScreen({ route, navigation }: Props) {
 
     if (currentQuestionIndex >= 9) {
       const { result, isNewHighscore, previousHighscore } = endGame();
+      // fire-and-forget — offline gameplay is unaffected
+      submitScore(result.categoryId, result.totalScore);
       navigation.replace('Result', {
         categoryId: result.categoryId,
         totalQuestions: result.totalQuestions,

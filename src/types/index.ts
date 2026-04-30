@@ -44,4 +44,5 @@ export type RootStackParamList = {
     isNewHighscore: boolean;
     previousHighscore: number;
   };
+  Leaderboard: { categoryId?: CategoryId };
 };

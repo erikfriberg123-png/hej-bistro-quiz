@@ -106,6 +106,13 @@ export default function ResultScreen({ route, navigation }: Props) {
           <Text style={styles.btnOutlineText}>Byt kategori</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Leaderboard', { categoryId })}
+          style={styles.btnOutline}
+        >
+          <Text style={styles.btnOutlineText}>🏆  Topplista</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={handleShare} style={styles.shareBtn}>
           <Text style={styles.shareText}>Dela resultat  ↗</Text>
         </TouchableOpacity>
