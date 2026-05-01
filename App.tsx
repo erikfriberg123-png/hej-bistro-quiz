@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Session } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFonts,
   Poppins_400Regular,
@@ -10,14 +12,22 @@ import {
   Poppins_700Bold,
   Poppins_800ExtraBold,
 } from '@expo-google-fonts/poppins';
-import { RootStackParamList } from './src/types';
+import { AuthStackParamList, RootStackParamList } from './src/types';
 import { supabase } from './src/lib/supabase';
+import { useGameStore } from './src/store/gameStore';
 import HomeScreen from './src/screens/HomeScreen';
 import GameScreen from './src/screens/GameScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+import AuthScreen from './src/screens/AuthScreen';
+import CreateQuestionScreen from './src/screens/CreateQuestionScreen';
+import ChallengeLobbyScreen from './src/screens/ChallengeLobbyScreen';
+import ChallengeResultScreen from './src/screens/ChallengeResultScreen';
+import AdminScreen from './src/screens/AdminScreen';
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const AppStack = createNativeStackNavigator<RootStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -28,16 +38,36 @@ export default function App() {
     Poppins_800ExtraBold,
   });
 
+  const [isReady, setIsReady] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [onboardingDone, setOnboardingDone] = useState(false);
+  const loadRemoteQuestions = useGameStore(s => s.loadRemoteQuestions);
+
   useEffect(() => {
-    // Sign in anonymously if no session exists
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        supabase.auth.signInAnonymously().catch(() => {});
-      }
+    const init = async () => {
+      const [{ data: { session } }, done] = await Promise.all([
+        supabase.auth.getSession(),
+        AsyncStorage.getItem('onboarding-done'),
+      ]);
+      setSession(session);
+      setOnboardingDone(!!done);
+      setIsReady(true);
+    };
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) loadRemoteQuestions();
     });
+    return () => subscription.unsubscribe();
   }, []);
 
-  if (!fontsLoaded) {
+  // Load remote questions whenever we have a session
+  useEffect(() => {
+    if (session) loadRemoteQuestions();
+  }, [!!session]);
+
+  if (!fontsLoaded || !isReady) {
     return (
       <View style={{ flex: 1, backgroundColor: '#12082A', alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator color="#9B5DE5" />
@@ -45,14 +75,32 @@ export default function App() {
     );
   }
 
+  if (!session) {
+    return (
+      <NavigationContainer>
+        <AuthStack.Navigator
+          initialRouteName={onboardingDone ? 'Auth' : 'Onboarding'}
+          screenOptions={{ headerShown: false, animation: 'fade' }}
+        >
+          <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
+          <AuthStack.Screen name="Auth" component={AuthScreen} />
+        </AuthStack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Game" component={GameScreen} />
-        <Stack.Screen name="Result" component={ResultScreen} />
-        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-      </Stack.Navigator>
+      <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <AppStack.Screen name="Home" component={HomeScreen} />
+        <AppStack.Screen name="Game" component={GameScreen} />
+        <AppStack.Screen name="Result" component={ResultScreen} />
+        <AppStack.Screen name="Leaderboard" component={LeaderboardScreen} />
+        <AppStack.Screen name="CreateQuestion" component={CreateQuestionScreen} />
+        <AppStack.Screen name="ChallengeLobby" component={ChallengeLobbyScreen} />
+        <AppStack.Screen name="ChallengeResult" component={ChallengeResultScreen} />
+        <AppStack.Screen name="Admin" component={AdminScreen} />
+      </AppStack.Navigator>
     </NavigationContainer>
   );
 }

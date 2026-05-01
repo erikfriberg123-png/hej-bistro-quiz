@@ -17,6 +17,7 @@ import { useGameStore } from '../store/gameStore';
 import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { getUsername, setUsername } from '../lib/scores';
+import { checkIsAdmin } from '../lib/remoteQuestions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -27,6 +28,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [username, setUsernameState] = useState<string | null>(null);
   const [inputName, setInputName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     checkStreak();
@@ -34,6 +36,7 @@ export default function HomeScreen({ navigation }: Props) {
       setUsernameState(name);
       setInputName(name ?? '');
     });
+    checkIsAdmin().then(setIsAdmin);
   }, []);
 
   const handleSaveUsername = async () => {
@@ -49,6 +52,7 @@ export default function HomeScreen({ navigation }: Props) {
       setSaving(false);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -94,9 +98,34 @@ export default function HomeScreen({ navigation }: Props) {
           ))}
         </View>
 
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ChallengeLobby')}
+          style={styles.challengeBtn}
+        >
+          <Text style={styles.challengeBtnIcon}>⚔️</Text>
+          <Text style={styles.challengeBtnText}>Utmaningsläge</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('CreateQuestion')}
+          style={styles.createBtn}
+        >
+          <Text style={styles.createBtnIcon}>✏️</Text>
+          <Text style={styles.createBtnText}>Skapa egna frågor</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.helpLink}>
           <Text style={styles.helpText}>Hur funkar det?</Text>
         </TouchableOpacity>
+
+        {isAdmin && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Admin')}
+            style={styles.adminBtn}
+          >
+            <Text style={styles.adminBtnText}>⚙️  Admin</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       {/* Help modal */}
@@ -128,6 +157,7 @@ export default function HomeScreen({ navigation }: Props) {
             <Text style={styles.modalBody}>
               {'Sätt ett smeknamn som visas på topplistan. Annars visas du som "Anonym".'}
             </Text>
+
             <TextInput
               style={styles.input}
               value={inputName}
@@ -220,7 +250,45 @@ const styles = StyleSheet.create({
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
   gridItem: { width: '50%' },
-  helpLink: { alignItems: 'center', marginTop: 24, paddingVertical: 12 },
+  challengeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0D2A2A',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#2EC4B6',
+  },
+  challengeBtnIcon: { fontSize: 16 },
+  challengeBtnText: {
+    color: '#2EC4B6',
+    fontSize: 15,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  createBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1E1040',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#3D2870',
+  },
+  createBtnIcon: { fontSize: 16 },
+  createBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  helpLink: { alignItems: 'center', marginTop: 12, paddingVertical: 12 },
+  adminBtn: { alignItems: 'center', paddingVertical: 8, marginBottom: 8 },
+  adminBtnText: { color: '#3D2870', fontSize: 13, fontFamily: 'Poppins_500Medium' },
   helpText: {
     color: '#B0A8C8',
     fontSize: 14,

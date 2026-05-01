@@ -11,7 +11,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { submitScore } from '../lib/scores';
+import { submitScore, getUsername } from '../lib/scores';
+import { createChallenge, joinChallenge, getChallengeById } from '../lib/challenges';
 import { shuffle } from '../utils/shuffle';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
@@ -23,9 +24,17 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 const TIMER_DURATION = 15000;
 
 export default function GameScreen({ route, navigation }: Props) {
-  const { categoryId } = route.params;
-  const { questions, currentQuestionIndex, score, startGame, submitAnswer, nextQuestion, endGame } =
-    useGameStore();
+  const { categoryId, challengeMode, challengeId, questionIds } = route.params;
+  const {
+    questions,
+    currentQuestionIndex,
+    score,
+    startGame,
+    startChallengeGame,
+    submitAnswer,
+    nextQuestion,
+    endGame,
+  } = useGameStore();
 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [answerStates, setAnswerStates] = useState<AnswerState[]>(['default', 'default', 'default', 'default']);
@@ -37,9 +46,14 @@ export default function GameScreen({ route, navigation }: Props) {
   const isAdvancingRef = useRef(false);
 
   const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
 
   useEffect(() => {
-    startGame(categoryId);
+    if (challengeMode === 'join' && questionIds?.length) {
+      startChallengeGame(categoryId, questionIds);
+    } else {
+      startGame(categoryId);
+    }
   }, []);
 
   useEffect(() => {
@@ -54,14 +68,55 @@ export default function GameScreen({ route, navigation }: Props) {
     setIsTimerRunning(true);
   }, [currentQuestion?.id]);
 
-  const advance = useCallback(() => {
-    if (isAdvancingRef.current) return;
-    isAdvancingRef.current = true;
+  const finishGame = useCallback(async () => {
+    const { result, isNewHighscore, previousHighscore } = endGame();
+    submitScore(result.categoryId, result.totalScore); // fire-and-forget
 
-    if (currentQuestionIndex >= 9) {
-      const { result, isNewHighscore, previousHighscore } = endGame();
-      // fire-and-forget — offline gameplay is unaffected
-      submitScore(result.categoryId, result.totalScore);
+    if (challengeMode === 'create') {
+      try {
+        const name = await getUsername() ?? 'Anonym';
+        const { code } = await createChallenge(
+          result.categoryId,
+          questions.map(q => q.id),
+          result.totalScore,
+          name,
+        );
+        navigation.replace('ChallengeResult', {
+          mode: 'create',
+          categoryId: result.categoryId,
+          myScore: result.totalScore,
+          challengeCode: code,
+        });
+      } catch {
+        navigation.replace('Result', {
+          categoryId: result.categoryId,
+          totalQuestions: result.totalQuestions,
+          correctAnswers: result.correctAnswers,
+          totalScore: result.totalScore,
+          isNewHighscore,
+          previousHighscore,
+        });
+      }
+    } else if (challengeMode === 'join' && challengeId) {
+      try {
+        const name = await getUsername() ?? 'Anonym';
+        await joinChallenge(challengeId, result.totalScore, name);
+        const challenge = await getChallengeById(challengeId);
+        navigation.replace('ChallengeResult', {
+          mode: 'join',
+          categoryId: result.categoryId,
+          myScore: result.totalScore,
+          challengerName: challenge?.creator_name ?? 'Anonym',
+          challengerScore: challenge?.creator_score ?? 0,
+        });
+      } catch {
+        navigation.replace('ChallengeResult', {
+          mode: 'join',
+          categoryId: result.categoryId,
+          myScore: result.totalScore,
+        });
+      }
+    } else {
       navigation.replace('Result', {
         categoryId: result.categoryId,
         totalQuestions: result.totalQuestions,
@@ -70,10 +125,19 @@ export default function GameScreen({ route, navigation }: Props) {
         isNewHighscore,
         previousHighscore,
       });
+    }
+  }, [challengeMode, challengeId, questions, endGame, navigation]);
+
+  const advance = useCallback(() => {
+    if (isAdvancingRef.current) return;
+    isAdvancingRef.current = true;
+
+    if (currentQuestionIndex >= totalQuestions - 1) {
+      finishGame();
     } else {
       nextQuestion();
     }
-  }, [currentQuestionIndex, endGame, nextQuestion, navigation]);
+  }, [currentQuestionIndex, totalQuestions, finishGame, nextQuestion]);
 
   const handleAnswer = useCallback(
     (displayIndex: number) => {
@@ -140,6 +204,9 @@ export default function GameScreen({ route, navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitBtn}>
           <Text style={styles.exitText}>✕</Text>
         </TouchableOpacity>
+        {challengeMode && (
+          <Text style={styles.challengeBadge}>⚔️ Utmaning</Text>
+        )}
         <ScoreBadge score={score} pointsAwarded={pointsAwarded} />
       </View>
 
@@ -155,7 +222,7 @@ export default function GameScreen({ route, navigation }: Props) {
         <QuestionCard
           question={currentQuestion.question}
           questionNumber={currentQuestionIndex + 1}
-          total={10}
+          total={totalQuestions}
         />
 
         {shuffledIndices.map((origIdx, dispIdx) => (
@@ -173,10 +240,7 @@ export default function GameScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#12082A',
-  },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   loading: {
     flex: 1,
     backgroundColor: '#12082A',
@@ -196,12 +260,15 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  exitBtn: {
-    padding: 8,
-  },
+  exitBtn: { padding: 8 },
   exitText: {
     color: '#B0A8C8',
     fontSize: 18,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  challengeBadge: {
+    color: '#2EC4B6',
+    fontSize: 13,
     fontFamily: 'Poppins_600SemiBold',
   },
   timerRow: {

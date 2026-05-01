@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CategoryId, Question, GameResult } from '../types';
 import { QUESTIONS } from '../data/questions';
+import { fetchRemoteQuestions } from '../lib/remoteQuestions';
 import { calculateScore } from '../utils/scoring';
 import { shuffle } from '../utils/shuffle';
 
@@ -16,13 +17,19 @@ interface GameState {
   highscores: Record<CategoryId, number>;
   streak: number;
   lastPlayedDate: string;
+  customQuestions: Question[];
+  remoteQuestions: Question[];
 
   startGame: (categoryId: CategoryId) => void;
+  startChallengeGame: (categoryId: CategoryId, questionIds: string[]) => void;
+  loadRemoteQuestions: () => Promise<void>;
   submitAnswer: (answerIndex: number, timeRemaining: number) => number;
   nextQuestion: () => void;
   endGame: () => { result: GameResult; isNewHighscore: boolean; previousHighscore: number };
   resetGame: () => void;
   checkStreak: () => void;
+  addCustomQuestion: (q: Question) => void;
+  deleteCustomQuestion: (id: string) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -44,16 +51,37 @@ export const useGameStore = create<GameState>()(
       },
       streak: 0,
       lastPlayedDate: '',
+      customQuestions: [],
+      remoteQuestions: [],
+
+      loadRemoteQuestions: async () => {
+        const questions = await fetchRemoteQuestions();
+        set({ remoteQuestions: questions });
+      },
 
       startGame: (categoryId) => {
-        const pool = QUESTIONS.filter(q => q.category === categoryId);
+        const allQuestions = [...get().remoteQuestions, ...QUESTIONS, ...get().customQuestions];
+        const pool = allQuestions.filter(q => q.category === categoryId);
         const selected = shuffle(pool).slice(0, 10);
         set({
           selectedCategory: categoryId,
           questions: selected,
           currentQuestionIndex: 0,
           score: 0,
-          answers: new Array(10).fill(null),
+          answers: new Array(selected.length).fill(null),
+        });
+      },
+
+      startChallengeGame: (categoryId, questionIds) => {
+        const ordered = questionIds
+          .map(id => QUESTIONS.find(q => q.id === id))
+          .filter((q): q is Question => q !== undefined);
+        set({
+          selectedCategory: categoryId,
+          questions: ordered,
+          currentQuestionIndex: 0,
+          score: 0,
+          answers: new Array(ordered.length).fill(null),
         });
       },
 
@@ -131,6 +159,14 @@ export const useGameStore = create<GameState>()(
           set({ streak: 0 });
         }
       },
+
+      addCustomQuestion: (q) => {
+        set(state => ({ customQuestions: [...state.customQuestions, q] }));
+      },
+
+      deleteCustomQuestion: (id) => {
+        set(state => ({ customQuestions: state.customQuestions.filter(q => q.id !== id) }));
+      },
     }),
     {
       name: 'hej-bistro-storage',
@@ -139,6 +175,7 @@ export const useGameStore = create<GameState>()(
         highscores: state.highscores,
         streak: state.streak,
         lastPlayedDate: state.lastPlayedDate,
+        customQuestions: state.customQuestions,
       }),
     }
   )

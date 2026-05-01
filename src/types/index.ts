@@ -33,9 +33,19 @@ export interface GameResult {
   date: string;
 }
 
+export type AuthStackParamList = {
+  Onboarding: undefined;
+  Auth: undefined;
+};
+
 export type RootStackParamList = {
   Home: undefined;
-  Game: { categoryId: CategoryId };
+  Game: {
+    categoryId: CategoryId;
+    challengeMode?: 'create' | 'join';
+    challengeId?: string;
+    questionIds?: string[];
+  };
   Result: {
     categoryId: CategoryId;
     totalQuestions: number;
@@ -45,4 +55,15 @@ export type RootStackParamList = {
     previousHighscore: number;
   };
   Leaderboard: { categoryId?: CategoryId };
+  CreateQuestion: undefined;
+  ChallengeLobby: undefined;
+  Admin: undefined;
+  ChallengeResult: {
+    mode: 'create' | 'join';
+    categoryId: CategoryId;
+    myScore: number;
+    challengeCode?: string;
+    challengerName?: string;
+    challengerScore?: number;
+  };
 };
