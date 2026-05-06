@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Quizine",
-    "slug": "quizine",
+    "slug": "hej-bistro-quiz",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/appicon.png",
