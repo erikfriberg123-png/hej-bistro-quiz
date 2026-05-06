@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "hej-bistro-quiz",
-    "slug": "hej-bistro-quiz",
+    "name": "Quizine",
+    "slug": "quizine",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/appicon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -14,8 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hejbistro.quiz",
-      "usesAppleSignIn": true
+      "bundleIdentifier": "com.quizine.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -30,6 +33,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "87de1099-7c19-4189-a11d-4ad66e30b7c4"
+      }
+    }
   }
 }

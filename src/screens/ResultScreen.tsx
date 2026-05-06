@@ -49,7 +49,7 @@ export default function ResultScreen({ route, navigation }: Props) {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Jag fick ${totalScore} XP på Hej Bistro Quiz i kategorin "${category?.name}"! ${correctAnswers} av ${totalQuestions} rätt. Kan du slå det? 🍽️`,
+        message: `Jag fick ${totalScore} XP på Quizine i kategorin "${category?.name}"! ${correctAnswers} av ${totalQuestions} rätt. Kan du slå det? 🍽️`,
       });
     } catch {}
   };

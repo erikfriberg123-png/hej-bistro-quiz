@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -101,7 +102,7 @@ export default function HomeScreen({ navigation }: Props) {
             )}
           </TouchableOpacity>
           <View style={styles.titleBlock}>
-            <Text style={styles.logo}>Hej Bistro</Text>
+            <Image source={require('../../assets/appicon.png')} style={styles.logo} />
             <Text style={styles.subtitle}>Quiz för restaurangfolk</Text>
           </View>
           <TouchableOpacity
@@ -356,10 +357,9 @@ const styles = StyleSheet.create({
   },
   titleBlock: { flex: 1, alignItems: 'center' },
   logo: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontFamily: 'Poppins_800ExtraBold',
-    letterSpacing: -0.5,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
   },
   subtitle: {
     color: '#B0A8C8',

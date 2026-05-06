@@ -22,7 +22,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
     if (!challengeCode) return;
     try {
       await Share.share({
-        message: `Jag fick ${myScore} XP i Hej Bistro Quiz! Kan du slå det? Använd koden ${challengeCode} för att svara på min utmaning 🍽️`,
+        message: `Jag fick ${myScore} XP i Quizine! Kan du slå det? Använd koden ${challengeCode} för att svara på min utmaning 🍽️`,
       });
     } catch {}
   };

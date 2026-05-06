@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
@@ -135,7 +136,7 @@ export default function AuthScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoBlock}>
-            <Text style={styles.logo}>Hej Bistro</Text>
+            <Image source={require('../../assets/appicon.png')} style={styles.logo} />
             <Text style={styles.tagline}>Quiz för restaurangfolk</Text>
           </View>
 
@@ -240,10 +241,10 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logo: {
-    color: '#FFFFFF',
-    fontSize: 38,
-    fontFamily: 'Poppins_800ExtraBold',
-    letterSpacing: -0.5,
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    marginBottom: 8,
   },
   tagline: {
     color: '#B0A8C8',

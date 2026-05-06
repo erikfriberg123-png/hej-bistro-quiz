@@ -16,7 +16,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 const PAGES = [
   {
     emoji: '🍽️',
-    title: 'Välkommen till\nHej Bistro Quiz!',
+    title: 'Välkommen till\nQuizine!',
     body: 'Det roligaste sättet att lära sig mer om mat, dryck och restaurangbranschen.',
     accent: '#FF6B35',
   },
