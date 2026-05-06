@@ -43,6 +43,34 @@ export const CATEGORIES: Category[] = [
     color: '#3A86FF',
     description: 'Kollektivavtal, arbetsrätt och anställningsvillkor i restaurangbranschen',
   },
+  {
+    id: 'food_cost',
+    name: 'Kostnad & Lönsamhet',
+    icon: '🧾',
+    color: '#06D6A0',
+    description: 'Food cost, marginaler, menykalkyl och lönsamhet i restaurangdrift',
+  },
+  {
+    id: 'scheduling_labor',
+    name: 'Schema & Personal',
+    icon: '⏱️',
+    color: '#FFB347',
+    description: 'Schemaläggning, personalplanering och bemanningsstrategi',
+  },
+  {
+    id: 'guest_psychology',
+    name: 'Gästpsykologi',
+    icon: '🧍',
+    color: '#FF6B9D',
+    description: 'Psykologi bakom gästupplevelse, menybeteende och serviceinteraktion',
+  },
+  {
+    id: 'service_pressure',
+    name: 'Service Under Tryck',
+    icon: '⚡',
+    color: '#FF4757',
+    description: 'Hantera stress, rush-situationer och kriser under service',
+  },
 ];
 
 export function getCategoryById(id: string): Category | undefined {

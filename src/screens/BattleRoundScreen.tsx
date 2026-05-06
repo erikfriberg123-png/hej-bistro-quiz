@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  StyleSheet,
+  Alert,
   SafeAreaView,
   StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  Alert,
+  View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
@@ -20,8 +20,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { submitScore, getUsername } from '../lib/scores';
-import { createChallenge, joinChallenge, getChallengeById } from '../lib/challenges';
+import { submitTurn } from '../lib/battles';
+import { getUsername } from '../lib/scores';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
 import { SparklerTimer } from '../components/SparklerTimer';
@@ -30,21 +30,20 @@ import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
 const TIMER_DURATION = 15000;
 
-export default function GameScreen({ route, navigation }: Props) {
-  const { categoryId, challengeMode, challengeId, questionIds, targetFriendId, targetFriendName } = route.params;
+export default function BattleRoundScreen({ route, navigation }: Props) {
   const {
-    questions,
-    currentQuestionIndex,
-    score,
-    startGame,
-    startChallengeGame,
-    submitAnswer,
-    nextQuestion,
-    endGame,
+    battleId, code, role, roundNumber,
+    category: categoryId, creatorScore, opponentScore,
+    creatorName, opponentName,
+  } = route.params;
+
+  const {
+    questions, currentQuestionIndex, score,
+    startGame, startChallengeGame, submitAnswer, nextQuestion, endGame,
   } = useGameStore();
 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -53,6 +52,7 @@ export default function GameScreen({ route, navigation }: Props) {
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
@@ -62,7 +62,6 @@ export default function GameScreen({ route, navigation }: Props) {
   const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
   const category = getCategoryById(categoryId);
 
-  // Animated next button
   const nextBtnProgress = useSharedValue(0);
   const nextBtnStyle = useAnimatedStyle(() => ({
     opacity: nextBtnProgress.value,
@@ -78,10 +77,11 @@ export default function GameScreen({ route, navigation }: Props) {
   }, [isAnswered]);
 
   useEffect(() => {
-    if (challengeMode === 'join' && questionIds?.length) {
+    const { questionIds } = route.params;
+    if (questionIds && questionIds.length > 0) {
       startChallengeGame(categoryId, questionIds);
     } else {
-      startGame(categoryId);
+      startGame(categoryId, 3);
     }
   }, []);
 
@@ -92,84 +92,46 @@ export default function GameScreen({ route, navigation }: Props) {
     setShowCelebration(false);
     setPointsAwarded(null);
     setAnswerStates(['default', 'default', 'default', 'default']);
-    const indices = shuffle([0, 1, 2, 3]);
-    setShuffledIndices(indices);
+    setShuffledIndices(shuffle([0, 1, 2, 3]));
     questionStartRef.current = Date.now();
     setIsTimerRunning(true);
   }, [currentQuestion?.id]);
 
-  const finishGame = useCallback(async () => {
-    const { result, isNewHighscore, previousHighscore } = endGame();
-    submitScore(result.categoryId, result.totalScore);
-
-    if (challengeMode === 'create') {
-      try {
-        const name = await getUsername() ?? 'Anonym';
-        const { code } = await createChallenge(
-          result.categoryId,
-          questions.map(q => q.id),
-          result.totalScore,
-          name,
-          targetFriendId,
-        );
-        navigation.replace('ChallengeResult', {
-          mode: 'create',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-          challengeCode: code,
-          targetFriendName,
-        });
-      } catch (e: any) {
-        Alert.alert('Debug – challenge error', String(e?.message ?? e));
-        navigation.replace('Result', {
-          categoryId: result.categoryId,
-          totalQuestions: result.totalQuestions,
-          correctAnswers: result.correctAnswers,
-          totalScore: result.totalScore,
-          isNewHighscore,
-          previousHighscore,
-        });
-      }
-    } else if (challengeMode === 'join' && challengeId) {
-      try {
-        const name = await getUsername() ?? 'Anonym';
-        await joinChallenge(challengeId, result.totalScore, name);
-        const challenge = await getChallengeById(challengeId);
-        navigation.replace('ChallengeResult', {
-          mode: 'join',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-          challengerName: challenge?.creator_name ?? 'Anonym',
-          challengerScore: challenge?.creator_score ?? 0,
-        });
-      } catch {
-        navigation.replace('ChallengeResult', {
-          mode: 'join',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-        });
-      }
-    } else {
-      navigation.replace('Result', {
-        categoryId: result.categoryId,
-        totalQuestions: result.totalQuestions,
-        correctAnswers: result.correctAnswers,
-        totalScore: result.totalScore,
-        isNewHighscore,
-        previousHighscore,
-      });
+  const finishRound = useCallback(async () => {
+    setSubmitting(true);
+    const { result } = endGame();
+    const playedQuestionIds = useGameStore.getState().questions.map(q => q.id);
+    try {
+      const myName = role === 'opponent' ? (await getUsername() ?? 'Anonym') : undefined;
+      await submitTurn(
+        battleId,
+        role,
+        { round: roundNumber, category: categoryId, score: result.totalScore, questionIds: playedQuestionIds },
+        myName,
+      );
+    } catch {
+      Alert.alert('Nätverksfel', 'Omgången sparades inte. Kontrollera anslutningen och försök igen.');
+    } finally {
+      setSubmitting(false);
     }
-  }, [challengeMode, challengeId, questions, endGame, navigation]);
+    navigation.replace('BattleBoard', {
+      battleId,
+      code,
+      role,
+      lastRoundCorrect: result.correctAnswers,
+      lastRoundTotal: result.totalQuestions,
+    });
+  }, [battleId, code, role, roundNumber, categoryId, endGame, navigation]);
 
   const advance = useCallback(() => {
     if (isAdvancingRef.current) return;
     isAdvancingRef.current = true;
     if (isLastQuestion) {
-      finishGame();
+      finishRound();
     } else {
       nextQuestion();
     }
-  }, [isLastQuestion, finishGame, nextQuestion]);
+  }, [isLastQuestion, finishRound, nextQuestion]);
 
   const handleAnswer = useCallback(
     (displayIndex: number) => {
@@ -196,9 +158,7 @@ export default function GameScreen({ route, navigation }: Props) {
         if (dispIdx === displayIndex && origIdx !== correct) return 'wrong';
         return 'disabled';
       });
-      if (points > 0) {
-        newStates[displayIndex] = 'correct';
-      }
+      if (points > 0) newStates[displayIndex] = 'correct';
       setAnswerStates(newStates);
     },
     [isAnswered, currentQuestion, shuffledIndices, submitAnswer],
@@ -210,7 +170,6 @@ export default function GameScreen({ route, navigation }: Props) {
     setIsAnswered(true);
     submitAnswer(-1, 0);
     setPointsAwarded(0);
-
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     const correct = currentQuestion.correctIndex;
@@ -228,17 +187,26 @@ export default function GameScreen({ route, navigation }: Props) {
     );
   }
 
+  const myScore = role === 'creator' ? creatorScore : opponentScore;
+  const theirScore = role === 'creator' ? opponentScore : creatorScore;
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitBtn}>
-          <Text style={styles.exitText}>✕</Text>
-        </TouchableOpacity>
-        {challengeMode && (
-          <Text style={styles.challengeBadge}>⚔️ Utmaning</Text>
-        )}
+        <View style={styles.battleInfo}>
+          <View style={styles.roundPill}>
+            <Text style={styles.roundPillText}>
+              {roundNumber > 4 ? '⚡ SUDDEN DEATH' : `OMGÅNG ${roundNumber} / 4`}
+            </Text>
+          </View>
+          <View style={styles.miniScoreRow}>
+            <Text style={styles.miniScoreMe}>{myScore}</Text>
+            <Text style={styles.miniScoreSep}>–</Text>
+            <Text style={styles.miniScoreThem}>{theirScore}</Text>
+          </View>
+        </View>
         <ScoreBadge score={score} pointsAwarded={pointsAwarded} />
       </View>
 
@@ -271,11 +239,20 @@ export default function GameScreen({ route, navigation }: Props) {
           <Animated.View style={[styles.nextBtnWrapper, nextBtnStyle]}>
             <TouchableOpacity
               onPress={advance}
-              style={[styles.nextBtn, { backgroundColor: category?.color ?? '#9B5DE5' }]}
+              style={[
+                styles.nextBtn,
+                { backgroundColor: category?.color ?? '#9B5DE5' },
+                submitting && styles.nextBtnDisabled,
+              ]}
               activeOpacity={0.85}
+              disabled={submitting}
             >
               <Text style={styles.nextBtnText}>
-                {isLastQuestion ? 'Visa resultat  🏆' : 'Nästa fråga  →'}
+                {submitting
+                  ? 'Sparar...'
+                  : isLastQuestion
+                  ? 'Klar med omgången  ✓'
+                  : 'Nästa fråga  →'}
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -308,16 +285,42 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  exitBtn: { padding: 8 },
-  exitText: {
-    color: '#B0A8C8',
-    fontSize: 18,
-    fontFamily: 'Poppins_600SemiBold',
+  battleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  challengeBadge: {
-    color: '#2EC4B6',
-    fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+  roundPill: {
+    backgroundColor: '#2A1860',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  roundPillText: {
+    color: '#9B5DE5',
+    fontSize: 10,
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: 1,
+  },
+  miniScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  miniScoreMe: {
+    color: '#9B5DE5',
+    fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
+  },
+  miniScoreSep: {
+    color: '#3D2870',
+    fontSize: 14,
+    fontFamily: 'Poppins_700Bold',
+  },
+  miniScoreThem: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
   },
   gameArea: {
     flex: 1,
@@ -333,15 +336,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  nextBtnWrapper: {
-    marginTop: 14,
-  },
+  nextBtnWrapper: { marginTop: 14 },
   nextBtn: {
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  nextBtnDisabled: { opacity: 0.6 },
   nextBtnText: {
     color: '#FFFFFF',
     fontSize: 17,

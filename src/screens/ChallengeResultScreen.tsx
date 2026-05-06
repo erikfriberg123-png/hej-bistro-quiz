@@ -15,7 +15,7 @@ import { getCategoryById } from '../data/categories';
 type Props = NativeStackScreenProps<RootStackParamList, 'ChallengeResult'>;
 
 export default function ChallengeResultScreen({ route, navigation }: Props) {
-  const { mode, categoryId, myScore, challengeCode, challengerName, challengerScore } = route.params;
+  const { mode, categoryId, myScore, challengeCode, challengerName, challengerScore, targetFriendName } = route.params;
   const category = getCategoryById(categoryId);
 
   const handleShare = async () => {
@@ -53,7 +53,11 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
         {mode === 'create' ? (
           <>
             <Text style={styles.heading}>Utmaning skapad!</Text>
-            <Text style={styles.sub}>Din vän behöver den här koden för att svara</Text>
+            <Text style={styles.sub}>
+              {targetFriendName
+                ? `${targetFriendName} kan nu hitta din utmaning i sitt utmaningsläge`
+                : 'Din vän behöver den här koden för att svara'}
+            </Text>
 
             <View style={[styles.codeBox, { borderColor: category?.color ?? '#2EC4B6' }]}>
               <Text style={styles.codeLabel}>KOD</Text>
@@ -108,7 +112,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
         )}
 
         <TouchableOpacity
-          onPress={() => navigation.navigate('ChallengeLobby')}
+          onPress={() => navigation.navigate('ChallengeLobby', {})}
           style={styles.outlineBtn}
         >
           <Text style={styles.outlineBtnText}>Ny utmaning ⚔️</Text>

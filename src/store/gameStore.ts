@@ -20,7 +20,7 @@ interface GameState {
   customQuestions: Question[];
   remoteQuestions: Question[];
 
-  startGame: (categoryId: CategoryId) => void;
+  startGame: (categoryId: CategoryId, count?: number) => void;
   startChallengeGame: (categoryId: CategoryId, questionIds: string[]) => void;
   loadRemoteQuestions: () => Promise<void>;
   submitAnswer: (answerIndex: number, timeRemaining: number) => number;
@@ -48,6 +48,10 @@ export const useGameStore = create<GameState>()(
         industry_culture: 0,
         fun_reallife: 0,
         labor_law: 0,
+        food_cost: 0,
+        scheduling_labor: 0,
+        guest_psychology: 0,
+        service_pressure: 0,
       },
       streak: 0,
       lastPlayedDate: '',
@@ -59,10 +63,10 @@ export const useGameStore = create<GameState>()(
         set({ remoteQuestions: questions });
       },
 
-      startGame: (categoryId) => {
+      startGame: (categoryId, count = 10) => {
         const allQuestions = [...get().remoteQuestions, ...QUESTIONS, ...get().customQuestions];
         const pool = allQuestions.filter(q => q.category === categoryId);
-        const selected = shuffle(pool).slice(0, 10);
+        const selected = shuffle(pool).slice(0, count);
         set({
           selectedCategory: categoryId,
           questions: selected,
@@ -73,8 +77,9 @@ export const useGameStore = create<GameState>()(
       },
 
       startChallengeGame: (categoryId, questionIds) => {
+        const allQuestions = [...get().remoteQuestions, ...QUESTIONS, ...get().customQuestions];
         const ordered = questionIds
-          .map(id => QUESTIONS.find(q => q.id === id))
+          .map(id => allQuestions.find(q => q.id === id))
           .filter((q): q is Question => q !== undefined);
         set({
           selectedCategory: categoryId,
@@ -104,12 +109,12 @@ export const useGameStore = create<GameState>()(
       },
 
       endGame: () => {
-        const { selectedCategory, score, answers, highscores, streak, lastPlayedDate } = get();
+        const { selectedCategory, questions, score, answers, highscores, streak, lastPlayedDate } = get();
         const correctAnswers = answers.filter(a => a === true).length;
 
         const result: GameResult = {
           categoryId: selectedCategory!,
-          totalQuestions: 10,
+          totalQuestions: questions.length,
           correctAnswers,
           totalScore: score,
           date: new Date().toISOString(),

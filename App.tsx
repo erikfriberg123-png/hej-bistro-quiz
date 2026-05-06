@@ -24,6 +24,11 @@ import AuthScreen from './src/screens/AuthScreen';
 import CreateQuestionScreen from './src/screens/CreateQuestionScreen';
 import ChallengeLobbyScreen from './src/screens/ChallengeLobbyScreen';
 import ChallengeResultScreen from './src/screens/ChallengeResultScreen';
+import FriendsScreen from './src/screens/FriendsScreen';
+import BattlePickCategoryScreen from './src/screens/BattlePickCategoryScreen';
+import BattleRoundScreen from './src/screens/BattleRoundScreen';
+import BattleBoardScreen from './src/screens/BattleBoardScreen';
+import BattleResultScreen from './src/screens/BattleResultScreen';
 import AdminScreen from './src/screens/AdminScreen';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
@@ -99,6 +104,11 @@ export default function App() {
         <AppStack.Screen name="CreateQuestion" component={CreateQuestionScreen} />
         <AppStack.Screen name="ChallengeLobby" component={ChallengeLobbyScreen} />
         <AppStack.Screen name="ChallengeResult" component={ChallengeResultScreen} />
+        <AppStack.Screen name="BattlePickCategory" component={BattlePickCategoryScreen} />
+        <AppStack.Screen name="BattleRound" component={BattleRoundScreen} />
+        <AppStack.Screen name="BattleBoard" component={BattleBoardScreen} />
+        <AppStack.Screen name="BattleResult" component={BattleResultScreen} />
+        <AppStack.Screen name="Friends" component={FriendsScreen} />
         <AppStack.Screen name="Admin" component={AdminScreen} />
       </AppStack.Navigator>
     </NavigationContainer>

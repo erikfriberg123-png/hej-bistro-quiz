@@ -24,6 +24,7 @@ export async function createChallenge(
   questionIds: string[],
   score: number,
   creatorName: string,
+  targetUserId?: string,
 ): Promise<{ code: string; id: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -38,12 +39,28 @@ export async function createChallenge(
       creator_id: user.id,
       creator_name: creatorName,
       creator_score: score,
+      ...(targetUserId ? { target_user_id: targetUserId } : {}),
     })
     .select('id, code')
     .single();
 
   if (error) throw error;
   return { code: data.code, id: data.id };
+}
+
+export async function getChallengesForMe(): Promise<Challenge[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('challenges')
+    .select('*')
+    .eq('target_user_id', user.id)
+    .is('opponent_id', null)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  return (data ?? []) as Challenge[];
 }
 
 export async function getChallengeByCode(code: string): Promise<Challenge | null> {

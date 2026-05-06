@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
@@ -18,6 +19,8 @@ import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { getUsername, setUsername } from '../lib/scores';
 import { checkIsAdmin } from '../lib/remoteQuestions';
+import { getPendingRequests } from '../lib/friends';
+import { getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -29,6 +32,11 @@ export default function HomeScreen({ navigation }: Props) {
   const [inputName, setInputName] = useState('');
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [challengeAfterSave, setChallengeAfterSave] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingBattleCount, setPendingBattleCount] = useState(0);
+  const [myTurnCount, setMyTurnCount] = useState(0);
+  const [mode, setMode] = useState<'training' | null>(null);
 
   useEffect(() => {
     checkStreak();
@@ -39,6 +47,14 @@ export default function HomeScreen({ navigation }: Props) {
     checkIsAdmin().then(setIsAdmin);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      getPendingRequests().then(p => setPendingCount(p.length)).catch(() => {});
+      getPendingBattlesForMe().then(b => setPendingBattleCount(b.length)).catch(() => {});
+      getMyActiveTurns().then(b => setMyTurnCount(b.length)).catch(() => {});
+    }, [])
+  );
+
   const handleSaveUsername = async () => {
     if (!inputName.trim()) return;
     setSaving(true);
@@ -46,10 +62,23 @@ export default function HomeScreen({ navigation }: Props) {
       await setUsername(inputName.trim());
       setUsernameState(inputName.trim());
       setProfileVisible(false);
+      if (challengeAfterSave) {
+        setChallengeAfterSave(false);
+        navigation.navigate('ChallengeLobby', {});
+      }
     } catch {
       Alert.alert('Fel', 'Kunde inte spara namn. Försök igen.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChallengePress = () => {
+    if (!username) {
+      setChallengeAfterSave(true);
+      setProfileVisible(true);
+    } else {
+      navigation.navigate('ChallengeLobby', {});
     }
   };
 
@@ -65,6 +94,11 @@ export default function HomeScreen({ navigation }: Props) {
             <Text style={styles.profileName} numberOfLines={1}>
               {username ?? 'Sätt namn'}
             </Text>
+            {pendingCount > 0 && (
+              <View style={styles.profileBadge}>
+                <Text style={styles.profileBadgeText}>{pendingCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <View style={styles.titleBlock}>
             <Text style={styles.logo}>Hej Bistro</Text>
@@ -78,33 +112,95 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
 
+        {pendingBattleCount > 0 && (
+          <TouchableOpacity
+            style={styles.pendingBattleBanner}
+            onPress={handleChallengePress}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.pendingBattleText}>
+              ⚔️  Du har {pendingBattleCount} utmaning{pendingBattleCount > 1 ? 'ar' : ''} att svara på!
+            </Text>
+            <Text style={styles.pendingBattleArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
+        {myTurnCount > 0 && (
+          <TouchableOpacity
+            style={styles.myTurnBanner}
+            onPress={handleChallengePress}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.myTurnText}>
+              ⚡  Din tur i {myTurnCount} battle{myTurnCount > 1 ? 's' : ''}!
+            </Text>
+            <Text style={styles.myTurnArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
         {streak > 0 && (
           <View style={styles.streakBanner}>
             <Text style={styles.streakText}>🔥 {streak} dag{streak !== 1 ? 'ar' : ''} i rad!</Text>
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>Välj kategori</Text>
+        {mode === null ? (
+          <>
+            <Text style={styles.sectionTitle}>Välj spelläge</Text>
 
-        <View style={styles.grid}>
-          {CATEGORIES.map((cat) => (
-            <View key={cat.id} style={styles.gridItem}>
-              <CategoryCard
-                category={cat}
-                highscore={highscores[cat.id] ?? 0}
-                onPress={() => navigation.navigate('Game', { categoryId: cat.id })}
-              />
+            <TouchableOpacity
+              style={styles.modeCard}
+              onPress={() => setMode('training')}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modeCardIcon}>🎯</Text>
+              <View style={styles.modeCardBody}>
+                <Text style={styles.modeCardTitle}>Träningsläge</Text>
+                <Text style={styles.modeCardSub}>Välj en kategori och öva på dina kunskaper</Text>
+              </View>
+              <Text style={styles.modeCardArrow}>→</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modeCard, styles.modeCardBattle]}
+              onPress={handleChallengePress}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modeCardIcon}>⚔️</Text>
+              <View style={styles.modeCardBody}>
+                <Text style={styles.modeCardTitle}>Battle</Text>
+                <Text style={styles.modeCardSub}>Utmana en kompis i ett riktigt quiz-duell</Text>
+              </View>
+              {pendingBattleCount > 0 ? (
+                <View style={styles.modeBadge}>
+                  <Text style={styles.modeBadgeText}>{pendingBattleCount}</Text>
+                </View>
+              ) : (
+                <Text style={styles.modeCardArrow}>→</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity onPress={() => setMode(null)} style={styles.backModeBtn}>
+              <Text style={styles.backModeBtnText}>← Spelläge</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.sectionTitle}>Välj kategori</Text>
+
+            <View style={styles.grid}>
+              {CATEGORIES.map((cat) => (
+                <View key={cat.id} style={styles.gridItem}>
+                  <CategoryCard
+                    category={cat}
+                    highscore={highscores[cat.id] ?? 0}
+                    onPress={() => navigation.navigate('Game', { categoryId: cat.id })}
+                  />
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ChallengeLobby')}
-          style={styles.challengeBtn}
-        >
-          <Text style={styles.challengeBtnIcon}>⚔️</Text>
-          <Text style={styles.challengeBtnText}>Utmaningsläge</Text>
-        </TouchableOpacity>
+          </>
+        )}
 
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateQuestion')}
@@ -150,10 +246,20 @@ export default function HomeScreen({ navigation }: Props) {
       </Modal>
 
       {/* Profile / username modal */}
-      <Modal visible={profileVisible} transparent animationType="slide" onRequestClose={() => setProfileVisible(false)}>
+      <Modal
+        visible={profileVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Ditt namn</Text>
+            {challengeAfterSave && (
+              <Text style={styles.modalHint}>
+                Du behöver ett smeknamn för att utmana andra.
+              </Text>
+            )}
             <Text style={styles.modalBody}>
               {'Sätt ett smeknamn som visas på topplistan. Annars visas du som "Anonym".'}
             </Text>
@@ -174,7 +280,27 @@ export default function HomeScreen({ navigation }: Props) {
             >
               <Text style={styles.modalBtnText}>{saving ? 'Sparar...' : 'Spara'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setProfileVisible(false)} style={styles.cancelBtn}>
+
+            <TouchableOpacity
+              onPress={() => {
+                setProfileVisible(false);
+                setChallengeAfterSave(false);
+                navigation.navigate('Friends');
+              }}
+              style={styles.friendsBtn}
+            >
+              <Text style={styles.friendsBtnText}>👥  Mina vänner</Text>
+              {pendingCount > 0 && (
+                <View style={styles.friendsBadge}>
+                  <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
+              style={styles.cancelBtn}
+            >
               <Text style={styles.cancelText}>Avbryt</Text>
             </TouchableOpacity>
           </View>
@@ -210,6 +336,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_500Medium',
     flexShrink: 1,
   },
+  profileBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  profileBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontFamily: 'Poppins_700Bold',
+    lineHeight: 13,
+  },
   titleBlock: { flex: 1, alignItems: 'center' },
   logo: {
     color: '#FFFFFF',
@@ -231,6 +375,54 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   leaderboardIcon: { fontSize: 18 },
+  pendingBattleBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#0D2A2A',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#2EC4B6',
+  },
+  pendingBattleText: {
+    color: '#2EC4B6',
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    flex: 1,
+  },
+  pendingBattleArrow: {
+    color: '#2EC4B6',
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+    marginLeft: 8,
+  },
+  myTurnBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1A1A10',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#F4C842',
+  },
+  myTurnText: {
+    color: '#F4C842',
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    flex: 1,
+  },
+  myTurnArrow: {
+    color: '#F4C842',
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+    marginLeft: 8,
+  },
   streakBanner: {
     backgroundColor: '#1E1040',
     borderRadius: 12,
@@ -250,23 +442,63 @@ const styles = StyleSheet.create({
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
   gridItem: { width: '50%' },
-  challengeBtn: {
+  modeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0D2A2A',
-    borderRadius: 14,
-    paddingVertical: 14,
-    marginTop: 16,
-    gap: 8,
+    backgroundColor: '#1E1040',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 14,
+    gap: 14,
     borderWidth: 1,
+    borderColor: '#3D2870',
+  },
+  modeCardBattle: {
+    backgroundColor: '#0D2A2A',
     borderColor: '#2EC4B6',
   },
-  challengeBtnIcon: { fontSize: 16 },
-  challengeBtnText: {
-    color: '#2EC4B6',
-    fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+  modeCardIcon: { fontSize: 32 },
+  modeCardBody: { flex: 1, gap: 3 },
+  modeCardTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+  },
+  modeCardSub: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    lineHeight: 18,
+  },
+  modeCardArrow: {
+    color: '#6050A0',
+    fontSize: 20,
+    fontFamily: 'Poppins_700Bold',
+  },
+  modeBadge: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  modeBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Poppins_700Bold',
+    lineHeight: 16,
+  },
+  backModeBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    marginBottom: 8,
+  },
+  backModeBtnText: {
+    color: '#B0A8C8',
+    fontSize: 14,
+    fontFamily: 'Poppins_500Medium',
   },
   createBtn: {
     flexDirection: 'row',
@@ -342,4 +574,36 @@ const styles = StyleSheet.create({
   modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
   cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  modalHint: {
+    color: '#2EC4B6',
+    fontSize: 13,
+    fontFamily: 'Poppins_600SemiBold',
+    marginBottom: 8,
+  },
+  friendsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#2A1A50',
+    marginTop: 4,
+    gap: 8,
+  },
+  friendsBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  friendsBadge: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  friendsBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Poppins_700Bold',
+    lineHeight: 14,
+  },
 });

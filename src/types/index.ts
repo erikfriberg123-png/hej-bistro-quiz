@@ -4,7 +4,11 @@ export type CategoryId =
   | 'service_guests'
   | 'industry_culture'
   | 'fun_reallife'
-  | 'labor_law';
+  | 'labor_law'
+  | 'food_cost'
+  | 'scheduling_labor'
+  | 'guest_psychology'
+  | 'service_pressure';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -45,6 +49,8 @@ export type RootStackParamList = {
     challengeMode?: 'create' | 'join';
     challengeId?: string;
     questionIds?: string[];
+    targetFriendId?: string;
+    targetFriendName?: string;
   };
   Result: {
     categoryId: CategoryId;
@@ -56,8 +62,10 @@ export type RootStackParamList = {
   };
   Leaderboard: { categoryId?: CategoryId };
   CreateQuestion: undefined;
-  ChallengeLobby: undefined;
-  Admin: undefined;
+  ChallengeLobby: {
+    preselectedFriendId?: string;
+    preselectedFriendName?: string;
+  };
   ChallengeResult: {
     mode: 'create' | 'join';
     categoryId: CategoryId;
@@ -65,5 +73,47 @@ export type RootStackParamList = {
     challengeCode?: string;
     challengerName?: string;
     challengerScore?: number;
+    targetFriendName?: string;
   };
+  BattlePickCategory: {
+    battleId: string;
+    code: string;
+    role: 'creator' | 'opponent';
+    roundNumber: number;
+    creatorScore: number;
+    opponentScore: number;
+    creatorName: string;
+    opponentName: string;
+  };
+  BattleRound: {
+    battleId: string;
+    code: string;
+    role: 'creator' | 'opponent';
+    roundNumber: number;
+    category: CategoryId;
+    creatorScore: number;
+    opponentScore: number;
+    creatorName: string;
+    opponentName: string;
+    questionIds?: string[];
+  };
+  BattleBoard: {
+    battleId: string;
+    code: string;
+    role: 'creator' | 'opponent';
+    lastRoundCorrect?: number;
+    lastRoundTotal?: number;
+  };
+  BattleResult: {
+    battleId: string;
+    role: 'creator' | 'opponent';
+    creatorScore: number;
+    opponentScore: number;
+    creatorName: string;
+    opponentName: string;
+    winner: 'creator' | 'opponent' | 'draw';
+    totalRounds: number;
+  };
+  Friends: undefined;
+  Admin: undefined;
 };
