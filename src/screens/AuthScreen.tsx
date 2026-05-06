@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,10 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
+import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
+import { setUsername } from '../lib/scores';
 
 type Mode = 'signin' | 'signup';
 
@@ -35,6 +38,12 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  useEffect(() => {
+    isAppleAuthAvailable().then(setAppleAvailable);
+  }, []);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -67,6 +76,24 @@ export default function AuthScreen() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    setError(null);
+    try {
+      const { username } = await signInWithApple();
+      if (username) {
+        try { await setUsername(username); } catch {}
+      }
+      // App.tsx switches to main stack via onAuthStateChange
+    } catch (e: any) {
+      if (e?.code !== 'ERR_REQUEST_CANCELED') {
+        setError('Apple-inloggning misslyckades. Försök igen.');
+      }
+    } finally {
+      setAppleLoading(false);
     }
   };
 
@@ -167,6 +194,32 @@ export default function AuthScreen() {
                 </Text>
             }
           </TouchableOpacity>
+
+          {appleAvailable && (
+            <>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>eller</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              {appleLoading
+                ? (
+                  <View style={styles.appleBtnPlaceholder}>
+                    <ActivityIndicator color="#FFFFFF" />
+                  </View>
+                )
+                : (
+                  <AppleAuthentication.AppleAuthenticationButton
+                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                    buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                    cornerRadius={14}
+                    style={styles.appleBtn}
+                    onPress={handleAppleSignIn}
+                  />
+                )
+              }
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -251,6 +304,31 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontFamily: 'Poppins_700Bold',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#3D2870',
+  },
+  dividerText: {
+    color: '#B0A8C8',
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+  },
+  appleBtn: {
+    width: '100%',
+    height: 52,
+  },
+  appleBtnPlaceholder: {
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   confirmContainer: {
     flex: 1,
