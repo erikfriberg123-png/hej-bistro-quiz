@@ -173,18 +173,19 @@ create trigger on_auth_user_created
 
 -- 8b. Battles (multi-round async PvP)
 create table public.battles (
-  id              uuid    default gen_random_uuid() primary key,
-  code            text    unique not null,
-  creator_id      uuid    references public.profiles(id) not null,
-  creator_name    text    not null default 'Anonym',
-  opponent_id     uuid    references public.profiles(id),
-  opponent_name   text,
-  creator_turns   jsonb   not null default '[]',
-  opponent_turns  jsonb   not null default '[]',
-  status          text    not null default 'waiting_opponent'
-                          check (status in ('waiting_opponent','creator_turn','opponent_turn','finished')),
-  winner          text    check (winner in ('creator','opponent','draw')),
-  created_at      timestamptz not null default now()
+  id                  uuid    default gen_random_uuid() primary key,
+  code                text    unique not null,
+  creator_id          uuid    references public.profiles(id) not null,
+  creator_name        text    not null default 'Anonym',
+  opponent_id         uuid    references public.profiles(id),
+  opponent_name       text,
+  target_opponent_id  uuid    references public.profiles(id),
+  creator_turns       jsonb   not null default '[]',
+  opponent_turns      jsonb   not null default '[]',
+  status              text    not null default 'waiting_opponent'
+                              check (status in ('waiting_opponent','creator_turn','opponent_turn','finished')),
+  winner              text    check (winner in ('creator','opponent','draw')),
+  created_at          timestamptz not null default now()
 );
 
 alter table public.battles enable row level security;
@@ -199,12 +200,22 @@ create policy "Participants can update battles"
   on public.battles for update using (
     auth.uid() = creator_id or
     opponent_id is null or
-    auth.uid() = opponent_id
+    auth.uid() = opponent_id or
+    target_opponent_id = auth.uid()
   );
 
-create index idx_battles_code       on public.battles (code);
-create index idx_battles_creator    on public.battles (creator_id) where status <> 'finished';
-create index idx_battles_opponent   on public.battles (opponent_id) where status <> 'finished';
+create index idx_battles_code            on public.battles (code);
+create index idx_battles_creator         on public.battles (creator_id) where status <> 'finished';
+create index idx_battles_opponent        on public.battles (opponent_id) where status <> 'finished';
+create index idx_battles_target_opponent on public.battles (target_opponent_id) where status = 'waiting_opponent';
+
+-- Migration: run this if the battles table already exists in your Supabase project:
+-- alter table public.battles add column if not exists target_opponent_id uuid references public.profiles(id);
+-- create index if not exists idx_battles_target_opponent on public.battles (target_opponent_id) where status = 'waiting_opponent';
+-- drop policy if exists "Participants can update battles" on public.battles;
+-- create policy "Participants can update battles" on public.battles for update using (
+--   auth.uid() = creator_id or opponent_id is null or auth.uid() = opponent_id or target_opponent_id = auth.uid()
+-- );
 
 -- 9. Performance indexes
 create index idx_scores_category_score    on public.scores (category_id, score desc);

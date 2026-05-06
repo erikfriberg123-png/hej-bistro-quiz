@@ -113,14 +113,14 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       Alert.alert('Nätverksfel', 'Omgången sparades inte. Kontrollera anslutningen och försök igen.');
     } finally {
       setSubmitting(false);
+      navigation.replace('BattleBoard', {
+        battleId,
+        code,
+        role,
+        lastRoundCorrect: result.correctAnswers,
+        lastRoundTotal: result.totalQuestions,
+      });
     }
-    navigation.replace('BattleBoard', {
-      battleId,
-      code,
-      role,
-      lastRoundCorrect: result.correctAnswers,
-      lastRoundTotal: result.totalQuestions,
-    });
   }, [battleId, code, role, roundNumber, categoryId, endGame, navigation]);
 
   const advance = useCallback(() => {
@@ -236,7 +236,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
             />
           ))}
 
-          <Animated.View style={[styles.nextBtnWrapper, nextBtnStyle]}>
+          <Animated.View
+            style={[styles.nextBtnWrapper, nextBtnStyle]}
+            pointerEvents={isAnswered ? 'auto' : 'none'}
+          >
             <TouchableOpacity
               onPress={advance}
               style={[

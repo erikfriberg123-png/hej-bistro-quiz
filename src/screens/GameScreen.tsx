@@ -53,6 +53,7 @@ export default function GameScreen({ route, navigation }: Props) {
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
@@ -99,28 +100,58 @@ export default function GameScreen({ route, navigation }: Props) {
   }, [currentQuestion?.id]);
 
   const finishGame = useCallback(async () => {
+    setIsFinishing(true);
     const { result, isNewHighscore, previousHighscore } = endGame();
     submitScore(result.categoryId, result.totalScore);
 
-    if (challengeMode === 'create') {
-      try {
-        const name = await getUsername() ?? 'Anonym';
-        const { code } = await createChallenge(
-          result.categoryId,
-          questions.map(q => q.id),
-          result.totalScore,
-          name,
-          targetFriendId,
-        );
-        navigation.replace('ChallengeResult', {
-          mode: 'create',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-          challengeCode: code,
-          targetFriendName,
-        });
-      } catch (e: any) {
-        Alert.alert('Debug – challenge error', String(e?.message ?? e));
+    try {
+      if (challengeMode === 'create') {
+        try {
+          const name = await getUsername() ?? 'Anonym';
+          const { code } = await createChallenge(
+            result.categoryId,
+            questions.map(q => q.id),
+            result.totalScore,
+            name,
+            targetFriendId,
+          );
+          navigation.replace('ChallengeResult', {
+            mode: 'create',
+            categoryId: result.categoryId,
+            myScore: result.totalScore,
+            challengeCode: code,
+            targetFriendName,
+          });
+        } catch {
+          navigation.replace('Result', {
+            categoryId: result.categoryId,
+            totalQuestions: result.totalQuestions,
+            correctAnswers: result.correctAnswers,
+            totalScore: result.totalScore,
+            isNewHighscore,
+            previousHighscore,
+          });
+        }
+      } else if (challengeMode === 'join' && challengeId) {
+        try {
+          const name = await getUsername() ?? 'Anonym';
+          await joinChallenge(challengeId, result.totalScore, name);
+          const challenge = await getChallengeById(challengeId);
+          navigation.replace('ChallengeResult', {
+            mode: 'join',
+            categoryId: result.categoryId,
+            myScore: result.totalScore,
+            challengerName: challenge?.creator_name ?? 'Anonym',
+            challengerScore: challenge?.creator_score ?? 0,
+          });
+        } catch {
+          navigation.replace('ChallengeResult', {
+            mode: 'join',
+            categoryId: result.categoryId,
+            myScore: result.totalScore,
+          });
+        }
+      } else {
         navigation.replace('Result', {
           categoryId: result.categoryId,
           totalQuestions: result.totalQuestions,
@@ -130,26 +161,7 @@ export default function GameScreen({ route, navigation }: Props) {
           previousHighscore,
         });
       }
-    } else if (challengeMode === 'join' && challengeId) {
-      try {
-        const name = await getUsername() ?? 'Anonym';
-        await joinChallenge(challengeId, result.totalScore, name);
-        const challenge = await getChallengeById(challengeId);
-        navigation.replace('ChallengeResult', {
-          mode: 'join',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-          challengerName: challenge?.creator_name ?? 'Anonym',
-          challengerScore: challenge?.creator_score ?? 0,
-        });
-      } catch {
-        navigation.replace('ChallengeResult', {
-          mode: 'join',
-          categoryId: result.categoryId,
-          myScore: result.totalScore,
-        });
-      }
-    } else {
+    } catch {
       navigation.replace('Result', {
         categoryId: result.categoryId,
         totalQuestions: result.totalQuestions,
@@ -268,14 +280,18 @@ export default function GameScreen({ route, navigation }: Props) {
             />
           ))}
 
-          <Animated.View style={[styles.nextBtnWrapper, nextBtnStyle]}>
+          <Animated.View
+            style={[styles.nextBtnWrapper, nextBtnStyle]}
+            pointerEvents={isAnswered ? 'auto' : 'none'}
+          >
             <TouchableOpacity
               onPress={advance}
-              style={[styles.nextBtn, { backgroundColor: category?.color ?? '#9B5DE5' }]}
+              style={[styles.nextBtn, { backgroundColor: category?.color ?? '#9B5DE5' }, isFinishing && styles.nextBtnDisabled]}
               activeOpacity={0.85}
+              disabled={isFinishing}
             >
               <Text style={styles.nextBtnText}>
-                {isLastQuestion ? 'Visa resultat  🏆' : 'Nästa fråga  →'}
+                {isFinishing ? 'Laddar...' : isLastQuestion ? 'Visa resultat  🏆' : 'Nästa fråga  →'}
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -342,6 +358,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  nextBtnDisabled: { opacity: 0.6 },
   nextBtnText: {
     color: '#FFFFFF',
     fontSize: 17,
