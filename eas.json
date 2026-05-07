@@ -11,6 +11,9 @@
       "distribution": "internal",
       "ios": {
         "simulator": false
+      },
+      "env": {
+        "EXPO_USE_PRECOMPILED_MODULES": "0"
       }
     },
     "production": {
