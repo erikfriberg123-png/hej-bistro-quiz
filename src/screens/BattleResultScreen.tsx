@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -11,9 +13,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import {
   HeadToHeadStats,
+  createBattle,
   getBattleById,
   getHeadToHeadStats,
 } from '../lib/battles';
+import { FriendStatus, getFriendStatus, sendFriendRequest } from '../lib/friends';
+import { getUsername } from '../lib/scores';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleResult'>;
 
@@ -30,12 +35,22 @@ export default function BattleResultScreen({ route, navigation }: Props) {
   } = route.params;
 
   const [stats, setStats] = useState<HeadToHeadStats | null>(null);
+  const [opponentUserId, setOpponentUserId] = useState<string | null>(null);
+  const [isRandomBattle, setIsRandomBattle] = useState(false);
+  const [friendStatus, setFriendStatus] = useState<FriendStatus>('none');
+  const [addingFriend, setAddingFriend] = useState(false);
+  const [rematchLoading, setRematchLoading] = useState(false);
 
   useEffect(() => {
     getBattleById(battleId).then(b => {
       if (!b) return;
-      const opponentId = role === 'creator' ? b.opponent_id : b.creator_id;
-      if (opponentId) getHeadToHeadStats(opponentId).then(setStats);
+      const oppId = role === 'creator' ? b.opponent_id : b.creator_id;
+      setOpponentUserId(oppId);
+      setIsRandomBattle(b.match_type === 'random');
+      if (oppId) {
+        getHeadToHeadStats(oppId).then(setStats);
+        getFriendStatus(oppId).then(setFriendStatus);
+      }
     });
   }, [battleId, role]);
 
@@ -43,6 +58,42 @@ export default function BattleResultScreen({ route, navigation }: Props) {
   const theirScore = role === 'creator' ? opponentScore : creatorScore;
   const myName = role === 'creator' ? creatorName : opponentName;
   const theirName = role === 'creator' ? opponentName : creatorName;
+
+  const handleRematch = async () => {
+    if (!opponentUserId) return;
+    setRematchLoading(true);
+    try {
+      const name = (await getUsername()) ?? 'Anonym';
+      const battle = await createBattle(name, opponentUserId, isRandomBattle ? 'random' : 'friend');
+      navigation.replace('BattlePickCategory', {
+        battleId: battle.id,
+        code: battle.code,
+        role: 'creator',
+        roundNumber: 1,
+        creatorScore: 0,
+        opponentScore: 0,
+        creatorName: name,
+        opponentName: theirName,
+      });
+    } catch {
+      Alert.alert('Fel', 'Kunde inte starta revanche. Försök igen.');
+    } finally {
+      setRematchLoading(false);
+    }
+  };
+
+  const handleAddFriend = async () => {
+    if (!opponentUserId) return;
+    setAddingFriend(true);
+    try {
+      await sendFriendRequest(opponentUserId);
+      setFriendStatus('pending_sent');
+    } catch {
+      Alert.alert('Fel', 'Kunde inte skicka vänförfrågan. Försök igen.');
+    } finally {
+      setAddingFriend(false);
+    }
+  };
 
   const didWin = winner === role;
   const isDraw = winner === 'draw';
@@ -111,11 +162,47 @@ export default function BattleResultScreen({ route, navigation }: Props) {
           </View>
         )}
 
+        {opponentUserId && (
+          <TouchableOpacity
+            onPress={handleRematch}
+            style={[styles.primaryBtn, rematchLoading && styles.btnDisabled]}
+            disabled={rematchLoading}
+          >
+            {rematchLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.primaryBtnText}>Revanche  ⚔️</Text>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {isRandomBattle && opponentUserId && friendStatus === 'none' && (
+          <TouchableOpacity
+            onPress={handleAddFriend}
+            style={[styles.friendBtn, addingFriend && styles.btnDisabled]}
+            disabled={addingFriend}
+          >
+            {addingFriend ? (
+              <ActivityIndicator color="#9B5DE5" />
+            ) : (
+              <Text style={styles.friendBtnText}>Lägg till {theirName} som vän  👋</Text>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {isRandomBattle && opponentUserId && friendStatus === 'pending_sent' && (
+          <View style={styles.friendSentBadge}>
+            <Text style={styles.friendSentText}>Vänförfrågan skickad  ✓</Text>
+          </View>
+        )}
+
         <TouchableOpacity
           onPress={() => navigation.navigate('ChallengeLobby', {})}
-          style={styles.primaryBtn}
+          style={!opponentUserId ? styles.primaryBtn : styles.ghostBtn}
         >
-          <Text style={styles.primaryBtnText}>Ny battle  ⚔️</Text>
+          <Text style={!opponentUserId ? styles.primaryBtnText : styles.ghostBtnText}>
+            Ny battle  ⚔️
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -227,8 +314,31 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginBottom: 12,
+    minHeight: 50,
+    justifyContent: 'center',
   },
   primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
   ghostBtn: { paddingVertical: 10 },
   ghostBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  friendBtn: {
+    backgroundColor: 'transparent',
+    borderRadius: 14,
+    paddingVertical: 14,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: '#9B5DE5',
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  friendBtnText: { color: '#9B5DE5', fontSize: 15, fontFamily: 'Poppins_600SemiBold' },
+  friendSentBadge: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  friendSentText: { color: '#00C896', fontSize: 14, fontFamily: 'Poppins_600SemiBold' },
+  btnDisabled: { opacity: 0.5 },
 });

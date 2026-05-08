@@ -21,6 +21,7 @@ import {
   createBattle,
   declineBattle,
   findActiveBattleBetween,
+  findOpenRandomBattle,
   getBattleByCode,
   getMyBattles,
   getPendingBattlesForMe,
@@ -41,6 +42,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
       : null,
   );
   const [creating, setCreating] = useState(false);
+  const [findingRandom, setFindingRandom] = useState(false);
   const [code, setCode] = useState('');
   const [joining, setJoining] = useState(false);
   const [myBattles, setMyBattles] = useState<Battle[]>([]);
@@ -58,35 +60,34 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
   );
 
   const handleCreate = async () => {
+    if (!selectedFriend) return;
     setCreating(true);
     try {
       const name = (await getUsername()) ?? 'Anonym';
 
-      if (selectedFriend) {
-        const existing = await findActiveBattleBetween(selectedFriend.user_id);
-        if (existing) {
-          const { data: { user } } = await supabase.auth.getUser();
-          const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
-          Alert.alert(
-            'Battle pågår redan',
-            `Du har redan en pågående battle med ${selectedFriend.username}. Vill du öppna den?`,
-            [
-              { text: 'Avbryt', style: 'cancel' },
-              {
-                text: 'Öppna battle',
-                onPress: () => navigation.navigate('BattleBoard', {
-                  battleId: existing.id,
-                  code: existing.code,
-                  role,
-                }),
-              },
-            ],
-          );
-          return;
-        }
+      const existing = await findActiveBattleBetween(selectedFriend.user_id);
+      if (existing) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
+        Alert.alert(
+          'Battle pågår redan',
+          `Du har redan en pågående battle med ${selectedFriend.username}. Vill du öppna den?`,
+          [
+            { text: 'Avbryt', style: 'cancel' },
+            {
+              text: 'Öppna battle',
+              onPress: () => navigation.navigate('BattleBoard', {
+                battleId: existing.id,
+                code: existing.code,
+                role,
+              }),
+            },
+          ],
+        );
+        return;
       }
 
-      const battle = await createBattle(name, selectedFriend?.user_id);
+      const battle = await createBattle(name, selectedFriend.user_id, 'friend');
       navigation.navigate('BattlePickCategory', {
         battleId: battle.id,
         code: battle.code,
@@ -95,12 +96,63 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
         creatorScore: 0,
         opponentScore: 0,
         creatorName: name,
-        opponentName: selectedFriend?.username ?? 'Motståndare',
+        opponentName: selectedFriend.username,
       });
     } catch {
       Alert.alert('Fel', 'Kunde inte skapa battle. Kontrollera anslutningen och försök igen.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleFindRandom = async () => {
+    setFindingRandom(true);
+    try {
+      const name = (await getUsername()) ?? 'Anonym';
+      const openBattle = await findOpenRandomBattle();
+
+      if (openBattle) {
+        const state = computeBattleState(openBattle);
+        const opponentRoundsPlayed = openBattle.opponent_turns.length;
+        const creatorTurn = openBattle.creator_turns[opponentRoundsPlayed];
+
+        if (creatorTurn) {
+          navigation.navigate('BattleRound', {
+            battleId: openBattle.id,
+            code: openBattle.code,
+            role: 'opponent',
+            roundNumber: opponentRoundsPlayed + 1,
+            category: creatorTurn.category,
+            creatorScore: state.creatorScore,
+            opponentScore: state.opponentScore,
+            creatorName: openBattle.creator_name,
+            opponentName: name,
+            questionIds: creatorTurn.questionIds,
+          });
+        } else {
+          navigation.navigate('BattleBoard', {
+            battleId: openBattle.id,
+            code: openBattle.code,
+            role: 'opponent',
+          });
+        }
+      } else {
+        const battle = await createBattle(name, undefined, 'random');
+        navigation.navigate('BattlePickCategory', {
+          battleId: battle.id,
+          code: battle.code,
+          role: 'creator',
+          roundNumber: 1,
+          creatorScore: 0,
+          opponentScore: 0,
+          creatorName: name,
+          opponentName: 'Slumpmässig motståndare',
+        });
+      }
+    } catch {
+      Alert.alert('Fel', 'Kunde inte hitta en motståndare. Försök igen.');
+    } finally {
+      setFindingRandom(false);
     }
   };
 
@@ -268,12 +320,12 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
           <View style={styles.panel}>
             <Text style={styles.panelTitle}>Ny battle</Text>
             <Text style={styles.panelSub}>
-              Du spelar 4 omgångar och väljer kategori i varje. Dela sedan koden med din motståndare.
+              Utmana en vän eller hitta en slumpmässig motståndare. Du väljer kategori i varje omgång.
             </Text>
 
-            {friends.length > 0 && (
+            {friends.length > 0 ? (
               <>
-                <Text style={styles.subLabel}>Välj motståndare (valfritt)</Text>
+                <Text style={styles.subLabel}>Utmana en vän</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -306,22 +358,47 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
+
+                <TouchableOpacity
+                  onPress={handleCreate}
+                  style={[
+                    styles.actionBtn,
+                    (!selectedFriend || creating) && styles.actionBtnDisabled,
+                  ]}
+                  disabled={!selectedFriend || creating}
+                >
+                  {creating ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.actionBtnText}>
+                      {selectedFriend
+                        ? `Utmana ${selectedFriend.username}  ⚔️`
+                        : 'Välj en vän ovan'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.orRow}>
+                  <View style={styles.orLine} />
+                  <Text style={styles.orText}>ELLER</Text>
+                  <View style={styles.orLine} />
+                </View>
               </>
+            ) : (
+              <Text style={styles.noFriendsHint}>
+                Lägg till vänner under fliken Vänner för att utmana dem direkt.
+              </Text>
             )}
 
             <TouchableOpacity
-              onPress={handleCreate}
-              style={[styles.actionBtn, creating && styles.actionBtnDisabled]}
-              disabled={creating}
+              onPress={handleFindRandom}
+              style={[styles.randomBtn, findingRandom && styles.actionBtnDisabled]}
+              disabled={findingRandom}
             >
-              {creating ? (
+              {findingRandom ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.actionBtnText}>
-                  {selectedFriend
-                    ? `Utmana ${selectedFriend.username}  ⚔️`
-                    : 'Starta battle  ⚔️'}
-                </Text>
+                <Text style={styles.actionBtnText}>Slumpmässig motståndare  🎲</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -532,6 +609,39 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Poppins_700Bold',
+  },
+  randomBtn: {
+    backgroundColor: '#00C896',
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  orRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginVertical: -4,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#2A1860',
+  },
+  orText: {
+    color: '#6050A0',
+    fontSize: 11,
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 1.5,
+  },
+  noFriendsHint: {
+    color: '#6050A0',
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 4,
   },
   codeInput: {
     backgroundColor: '#2A1A50',

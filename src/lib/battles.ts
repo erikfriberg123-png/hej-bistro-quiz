@@ -19,6 +19,7 @@ export interface Battle {
   opponent_turns: BattleTurn[];
   status: 'waiting_opponent' | 'creator_turn' | 'opponent_turn' | 'finished';
   winner: 'creator' | 'opponent' | 'draw' | null;
+  match_type: 'friend' | 'random';
   created_at: string;
 }
 
@@ -123,7 +124,11 @@ function generateCode(): string {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-export async function createBattle(creatorName: string, targetOpponentId?: string): Promise<Battle> {
+export async function createBattle(
+  creatorName: string,
+  targetOpponentId?: string,
+  matchType: 'friend' | 'random' = 'friend',
+): Promise<Battle> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Inte inloggad');
 
@@ -138,6 +143,7 @@ export async function createBattle(creatorName: string, targetOpponentId?: strin
       opponent_turns: [],
       status: 'waiting_opponent',
       winner: null,
+      match_type: matchType,
       ...(targetOpponentId ? { target_opponent_id: targetOpponentId } : {}),
     })
     .select('*')
@@ -145,6 +151,24 @@ export async function createBattle(creatorName: string, targetOpponentId?: strin
 
   if (error) throw error;
   return normalizeBattle(data);
+}
+
+export async function findOpenRandomBattle(): Promise<Battle | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('battles')
+    .select('*')
+    .eq('match_type', 'random')
+    .eq('status', 'waiting_opponent')
+    .neq('creator_id', user.id)
+    .order('created_at', { ascending: true })
+    .limit(10);
+
+  // Only join battles where the creator has already played their first round
+  const battles = (data ?? []).map(normalizeBattle);
+  return battles.find(b => b.creator_turns.length > 0) ?? null;
 }
 
 export async function getPendingBattlesForMe(): Promise<Battle[]> {
