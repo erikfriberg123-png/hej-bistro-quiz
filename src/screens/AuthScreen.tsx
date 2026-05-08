@@ -18,7 +18,7 @@ import { supabase } from '../lib/supabase';
 import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
 import { setUsername } from '../lib/scores';
 
-type Mode = 'signin' | 'signup';
+type Mode = 'signin' | 'signup' | 'reset';
 
 const ERROR_MAP: Record<string, string> = {
   'Invalid login credentials': 'Fel e-post eller lösenord.',
@@ -39,6 +39,7 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
@@ -49,6 +50,26 @@ export default function AuthScreen() {
   const switchMode = (next: Mode) => {
     setMode(next);
     setError(null);
+    setResetSent(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!email.trim()) {
+      setError('Ange din e-postadress.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      if (error) {
+        setError(mapError(error.message));
+      } else {
+        setResetSent(true);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -123,6 +144,29 @@ export default function AuthScreen() {
     );
   }
 
+  if (mode === 'reset' && resetSent) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+        <View style={styles.confirmContainer}>
+          <Text style={styles.confirmEmoji}>🔑</Text>
+          <Text style={styles.confirmTitle}>Länk skickad!</Text>
+          <Text style={styles.confirmBody}>
+            {'Vi har skickat en länk för att återställa lösenordet till\n'}
+            <Text style={styles.confirmEmail}>{email.trim()}</Text>
+            {'\n\nKontrollera din inkorg och följ instruktionerna.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => switchMode('signin')}
+            style={styles.backBtn}
+          >
+            <Text style={styles.backText}>Gå till inloggning</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#12082A" />
@@ -140,63 +184,106 @@ export default function AuthScreen() {
             <Text style={styles.tagline}>Quiz för restaurangfolk</Text>
           </View>
 
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              onPress={() => switchMode('signin')}
-              style={[styles.tab, mode === 'signin' && styles.tabActive]}
-            >
-              <Text style={[styles.tabText, mode === 'signin' && styles.tabTextActive]}>
-                Logga in
+          {mode === 'reset' ? (
+            <>
+              <TouchableOpacity onPress={() => switchMode('signin')} style={styles.resetBackRow}>
+                <Text style={styles.resetBackText}>← Tillbaka</Text>
+              </TouchableOpacity>
+              <Text style={styles.resetTitle}>Återställ lösenord</Text>
+              <Text style={styles.resetBody}>
+                Ange din e-postadress så skickar vi en länk för att återställa ditt lösenord.
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => switchMode('signup')}
-              style={[styles.tab, mode === 'signup' && styles.tabActive]}
-            >
-              <Text style={[styles.tabText, mode === 'signup' && styles.tabTextActive]}>
-                Skapa konto
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="E-postadress"
+                placeholderTextColor="#6050A0"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={!loading ? handleResetPassword : undefined}
+              />
+              {error && <Text style={styles.errorText}>{error}</Text>}
+              <TouchableOpacity
+                onPress={handleResetPassword}
+                style={[styles.submitBtn, (!email.trim() || loading) && styles.submitBtnDisabled]}
+                disabled={!email.trim() || loading}
+              >
+                {loading
+                  ? <ActivityIndicator color="#FFFFFF" />
+                  : <Text style={styles.submitText}>Skicka återställningslänk</Text>
+                }
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View style={styles.tabs}>
+                <TouchableOpacity
+                  onPress={() => switchMode('signin')}
+                  style={[styles.tab, mode === 'signin' && styles.tabActive]}
+                >
+                  <Text style={[styles.tabText, mode === 'signin' && styles.tabTextActive]}>
+                    Logga in
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => switchMode('signup')}
+                  style={[styles.tab, mode === 'signup' && styles.tabActive]}
+                >
+                  <Text style={[styles.tabText, mode === 'signup' && styles.tabTextActive]}>
+                    Skapa konto
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="E-postadress"
-            placeholderTextColor="#6050A0"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-          />
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Lösenord"
-            placeholderTextColor="#6050A0"
-            secureTextEntry
-            returnKeyType="done"
-            onSubmitEditing={canSubmit ? handleSubmit : undefined}
-          />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="E-postadress"
+                placeholderTextColor="#6050A0"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+              />
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Lösenord"
+                placeholderTextColor="#6050A0"
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={canSubmit ? handleSubmit : undefined}
+              />
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
+              {error && <Text style={styles.errorText}>{error}</Text>}
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
-            disabled={!canSubmit}
-          >
-            {loading
-              ? <ActivityIndicator color="#FFFFFF" />
-              : <Text style={styles.submitText}>
-                  {mode === 'signin' ? 'Logga in' : 'Skapa konto'}
-                </Text>
-            }
-          </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmit}
+                style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
+                disabled={!canSubmit}
+              >
+                {loading
+                  ? <ActivityIndicator color="#FFFFFF" />
+                  : <Text style={styles.submitText}>
+                      {mode === 'signin' ? 'Logga in' : 'Skapa konto'}
+                    </Text>
+                }
+              </TouchableOpacity>
 
-          {appleAvailable && (
+              {mode === 'signin' && (
+                <TouchableOpacity onPress={() => switchMode('reset')} style={styles.forgotBtn}>
+                  <Text style={styles.forgotText}>Glömt lösenordet?</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
+          {appleAvailable && mode !== 'reset' && (
             <>
               <View style={styles.divider}>
                 <View style={styles.dividerLine} />
@@ -330,6 +417,36 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  forgotBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  forgotText: {
+    color: '#9B5DE5',
+    fontSize: 14,
+    fontFamily: 'Poppins_500Medium',
+  },
+  resetBackRow: {
+    marginBottom: 20,
+  },
+  resetBackText: {
+    color: '#B0A8C8',
+    fontSize: 14,
+    fontFamily: 'Poppins_500Medium',
+  },
+  resetTitle: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontFamily: 'Poppins_700Bold',
+    marginBottom: 12,
+  },
+  resetBody: {
+    color: '#B0A8C8',
+    fontSize: 14,
+    fontFamily: 'Poppins_400Regular',
+    lineHeight: 22,
+    marginBottom: 24,
   },
   confirmContainer: {
     flex: 1,

@@ -120,6 +120,24 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logga ut',
+      'Är du säker på att du vill logga ut?',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Logga ut',
+          style: 'destructive',
+          onPress: async () => {
+            setProfileVisible(false);
+            await supabase.auth.signOut();
+          },
+        },
+      ],
+    );
+  };
+
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -377,6 +395,10 @@ export default function HomeScreen({ navigation }: Props) {
                     style={styles.cancelBtn}
                   >
                     <Text style={styles.cancelText}>Avbryt</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+                    <Text style={styles.logoutText}>Logga ut</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -670,6 +692,8 @@ const styles = StyleSheet.create({
   modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
   cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  logoutBtn: { alignItems: 'center', paddingVertical: 8 },
+  logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'Poppins_500Medium' },
   modalHint: {
     color: '#2EC4B6',
     fontSize: 13,
