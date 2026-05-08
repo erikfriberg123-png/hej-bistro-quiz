@@ -34,6 +34,18 @@ export async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
+export async function checkUsernameAvailable(username: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .ilike('username', username.trim())
+    .neq('id', user.id)
+    .maybeSingle();
+  return !data;
+}
+
 export async function setUsername(username: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Inte inloggad');

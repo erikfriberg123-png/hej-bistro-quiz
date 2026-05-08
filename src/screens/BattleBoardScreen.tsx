@@ -12,9 +12,13 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { Battle, computeBattleState, forfeitBattle, getBattleById, normalizeBattle } from '../lib/battles';
-import { CATEGORIES } from '../data/categories';
+import { Battle, computeBattleState, computeBattlePhase, getChallengeForResponder, forfeitBattle, getBattleById, normalizeBattle, joinBattle } from '../lib/battles';
+import { getUsername } from '../lib/scores';
+import { CATEGORIES, getCategoryById } from '../data/categories';
 import { supabase } from '../lib/supabase';
+import { useGameStore } from '../store/gameStore';
+import { submitComplaint } from '../lib/submissions';
+import { ComplaintModal } from '../components/ComplaintModal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleBoard'>;
 
@@ -48,13 +52,17 @@ const roundCardStyles = StyleSheet.create({
 });
 
 export default function BattleBoardScreen({ route, navigation }: Props) {
-  const { battleId, code, role, lastRoundCorrect, lastRoundTotal } = route.params;
+  const { battleId, code, role, lastRoundCorrect, lastRoundTotal, lastRoundResults } = route.params;
   const [battle, setBattle] = useState<Battle | null>(null);
   const [loading, setLoading] = useState(true);
   const [forfeitConfirm, setForfeitConfirm] = useState(false);
   const [forfeiting, setForfeiting] = useState(false);
   const [justFinished, setJustFinished] = useState(false);
+  const [complainedIds, setComplainedIds] = useState<Set<string>>(new Set());
+  const [complaintTarget, setComplaintTarget] = useState<{ id: string; question: string; category: string } | null>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
+  const { questions: lastRoundQuestions } = useGameStore();
 
   const loadBattle = useCallback(async () => {
     try {
@@ -72,10 +80,11 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     loadBattle();
   }, [loadBattle]));
 
-  // Realtime subscription — updates instantly when the other player finishes their turn
+  // Realtime subscription — unique name per mount so remounting never hits an already-subscribed channel
   useEffect(() => {
+    const channelName = `battle-${battleId}-${Date.now()}`;
     const channel = supabase
-      .channel(`battle:${battleId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'battles', filter: `id=eq.${battleId}` },
@@ -96,38 +105,56 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     prevStatusRef.current = battle.status;
   }, [battle]);
 
-  const handlePlayRound = () => {
+  const handleChallenge = () => {
     if (!battle) return;
     const state = computeBattleState(battle);
+    const ct = battle.creator_turns.length;
+    const ot = battle.opponent_turns.length;
+    const roundNumber = Math.min(ct, ot) + 1;
+    navigation.navigate('BattlePickCategory', {
+      battleId,
+      code,
+      role,
+      roundNumber,
+      creatorScore: state.creatorScore,
+      opponentScore: state.opponentScore,
+      creatorName: battle.creator_name,
+      opponentName: battle.opponent_name ?? 'Motståndare',
+    });
+  };
 
-    if (role === 'creator') {
-      navigation.navigate('BattlePickCategory', {
-        battleId,
-        code,
-        role,
-        roundNumber: battle.creator_turns.length + 1,
-        creatorScore: state.creatorScore,
-        opponentScore: state.opponentScore,
-        creatorName: battle.creator_name,
-        opponentName: battle.opponent_name ?? 'Motståndare',
-      });
-    } else {
-      const opponentRoundsPlayed = battle.opponent_turns.length;
-      const creatorTurn = battle.creator_turns[opponentRoundsPlayed];
-      if (!creatorTurn) return;
-      navigation.navigate('BattleRound', {
-        battleId,
-        code,
-        role,
-        roundNumber: opponentRoundsPlayed + 1,
-        category: creatorTurn.category,
-        creatorScore: state.creatorScore,
-        opponentScore: state.opponentScore,
-        creatorName: battle.creator_name,
-        opponentName: battle.opponent_name ?? 'Motståndare',
-        questionIds: creatorTurn.questionIds,
-      });
+  const handleAcceptChallenge = async () => {
+    if (!battle) return;
+    let current = battle;
+
+    if (role === 'opponent' && !battle.opponent_id) {
+      const name = await getUsername() ?? 'Anonym';
+      try {
+        current = await joinBattle(battleId, name);
+        setBattle(current);
+      } catch {
+        return;
+      }
     }
+
+    const state = computeBattleState(current);
+    const challenge = getChallengeForResponder(current);
+    if (!challenge) return;
+    const ct = current.creator_turns.length;
+    const ot = current.opponent_turns.length;
+    const roundNumber = Math.max(ct, ot);
+    navigation.navigate('BattleRound', {
+      battleId,
+      code,
+      role,
+      roundNumber,
+      category: challenge.category,
+      creatorScore: state.creatorScore,
+      opponentScore: state.opponentScore,
+      creatorName: current.creator_name,
+      opponentName: current.opponent_name ?? 'Motståndare',
+      questionIds: challenge.questionIds,
+    });
   };
 
   const handleSeeResult = () => {
@@ -188,25 +215,10 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   const state = computeBattleState(battle);
   const myName = role === 'creator' ? battle.creator_name : (battle.opponent_name ?? 'Du');
   const theirName = role === 'creator' ? (battle.opponent_name ?? 'Motståndare') : battle.creator_name;
-  const myScore = role === 'creator' ? state.creatorScore : state.opponentScore;
-  const theirScore = role === 'creator' ? state.opponentScore : state.creatorScore;
-  const myTurns = role === 'creator' ? battle.creator_turns : battle.opponent_turns;
-  const theirTurns = role === 'creator' ? battle.opponent_turns : battle.creator_turns;
 
-  const isMyTurn =
-    (role === 'creator' && state.nextTurn === 'creator') ||
-    (role === 'opponent' && state.nextTurn === 'opponent');
-  const isWaitingOpponent = battle.status === 'waiting_opponent';
   const iWon = state.winner === role;
   const wasForfeited = state.isFinished &&
     (battle.creator_turns.length < 4 || battle.opponent_turns.length < 4);
-
-  const maxRounds = Math.max(myTurns.length, theirTurns.length);
-  const roundRows = Array.from({ length: maxRounds }, (_, i) => ({
-    roundNum: i + 1,
-    myTurn: myTurns[i] ?? null,
-    theirTurn: theirTurns[i] ?? null,
-  }));
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -226,121 +238,188 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
 
         {/* Round result */}
         {lastRoundCorrect !== undefined && lastRoundTotal !== undefined && (
-          <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
-        )}
+          <>
+            <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
 
-        {/* Score */}
-        <View style={styles.scoreCard}>
-          <View style={styles.scoreCol}>
-            <Text style={styles.scoreName} numberOfLines={1}>{myName}</Text>
-            <Text style={[styles.scoreNum, styles.scoreNumMe]}>{myScore}</Text>
-            <Text style={styles.scoreXP}>XP</Text>
-          </View>
-          <Text style={styles.scoreDash}>–</Text>
-          <View style={styles.scoreCol}>
-            <Text style={styles.scoreName} numberOfLines={1}>{theirName}</Text>
-            <Text style={styles.scoreNum}>{theirScore}</Text>
-            <Text style={styles.scoreXP}>XP</Text>
-          </View>
-        </View>
+            {lastRoundQuestions.length > 0 && (
+              <View style={resultCards.container}>
+                {lastRoundQuestions.map((q, i) => {
+                  const correct = lastRoundResults ? lastRoundResults[i] : undefined;
+                  const isCorrect = correct === true;
+                  const isExpanded = expandedCard === q.id;
 
-        {/* Round history */}
-        {roundRows.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>OMGÅNGAR</Text>
-            {roundRows.map(row => {
-              const myCat = row.myTurn ? CATEGORIES.find(c => c.id === row.myTurn!.category) : null;
-              const theirCat = row.theirTurn ? CATEGORIES.find(c => c.id === row.theirTurn!.category) : null;
-              return (
-                <View key={row.roundNum} style={styles.roundRow}>
-                  <Text style={styles.roundNum}>#{row.roundNum}</Text>
-                  <View style={styles.roundHalf}>
-                    {row.myTurn ? (
-                      <>
-                        <Text style={styles.roundCat} numberOfLines={1}>
-                          {myCat?.icon ?? '?'} {myCat?.name ?? ''}
+                  return (
+                    <TouchableOpacity
+                      key={q.id}
+                      activeOpacity={0.85}
+                      onPress={() => setExpandedCard(isExpanded ? null : q.id)}
+                      style={[
+                        resultCards.card,
+                        isCorrect ? resultCards.cardCorrect : resultCards.cardWrong,
+                      ]}
+                    >
+                      {/* Header row */}
+                      <View style={resultCards.cardHeader}>
+                        <Text style={resultCards.cardIcon}>{isCorrect ? '✓' : '✗'}</Text>
+                        <Text
+                          style={[resultCards.cardQuestion, isCorrect ? resultCards.textCorrect : resultCards.textWrong]}
+                          numberOfLines={isExpanded ? undefined : 2}
+                        >
+                          {q.question}
                         </Text>
-                        <Text style={styles.roundScore}>{row.myTurn.score} XP</Text>
-                      </>
-                    ) : (
-                      <Text style={styles.roundPending}>–</Text>
-                    )}
-                  </View>
-                  <View style={styles.roundDivider} />
-                  <View style={styles.roundHalf}>
-                    {row.theirTurn ? (
-                      <>
-                        <Text style={styles.roundCat} numberOfLines={1}>
-                          {theirCat?.icon ?? '?'} {theirCat?.name ?? ''}
-                        </Text>
-                        <Text style={styles.roundScore}>{row.theirTurn.score} XP</Text>
-                      </>
-                    ) : (
-                      <Text style={styles.roundPending}>–</Text>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+                        <Text style={resultCards.chevron}>{isExpanded ? '▲' : '▼'}</Text>
+                      </View>
+
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <View style={resultCards.expanded}>
+                          <Text style={resultCards.correctLabel}>Rätt svar:</Text>
+                          <Text style={resultCards.correctAnswer}>
+                            {q.answers[q.correctIndex]}
+                          </Text>
+                          {complainedIds.has(q.id) ? (
+                            <Text style={resultCards.sentText}>Klagomål skickat ✓</Text>
+                          ) : (
+                            <TouchableOpacity
+                              onPress={() => setComplaintTarget({ id: q.id, question: q.question, category: q.category })}
+                              style={resultCards.complainBtn}
+                            >
+                              <Text style={resultCards.complainBtnText}>⚠️  Klaga på frågan</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </>
         )}
 
         {/* CTA */}
-        <View style={[styles.ctaBox, justFinished && iWon && styles.ctaBoxWin]}>
-          {state.isFinished ? (
-            justFinished ? (
-              <>
-                <Text style={styles.ctaEmoji}>{iWon ? '🎉' : state.winner === 'draw' ? '🤝' : '💪'}</Text>
-                <Text style={styles.ctaTitle}>
-                  {iWon
-                    ? wasForfeited ? 'Motståndaren gav upp!' : 'Du vinner!'
-                    : state.winner === 'draw' ? 'Oavgjort!'
-                    : 'Motståndaren vann!'}
-                </Text>
+        {(() => {
+          if (!battle) return null;
+          const phase = computeBattlePhase(battle);
+          const challenge = getChallengeForResponder(battle);
+          const challengeCat = challenge ? getCategoryById(challenge.category) : null;
+          const ct = battle.creator_turns.length;
+          const ot = battle.opponent_turns.length;
+          const nextRound = Math.min(ct, ot) + 1;
+
+          if (state.isFinished) {
+            return (
+              <View style={[styles.ctaBox, justFinished && iWon && styles.ctaBoxWin]}>
+                {justFinished ? (
+                  <>
+                    <Text style={styles.ctaEmoji}>{iWon ? '🎉' : state.winner === 'draw' ? '🤝' : '💪'}</Text>
+                    <Text style={styles.ctaTitle}>
+                      {iWon
+                        ? wasForfeited ? 'Motståndaren gav upp!' : 'Du vinner!'
+                        : state.winner === 'draw' ? 'Oavgjort!'
+                        : 'Motståndaren vann!'}
+                    </Text>
+                    <Text style={styles.ctaSub}>
+                      {iWon ? 'Grattis — du är den bästa!' : 'Dags för en revanche?'}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.ctaTitle}>Battle klar! 🏆</Text>
+                )}
+                <TouchableOpacity onPress={handleSeeResult} style={styles.primaryBtn}>
+                  <Text style={styles.primaryBtnText}>Se resultat  →</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }
+
+          if (phase === 'waiting_opponent') {
+            return (
+              <View style={styles.ctaBox}>
+                <Text style={styles.ctaTitle}>Väntar på motståndare ⏳</Text>
                 <Text style={styles.ctaSub}>
-                  {iWon ? 'Grattis — du är den bästa!' : 'Dags för en revanche?'}
+                  Dela koden{' '}
+                  <Text style={{ color: '#9B5DE5', fontFamily: 'Poppins_700Bold' }}>{code}</Text>
+                  {' '}med din motståndare.
                 </Text>
-                <TouchableOpacity onPress={handleSeeResult} style={styles.primaryBtn}>
-                  <Text style={styles.primaryBtnText}>Se resultat  →</Text>
+              </View>
+            );
+          }
+
+          // My turn to pick a category and challenge
+          if ((phase === 'creator_challenge' && role === 'creator') ||
+              (phase === 'opponent_challenge' && role === 'opponent')) {
+            return (
+              <View style={styles.ctaBox}>
+                <Text style={styles.ctaEmoji}>⚔️</Text>
+                <Text style={styles.ctaTitle}>Din tur att utmana!</Text>
+                <Text style={styles.ctaSub}>Välj en kategori och ge din motståndare en utmaning – omgång {nextRound} av 4.</Text>
+                <TouchableOpacity onPress={handleChallenge} style={styles.primaryBtn}>
+                  <Text style={styles.primaryBtnText}>Välj kategori  →</Text>
                 </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <Text style={styles.ctaTitle}>Battle klar! 🏆</Text>
-                <TouchableOpacity onPress={handleSeeResult} style={styles.primaryBtn}>
-                  <Text style={styles.primaryBtnText}>Se resultat  →</Text>
+              </View>
+            );
+          }
+
+          // Opponent is challenging — I need to wait
+          if ((phase === 'creator_challenge' && role === 'opponent') ||
+              (phase === 'opponent_challenge' && role === 'creator')) {
+            return (
+              <View style={styles.ctaBox}>
+                <Text style={styles.ctaTitle}>Väntar på {theirName}... ⏳</Text>
+                <Text style={styles.ctaSub}>{theirName} väljer kategori för omgång {nextRound}.</Text>
+                <TouchableOpacity onPress={loadBattle} style={styles.refreshBtn}>
+                  <Text style={styles.refreshBtnText}>↻  Uppdatera nu</Text>
                 </TouchableOpacity>
-              </>
-            )
-          ) : isWaitingOpponent ? (
-            <>
-              <Text style={styles.ctaTitle}>Väntar på motståndare ⏳</Text>
-              <Text style={styles.ctaSub}>
-                Din motståndare ser utmaningen i sin app. Koden är{' '}
-                <Text style={{ color: '#9B5DE5', fontFamily: 'Poppins_700Bold' }}>{code}</Text>
-                {' '}om de behöver ange den manuellt.
-              </Text>
-            </>
-          ) : isMyTurn ? (
-            <>
-              <Text style={styles.ctaTitle}>Din tur! ⚡</Text>
-              <Text style={styles.ctaSub}>Välj en kategori och spela omgång {myTurns.length + 1}.</Text>
-              <TouchableOpacity onPress={handlePlayRound} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>Spela omgång {myTurns.length + 1}  →</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={styles.ctaTitle}>Väntar på {theirName}...</Text>
-              <Text style={styles.ctaSub}>
-                Det är {theirName}s tur. Sidan uppdateras automatiskt var 5:e sekund.
-              </Text>
-              <TouchableOpacity onPress={loadBattle} style={styles.refreshBtn}>
-                <Text style={styles.refreshBtnText}>↻  Uppdatera nu</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+              </View>
+            );
+          }
+
+          // My turn to RESPOND — accept or decline the challenge
+          if ((phase === 'opponent_respond' && role === 'opponent') ||
+              (phase === 'creator_respond' && role === 'creator')) {
+            return (
+              <View style={[styles.ctaBox, styles.ctaBoxChallenge]}>
+                <Text style={styles.ctaChallengeFrom}>{challenge?.challengerName ?? theirName} utmanar dig!</Text>
+                {challengeCat && (
+                  <View style={[styles.challengeCatBadge, { borderColor: challengeCat.color }]}>
+                    <Text style={styles.challengeCatIcon}>{challengeCat.icon}</Text>
+                    <Text style={[styles.challengeCatName, { color: challengeCat.color }]}>{challengeCat.name}</Text>
+                  </View>
+                )}
+                <Text style={styles.ctaSub}>Tre frågor inom kategorin. Klarar du det?</Text>
+                <TouchableOpacity onPress={handleAcceptChallenge} style={styles.primaryBtn}>
+                  <Text style={styles.primaryBtnText}>Acceptera utmaning  ✓</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setForfeitConfirm(true)} style={styles.declineBtn}>
+                  <Text style={styles.declineBtnText}>Tacka nej (ge upp)</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }
+
+          // Other player needs to respond — I wait
+          if ((phase === 'opponent_respond' && role === 'creator') ||
+              (phase === 'creator_respond' && role === 'opponent')) {
+            return (
+              <View style={styles.ctaBox}>
+                <Text style={styles.ctaTitle}>Väntar på {theirName}... ⏳</Text>
+                <Text style={styles.ctaSub}>{theirName} avgör om de accepterar din utmaning.</Text>
+                {challengeCat && (
+                  <View style={[styles.challengeCatBadge, { borderColor: challengeCat.color }]}>
+                    <Text style={styles.challengeCatIcon}>{challengeCat.icon}</Text>
+                    <Text style={[styles.challengeCatName, { color: challengeCat.color }]}>{challengeCat.name}</Text>
+                  </View>
+                )}
+                <TouchableOpacity onPress={loadBattle} style={styles.refreshBtn}>
+                  <Text style={styles.refreshBtnText}>↻  Uppdatera nu</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }
+
+          return null;
+        })()}
 
       </ScrollView>
 
@@ -353,6 +432,18 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
           <Text style={styles.forfeitText}>Ge upp</Text>
         </TouchableOpacity>
       )}
+
+      <ComplaintModal
+        visible={complaintTarget !== null}
+        questionText={complaintTarget?.question ?? ''}
+        onClose={() => setComplaintTarget(null)}
+        onSubmit={async (message) => {
+          if (!complaintTarget) return;
+          const { error } = await submitComplaint(complaintTarget.id, complaintTarget.question, complaintTarget.category, message);
+          if (!error) setComplainedIds(prev => new Set(prev).add(complaintTarget.id));
+          setComplaintTarget(null);
+        }}
+      />
 
       {!state.isFinished && forfeitConfirm && (
         <View style={styles.forfeitConfirmBox}>
@@ -493,6 +584,41 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#2EC45C',
   },
+  ctaBoxChallenge: {
+    borderWidth: 1.5,
+    borderColor: '#9B5DE5',
+  },
+  ctaChallengeFrom: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+    textAlign: 'center',
+  },
+  challengeCatBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 2,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignSelf: 'center',
+  },
+  challengeCatIcon: { fontSize: 28 },
+  challengeCatName: {
+    fontSize: 18,
+    fontFamily: 'Poppins_700Bold',
+  },
+  declineBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  declineBtnText: {
+    color: '#6B4A6B',
+    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    textDecorationLine: 'underline',
+  },
   ctaEmoji: { fontSize: 40 },
   ctaTitle: {
     color: '#FFFFFF',
@@ -580,5 +706,94 @@ const styles = StyleSheet.create({
     color: '#FF453A',
     fontSize: 14,
     fontFamily: 'Poppins_700Bold',
+  },
+});
+
+const resultCards = StyleSheet.create({
+  container: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+    gap: 0,
+  },
+  cardCorrect: {
+    backgroundColor: '#0A2A18',
+    borderColor: '#2EC45C',
+  },
+  cardWrong: {
+    backgroundColor: '#2A0A0A',
+    borderColor: '#FF453A',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  cardIcon: {
+    fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
+    color: '#FFFFFF',
+    marginTop: 1,
+    width: 18,
+  },
+  cardQuestion: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    lineHeight: 19,
+  },
+  textCorrect: {
+    color: '#7DFFA8',
+  },
+  textWrong: {
+    color: '#FF8A80',
+  },
+  chevron: {
+    color: '#6050A0',
+    fontSize: 10,
+    marginTop: 4,
+  },
+  expanded: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#2A1A50',
+    gap: 8,
+  },
+  correctLabel: {
+    color: '#B0A8C8',
+    fontSize: 11,
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  correctAnswer: {
+    color: '#2EC45C',
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    lineHeight: 20,
+  },
+  complainBtn: {
+    marginTop: 4,
+    backgroundColor: '#2A1A50',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  complainBtnText: {
+    color: '#B0A8C8',
+    fontSize: 13,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  sentText: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontFamily: 'Poppins_600SemiBold',
+    textAlign: 'center',
+    marginTop: 4,
   },
 });

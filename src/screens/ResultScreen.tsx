@@ -7,11 +7,14 @@ import {
   StatusBar,
   TouchableOpacity,
   Share,
+  ScrollView,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { getCategoryById } from '../data/categories';
+import { submitComplaint } from '../lib/submissions';
+import { ComplaintModal } from '../components/ComplaintModal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
@@ -19,9 +22,11 @@ export default function ResultScreen({ route, navigation }: Props) {
   const { categoryId, totalQuestions, correctAnswers, totalScore, isNewHighscore, previousHighscore } =
     route.params;
 
-  const { startGame } = useGameStore();
+  const { startGame, questions } = useGameStore();
   const category = getCategoryById(categoryId);
   const [displayScore, setDisplayScore] = useState(0);
+  const [complainedIds, setComplainedIds] = useState<Set<string>>(new Set());
+  const [complaintTarget, setComplaintTarget] = useState<{ id: string; question: string; category: string } | null>(null);
 
   useEffect(() => {
     const target = totalScore;
@@ -46,6 +51,13 @@ export default function ResultScreen({ route, navigation }: Props) {
     navigation.navigate('Home');
   };
 
+  const handleComplainSubmit = async (message: string) => {
+    if (!complaintTarget) return;
+    const { error } = await submitComplaint(complaintTarget.id, complaintTarget.question, complaintTarget.category, message);
+    if (!error) setComplainedIds(prev => new Set(prev).add(complaintTarget.id));
+    setComplaintTarget(null);
+  };
+
   const handleShare = async () => {
     try {
       await Share.share({
@@ -62,7 +74,11 @@ export default function ResultScreen({ route, navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.emoji}>{emoji}</Text>
 
         {isNewHighscore && (
@@ -116,7 +132,35 @@ export default function ResultScreen({ route, navigation }: Props) {
         <TouchableOpacity onPress={handleShare} style={styles.shareBtn}>
           <Text style={styles.shareText}>Dela resultat  ↗</Text>
         </TouchableOpacity>
-      </View>
+
+        {questions.length > 0 && (
+          <View style={styles.complainSection}>
+            <Text style={styles.complainTitle}>⚠️  Fel på en fråga?</Text>
+            {questions.map(q => (
+              <View key={q.id} style={styles.complainRow}>
+                <Text style={styles.complainQ} numberOfLines={2}>{q.question}</Text>
+                {complainedIds.has(q.id) ? (
+                  <Text style={styles.complainedBadge}>Skickat ✓</Text>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => setComplaintTarget({ id: q.id, question: q.question, category: q.category })}
+                    style={styles.complainBtn}
+                  >
+                    <Text style={styles.complainBtnText}>Klaga</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      <ComplaintModal
+        visible={complaintTarget !== null}
+        questionText={complaintTarget?.question ?? ''}
+        onClose={() => setComplaintTarget(null)}
+        onSubmit={handleComplainSubmit}
+      />
     </SafeAreaView>
   );
 }
@@ -127,10 +171,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#12082A',
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 32,
   },
   emoji: {
     fontSize: 64,
@@ -237,5 +282,52 @@ const styles = StyleSheet.create({
     color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'Poppins_500Medium',
+  },
+  complainSection: {
+    width: '100%',
+    marginTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#2A1A50',
+    paddingTop: 16,
+    gap: 10,
+  },
+  complainTitle: {
+    color: '#B0A8C8',
+    fontSize: 13,
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  complainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E1040',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  complainQ: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    lineHeight: 18,
+  },
+  complainBtn: {
+    backgroundColor: '#3D2870',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  complainBtnText: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  complainedBadge: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontFamily: 'Poppins_600SemiBold',
   },
 });

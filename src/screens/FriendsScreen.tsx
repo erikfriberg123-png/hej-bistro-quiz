@@ -15,15 +15,15 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import {
-  FriendProfile,
-  FriendStatus,
+  type FriendProfile,
+  type FriendStatus,
   searchUsers,
   sendFriendRequest,
   acceptFriendRequest,
   removeFriend,
   getFriends,
   getPendingRequests,
-  getFriendStatus,
+  getFriendStatusBatch,
 } from '../lib/friends';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
@@ -61,9 +61,8 @@ export default function FriendsScreen({ navigation }: Props) {
       setSearching(true);
       try {
         const results = await searchUsers(query);
-        const withStatus = await Promise.all(
-          results.map(async u => ({ ...u, status: await getFriendStatus(u.user_id) }))
-        );
+        const statusMap = await getFriendStatusBatch(results.map(u => u.user_id));
+        const withStatus = results.map(u => ({ ...u, status: statusMap[u.user_id] ?? 'none' as FriendStatus }));
         setSearchResults(withStatus);
       } catch {
         setSearchResults([]);

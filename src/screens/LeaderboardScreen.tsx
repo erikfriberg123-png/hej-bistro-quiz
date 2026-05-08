@@ -19,7 +19,7 @@ import { getCategoryById } from '../data/categories';
 type Props = NativeStackScreenProps<RootStackParamList, 'Leaderboard'>;
 
 export default function LeaderboardScreen({ navigation, route }: Props) {
-  const initialCategory = route.params?.categoryId ?? 'food_drink';
+  const initialCategory = route.params?.categoryId ?? 'food';
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

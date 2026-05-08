@@ -32,6 +32,14 @@ export interface BattleComputedState {
   nextTurn: 'creator' | 'opponent';
 }
 
+export type BattlePhase =
+  | 'waiting_opponent'
+  | 'creator_challenge'   // creator picks category & plays
+  | 'opponent_respond'    // opponent sees challenge, accepts or declines
+  | 'opponent_challenge'  // opponent picks category & plays
+  | 'creator_respond'     // creator sees challenge, accepts or declines
+  | 'finished';
+
 function parseJsonbArray(value: unknown): BattleTurn[] {
   if (Array.isArray(value)) return value as BattleTurn[];
   if (typeof value === 'string') {
@@ -43,25 +51,64 @@ function parseJsonbArray(value: unknown): BattleTurn[] {
 export function normalizeBattle(raw: unknown): Battle {
   const b = raw as Record<string, unknown>;
   return {
-    ...(b as Battle),
+    ...(b as unknown as Battle),
     creator_turns: parseJsonbArray(b.creator_turns),
     opponent_turns: parseJsonbArray(b.opponent_turns),
   };
 }
 
+export function computeBattlePhase(battle: Battle): BattlePhase {
+  if (battle.status === 'finished') return 'finished';
+  const ct = battle.creator_turns.length;
+  const ot = battle.opponent_turns.length;
+  if (ct === ot && ct >= 4) return 'finished';
+  if (battle.status === 'waiting_opponent') {
+    return ct > 0 ? 'opponent_respond' : 'waiting_opponent';
+  }
+  if (ct > ot) return 'opponent_respond';
+  if (ot > ct) return 'creator_respond';
+  return ct % 2 === 0 ? 'creator_challenge' : 'opponent_challenge';
+}
+
+export function getChallengeForResponder(
+  battle: Battle,
+): { category: CategoryId; questionIds: string[]; challengerName: string } | null {
+  const ct = battle.creator_turns.length;
+  const ot = battle.opponent_turns.length;
+
+  if (ct > ot) {
+    const lastTurn = battle.creator_turns[ct - 1];
+    if (!lastTurn?.questionIds?.length) return null;
+    return { category: lastTurn.category, questionIds: lastTurn.questionIds, challengerName: battle.creator_name };
+  }
+  if (ot > ct) {
+    const lastTurn = battle.opponent_turns[ot - 1];
+    if (!lastTurn?.questionIds?.length) return null;
+    return { category: lastTurn.category, questionIds: lastTurn.questionIds, challengerName: battle.opponent_name ?? 'Motståndare' };
+  }
+  return null;
+}
+
 export function computeBattleState(battle: Battle): BattleComputedState {
   const creatorScore = battle.creator_turns.reduce((s, t) => s + t.score, 0);
   const opponentScore = battle.opponent_turns.reduce((s, t) => s + t.score, 0);
-  const creatorRoundsPlayed = battle.creator_turns.length;
-  const opponentRoundsPlayed = battle.opponent_turns.length;
-  const completedRounds = Math.min(creatorRoundsPlayed, opponentRoundsPlayed);
-  const nextTurn: 'creator' | 'opponent' =
-    creatorRoundsPlayed > opponentRoundsPlayed ? 'opponent' : 'creator';
+  const ct = battle.creator_turns.length;
+  const ot = battle.opponent_turns.length;
+  const completedRounds = Math.min(ct, ot);
+
+  // nextTurn: who needs to act next
+  // If turns are unequal, the one with fewer turns responds
+  // If turns are equal, the challenger for the next round takes their turn (alternates)
+  const nextTurn: 'creator' | 'opponent' = (() => {
+    if (ct > ot) return 'opponent'; // creator challenged, opponent responds
+    if (ot > ct) return 'creator';  // opponent challenged, creator responds
+    return ct % 2 === 0 ? 'creator' : 'opponent'; // equal: alternate challenger
+  })();
 
   let isFinished = battle.status === 'finished';
   let winner: 'creator' | 'opponent' | 'draw' | null = battle.winner ?? null;
 
-  if (!isFinished && creatorRoundsPlayed >= 4 && opponentRoundsPlayed >= 4) {
+  if (!isFinished && ct >= 4 && ot >= 4) {
     isFinished = true;
     if (creatorScore > opponentScore) winner = 'creator';
     else if (opponentScore > creatorScore) winner = 'opponent';
@@ -116,6 +163,27 @@ export async function getPendingBattlesForMe(): Promise<Battle[]> {
 
 export async function declineBattle(battleId: string): Promise<void> {
   await supabase.from('battles').delete().eq('id', battleId);
+}
+
+export async function joinBattle(battleId: string, opponentName: string): Promise<Battle> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Inte inloggad');
+
+  const current = await getBattleById(battleId);
+  if (!current) throw new Error('Slag hittades inte');
+
+  const ct = current.creator_turns.length;
+  const newStatus: Battle['status'] = ct > 0 ? 'opponent_turn' : 'creator_turn';
+
+  const { data, error } = await supabase
+    .from('battles')
+    .update({ opponent_id: user.id, opponent_name: opponentName, status: newStatus })
+    .eq('id', battleId)
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return normalizeBattle(data);
 }
 
 export async function forfeitBattle(battleId: string, role: 'creator' | 'opponent'): Promise<void> {

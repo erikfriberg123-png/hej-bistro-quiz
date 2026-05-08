@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
@@ -20,8 +21,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { submitTurn } from '../lib/battles';
+import { submitTurn, computeBattlePhase } from '../lib/battles';
 import { getUsername } from '../lib/scores';
+import { sendPushToUser } from '../lib/pushNotifications';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
 import { SparklerTimer } from '../components/SparklerTimer';
@@ -103,22 +105,37 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     const playedQuestionIds = useGameStore.getState().questions.map(q => q.id);
     try {
       const myName = role === 'opponent' ? (await getUsername() ?? 'Anonym') : undefined;
-      await submitTurn(
+      const updatedBattle = await submitTurn(
         battleId,
         role,
         { round: roundNumber, category: categoryId, score: result.totalScore, questionIds: playedQuestionIds },
         myName,
       );
+
+      // Push notification to the other player
+      const phase = computeBattlePhase(updatedBattle);
+      const targetId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
+      const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
+      if (targetId) {
+        const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
+        const title = 'Quizine ⚔️';
+        const body = isChallenge
+          ? `${myDisplayName} utmanade dig! Dags att svara.`
+          : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
+        sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
+      }
     } catch {
       Alert.alert('Nätverksfel', 'Omgången sparades inte. Kontrollera anslutningen och försök igen.');
     } finally {
       setSubmitting(false);
+      const lastRoundResults = useGameStore.getState().answers.map(a => a === true);
       navigation.replace('BattleBoard', {
         battleId,
         code,
         role,
         lastRoundCorrect: result.correctAnswers,
         lastRoundTotal: result.totalQuestions,
+        lastRoundResults,
       });
     }
   }, [battleId, code, role, roundNumber, categoryId, endGame, navigation]);
@@ -140,7 +157,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       setIsAnswered(true);
 
       const elapsed = (Date.now() - questionStartRef.current) / 1000;
-      const timeRemaining = Math.max(0, 15 - elapsed);
+      const timeRemaining = Math.max(0, TIMER_DURATION / 1000 - elapsed);
       const actualIndex = shuffledIndices[displayIndex];
       const correct = currentQuestion.correctIndex;
       const points = submitAnswer(actualIndex, timeRemaining);
@@ -148,9 +165,9 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 
       if (points > 0) {
         setShowCelebration(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
       const newStates: AnswerState[] = shuffledIndices.map((origIdx, dispIdx) => {
@@ -170,7 +187,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     setIsAnswered(true);
     submitAnswer(-1, 0);
     setPointsAwarded(0);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
@@ -226,15 +243,32 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
             total={totalQuestions}
           />
 
-          {shuffledIndices.map((origIdx, dispIdx) => (
-            <AnswerButton
-              key={dispIdx}
-              index={dispIdx}
-              text={currentQuestion.answers[origIdx]}
-              state={answerStates[dispIdx]}
-              onPress={() => handleAnswer(dispIdx)}
-            />
-          ))}
+          <View style={styles.answersGrid}>
+            <View style={styles.answersRow}>
+              {[0, 1].map(dispIdx => (
+                <AnswerButton
+                  key={dispIdx}
+                  index={dispIdx}
+                  text={currentQuestion.answers[shuffledIndices[dispIdx]]}
+                  state={answerStates[dispIdx]}
+                  onPress={() => handleAnswer(dispIdx)}
+                  compact
+                />
+              ))}
+            </View>
+            <View style={styles.answersRow}>
+              {[2, 3].map(dispIdx => (
+                <AnswerButton
+                  key={dispIdx}
+                  index={dispIdx}
+                  text={currentQuestion.answers[shuffledIndices[dispIdx]]}
+                  state={answerStates[dispIdx]}
+                  onPress={() => handleAnswer(dispIdx)}
+                  compact
+                />
+              ))}
+            </View>
+          </View>
 
           <Animated.View
             style={[styles.nextBtnWrapper, nextBtnStyle]}
@@ -339,6 +373,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
+  answersGrid: { gap: 8 },
+  answersRow: { flexDirection: 'row', gap: 8 },
   nextBtnWrapper: { marginTop: 14 },
   nextBtn: {
     borderRadius: 16,

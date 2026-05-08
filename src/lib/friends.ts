@@ -107,26 +107,37 @@ export async function getPendingRequests(): Promise<FriendProfile[]> {
 export type FriendStatus = 'none' | 'pending_sent' | 'pending_received' | 'accepted';
 
 export async function getFriendStatus(targetId: string): Promise<FriendStatus> {
+  const map = await getFriendStatusBatch([targetId]);
+  return map[targetId] ?? 'none';
+}
+
+export async function getFriendStatusBatch(
+  targetIds: string[],
+): Promise<Record<string, FriendStatus>> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return 'none';
+  if (!user || targetIds.length === 0) return {};
 
-  const { data: sent } = await supabase
-    .from('friends')
-    .select('status')
-    .eq('user_id', user.id)
-    .eq('friend_id', targetId)
-    .maybeSingle();
+  const [{ data: sent }, { data: received }] = await Promise.all([
+    supabase
+      .from('friends')
+      .select('friend_id, status')
+      .eq('user_id', user.id)
+      .in('friend_id', targetIds),
+    supabase
+      .from('friends')
+      .select('user_id, status')
+      .eq('friend_id', user.id)
+      .in('user_id', targetIds),
+  ]);
 
-  if (sent) return sent.status === 'accepted' ? 'accepted' : 'pending_sent';
-
-  const { data: received } = await supabase
-    .from('friends')
-    .select('status')
-    .eq('user_id', targetId)
-    .eq('friend_id', user.id)
-    .maybeSingle();
-
-  if (received) return received.status === 'accepted' ? 'accepted' : 'pending_received';
-
-  return 'none';
+  const result: Record<string, FriendStatus> = {};
+  for (const row of sent ?? []) {
+    result[row.friend_id] = row.status === 'accepted' ? 'accepted' : 'pending_sent';
+  }
+  for (const row of received ?? []) {
+    if (!result[row.user_id]) {
+      result[row.user_id] = row.status === 'accepted' ? 'accepted' : 'pending_received';
+    }
+  }
+  return result;
 }

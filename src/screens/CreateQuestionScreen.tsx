@@ -16,6 +16,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId, Question } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { useGameStore } from '../store/gameStore';
+import { submitQuestion } from '../lib/submissions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateQuestion'>;
 
@@ -24,7 +25,7 @@ const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 export default function CreateQuestionScreen({ navigation }: Props) {
   const { customQuestions, addCustomQuestion, deleteCustomQuestion } = useGameStore();
 
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food_drink');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food');
   const [questionText, setQuestionText] = useState('');
   const [answers, setAnswers] = useState<[string, string, string, string]>([...EMPTY_ANSWERS]);
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
@@ -37,7 +38,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
     setAnswers(next);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!questionText.trim()) {
       Alert.alert('Saknad fråga', 'Skriv in en fråga.');
       return;
@@ -51,20 +52,23 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       return;
     }
 
-    const q: Question = {
-      id: `custom_${Date.now()}`,
+    const { error } = await submitQuestion({
       category: selectedCategory,
       question: questionText.trim(),
       answers: answers.map(a => a.trim()) as [string, string, string, string],
       correctIndex: correctIndex as 0 | 1 | 2 | 3,
       difficulty: 'medium',
-    };
+    });
 
-    addCustomQuestion(q);
+    if (error) {
+      Alert.alert('Fel', 'Kunde inte skicka frågan. Försök igen.');
+      return;
+    }
+
     setQuestionText('');
     setAnswers([...EMPTY_ANSWERS]);
     setCorrectIndex(null);
-    Alert.alert('Tillagd! ✓', `Frågan har lagts till i "${category.name}".`);
+    Alert.alert('Skickad! ✓', 'Din fråga har skickats för granskning. Tack!');
   };
 
   const handleDelete = (id: string, questionText: string) => {

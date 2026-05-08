@@ -8,11 +8,12 @@ interface Props {
   state: AnswerState;
   onPress: () => void;
   index: number;
+  compact?: boolean;
 }
 
 const LABELS = ['A', 'B', 'C', 'D'];
 
-export function AnswerButton({ text, state, onPress, index }: Props) {
+export function AnswerButton({ text, state, onPress, index, compact }: Props) {
   const isDisabled = state === 'disabled' || state === 'correct' || state === 'wrong' || state === 'show-correct';
 
   const borderColor =
@@ -41,12 +42,12 @@ export function AnswerButton({ text, state, onPress, index }: Props) {
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.75}
-      style={[styles.button, { backgroundColor: bgColor, borderColor }]}
+      style={[styles.button, compact && styles.buttonCompact, { backgroundColor: bgColor, borderColor }]}
     >
       <View style={[styles.label, { backgroundColor: labelBg }]}>
         <Text style={styles.labelText}>{LABELS[index]}</Text>
       </View>
-      <Text style={[styles.text, state === 'disabled' && styles.dimmed]}>{text}</Text>
+      <Text style={[styles.text, compact && styles.textCompact, state === 'disabled' && styles.dimmed]}>{text}</Text>
     </TouchableOpacity>
   );
 }
@@ -61,6 +62,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 10,
     minHeight: 56,
+  },
+  buttonCompact: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    marginBottom: 0,
+    minHeight: 80,
+    alignItems: 'flex-start',
   },
   label: {
     width: 28,
@@ -81,6 +90,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Poppins_500Medium',
     lineHeight: 20,
+  },
+  textCompact: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   dimmed: {
     color: '#7060A0',

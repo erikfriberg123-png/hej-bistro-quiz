@@ -29,7 +29,11 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "name": "Quizine",
+      "shortName": "Quizine",
+      "description": "Quiz för restaurangfolk"
     },
     "plugins": [
       "expo-font"

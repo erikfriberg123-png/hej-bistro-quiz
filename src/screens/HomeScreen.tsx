@@ -18,10 +18,11 @@ import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
-import { getUsername, setUsername } from '../lib/scores';
+import { getUsername, setUsername, checkUsernameAvailable } from '../lib/scores';
 import { checkIsAdmin } from '../lib/remoteQuestions';
 import { getPendingRequests } from '../lib/friends';
-import { getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
+import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
+import { supabase } from '../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -29,21 +30,30 @@ export default function HomeScreen({ navigation }: Props) {
   const { highscores, streak, checkStreak } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
+  const [usernameRequired, setUsernameRequired] = useState(false);
   const [username, setUsernameState] = useState<string | null>(null);
   const [inputName, setInputName] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [challengeAfterSave, setChallengeAfterSave] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-  const [pendingBattleCount, setPendingBattleCount] = useState(0);
-  const [myTurnCount, setMyTurnCount] = useState(0);
+  const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
+  const [myTurnBattles, setMyTurnBattles] = useState<Battle[]>([]);
   const [mode, setMode] = useState<'training' | null>(null);
+
+  const pendingBattleCount = pendingBattles.length;
+  const myTurnCount = myTurnBattles.length;
 
   useEffect(() => {
     checkStreak();
     getUsername().then(name => {
       setUsernameState(name);
       setInputName(name ?? '');
+      if (!name) {
+        setUsernameRequired(true);
+        setProfileVisible(true);
+      }
     });
     checkIsAdmin().then(setIsAdmin);
   }, []);
@@ -51,27 +61,54 @@ export default function HomeScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       getPendingRequests().then(p => setPendingCount(p.length)).catch(() => {});
-      getPendingBattlesForMe().then(b => setPendingBattleCount(b.length)).catch(() => {});
-      getMyActiveTurns().then(b => setMyTurnCount(b.length)).catch(() => {});
+      getPendingBattlesForMe().then(setPendingBattles).catch(() => {});
+      getMyActiveTurns().then(setMyTurnBattles).catch(() => {});
     }, [])
   );
 
   const handleSaveUsername = async () => {
     if (!inputName.trim()) return;
+    setUsernameError('');
     setSaving(true);
     try {
+      const available = await checkUsernameAvailable(inputName.trim());
+      if (!available) {
+        setUsernameError('Det namnet är redan taget. Välj ett annat.');
+        return;
+      }
       await setUsername(inputName.trim());
       setUsernameState(inputName.trim());
+      setUsernameRequired(false);
       setProfileVisible(false);
       if (challengeAfterSave) {
         setChallengeAfterSave(false);
         navigation.navigate('ChallengeLobby', {});
       }
     } catch {
-      Alert.alert('Fel', 'Kunde inte spara namn. Försök igen.');
+      setUsernameError('Kunde inte spara namn. Försök igen.');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePendingBattlePress = async () => {
+    const battle = pendingBattles[0];
+    if (!battle) return;
+    if (!username) {
+      setChallengeAfterSave(true);
+      setProfileVisible(true);
+      return;
+    }
+    navigation.navigate('BattleBoard', { battleId: battle.id, code: battle.code, role: 'opponent' });
+  };
+
+  const handleMyTurnPress = async () => {
+    const battle = myTurnBattles[0];
+    if (!battle) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const role = battle.creator_id === user.id ? 'creator' : 'opponent';
+    navigation.navigate('BattleBoard', { battleId: battle.id, code: battle.code, role });
   };
 
   const handleChallengePress = () => {
@@ -116,7 +153,7 @@ export default function HomeScreen({ navigation }: Props) {
         {pendingBattleCount > 0 && (
           <TouchableOpacity
             style={styles.pendingBattleBanner}
-            onPress={handleChallengePress}
+            onPress={handlePendingBattlePress}
             activeOpacity={0.8}
           >
             <Text style={styles.pendingBattleText}>
@@ -129,7 +166,7 @@ export default function HomeScreen({ navigation }: Props) {
         {myTurnCount > 0 && (
           <TouchableOpacity
             style={styles.myTurnBanner}
-            onPress={handleChallengePress}
+            onPress={handleMyTurnPress}
             activeOpacity={0.8}
           >
             <Text style={styles.myTurnText}>
@@ -230,15 +267,24 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Hur funkar det?</Text>
-            <Text style={styles.modalBody}>
-              {'1. Välj en kategori\n\n'}
-              {'2. Svara på 10 frågor\n\n'}
-              {'3. Du har 15 sekunder per fråga\n\n'}
-              {'4. Ju snabbare du svarar rätt, desto mer XP får du\n\n'}
-              {'5. Max 150 XP per fråga (100 bas + 50 tidsbonus)\n\n'}
-              {'6. Spela varje dag för att hålla din streak!\n\n'}
-              {'7. Ditt resultat skickas till topplistan 🏆'}
-            </Text>
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.helpScroll}>
+
+              <Text style={styles.helpSection}>🎯 Quiz-läget</Text>
+              <Text style={styles.modalBody}>
+                {'Välj en kategori och svara på 10 frågor. Du har 15 sekunder per fråga — ju snabbare du svarar rätt, desto mer XP får du. Max 150 XP per fråga (100 bas + 50 tidsbonus). Spela varje dag för att hålla igång din streak och klättra på topplistan! 🏆'}
+              </Text>
+
+              <Text style={styles.helpSection}>⚔️ Battle-läget</Text>
+              <Text style={styles.modalBody}>
+                {'Utmana en vän på ett ämne du väljer. Tryck på "Battle" på startsidan och välj en vän och kategori.\n\nNi spelar var för sig i er egen takt. När ni båda är klara räknas poängen ihop — den med flest poäng vinner.\n\nHar du fått en utmaning? En banner visas på startsidan — tryck på den för att hoppa direkt in i din match.'}
+              </Text>
+
+              <Text style={styles.helpSection}>👥 Lägga till vänner</Text>
+              <Text style={styles.modalBody}>
+                {'Tryck på vänner-ikonen 👥 uppe till höger på startsidan.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni se varandras resultat och utmana varandra i Battle-läget.\n\nGlöm inte att sätta ett smeknamn på din profil — annars kan ingen hitta dig!'}
+              </Text>
+
+            </ScrollView>
             <TouchableOpacity onPress={() => setHelpVisible(false)} style={styles.modalBtn}>
               <Text style={styles.modalBtnText}>Förstått!</Text>
             </TouchableOpacity>
@@ -251,61 +297,92 @@ export default function HomeScreen({ navigation }: Props) {
         visible={profileVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
+        onRequestClose={() => {
+          if (usernameRequired) return;
+          setProfileVisible(false);
+          setChallengeAfterSave(false);
+        }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Ditt namn</Text>
-            {challengeAfterSave && (
-              <Text style={styles.modalHint}>
-                Du behöver ett smeknamn för att utmana andra.
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            if (usernameRequired) return;
+            setProfileVisible(false);
+            setChallengeAfterSave(false);
+          }}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>
+                {usernameRequired ? 'Välj ett smeknamn' : 'Ditt namn'}
               </Text>
-            )}
-            <Text style={styles.modalBody}>
-              {'Sätt ett smeknamn som visas på topplistan. Annars visas du som "Anonym".'}
-            </Text>
-
-            <TextInput
-              style={styles.input}
-              value={inputName}
-              onChangeText={setInputName}
-              placeholder="Ditt smeknamn..."
-              placeholderTextColor="#6050A0"
-              maxLength={20}
-              autoCapitalize="words"
-            />
-            <TouchableOpacity
-              onPress={handleSaveUsername}
-              style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
-              disabled={!inputName.trim() || saving}
-            >
-              <Text style={styles.modalBtnText}>{saving ? 'Sparar...' : 'Spara'}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                setProfileVisible(false);
-                setChallengeAfterSave(false);
-                navigation.navigate('Friends');
-              }}
-              style={styles.friendsBtn}
-            >
-              <Text style={styles.friendsBtnText}>👥  Mina vänner</Text>
-              {pendingCount > 0 && (
-                <View style={styles.friendsBadge}>
-                  <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
-                </View>
+              {usernameRequired ? (
+                <Text style={styles.modalBody}>
+                  {'Välj ett unikt smeknamn innan du börjar spela. Det visas på topplistan och när du utmanar vänner.'}
+                </Text>
+              ) : challengeAfterSave ? (
+                <Text style={styles.modalHint}>
+                  Du behöver ett smeknamn för att utmana andra.
+                </Text>
+              ) : (
+                <Text style={styles.modalBody}>
+                  {'Ändra ditt smeknamn. Namnet måste vara unikt.'}
+                </Text>
               )}
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
-              style={styles.cancelBtn}
-            >
-              <Text style={styles.cancelText}>Avbryt</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              <TextInput
+                style={[styles.input, usernameError ? styles.inputError : null]}
+                value={inputName}
+                onChangeText={v => { setInputName(v); setUsernameError(''); }}
+                placeholder="Ditt smeknamn..."
+                placeholderTextColor="#6050A0"
+                maxLength={20}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              {usernameError ? (
+                <Text style={styles.usernameError}>{usernameError}</Text>
+              ) : null}
+
+              <TouchableOpacity
+                onPress={handleSaveUsername}
+                style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
+                disabled={!inputName.trim() || saving}
+              >
+                <Text style={styles.modalBtnText}>{saving ? 'Kontrollerar...' : 'Spara'}</Text>
+              </TouchableOpacity>
+
+              {!usernameRequired && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setProfileVisible(false);
+                      setChallengeAfterSave(false);
+                      navigation.navigate('Friends');
+                    }}
+                    style={styles.friendsBtn}
+                  >
+                    <Text style={styles.friendsBtnText}>👥  Mina vänner</Text>
+                    {pendingCount > 0 && (
+                      <View style={styles.friendsBadge}>
+                        <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
+                    style={styles.cancelBtn}
+                  >
+                    <Text style={styles.cancelText}>Avbryt</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </SafeAreaView>
   );
@@ -551,6 +628,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
+  helpScroll: {
+    maxHeight: 420,
+    marginBottom: 4,
+  },
+  helpSection: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'Poppins_700Bold',
+    marginBottom: 8,
+  },
   input: {
     backgroundColor: '#2A1A50',
     borderRadius: 12,
@@ -559,9 +646,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Poppins_500Medium',
-    marginBottom: 16,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#3D2870',
+  },
+  inputError: {
+    borderColor: '#FF5555',
+  },
+  usernameError: {
+    color: '#FF5555',
+    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    marginBottom: 12,
   },
   modalBtn: {
     backgroundColor: '#9B5DE5',

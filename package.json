@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:web": "expo export --platform web && node -e \"require('fs').writeFileSync('dist/_redirects', '/* /index.html 200\\n')\""
   },
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.1",
@@ -19,6 +20,7 @@
     "expo-apple-authentication": "~55.0.13",
     "expo-font": "~55.0.7",
     "expo-haptics": "~55.0.14",
+    "expo-notifications": "~55.0.22",
     "expo-status-bar": "~55.0.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",

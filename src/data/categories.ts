@@ -2,11 +2,25 @@ import { Category } from '../types';
 
 export const CATEGORIES: Category[] = [
   {
-    id: 'food_drink',
-    name: 'Mat & Dryck',
-    icon: '🍷',
+    id: 'food',
+    name: 'Mat',
+    icon: '🍔',
     color: '#FF6B35',
-    description: 'Testa dina kunskaper om mat, dryck och råvaror',
+    description: 'Testa dina kunskaper om mat, råvaror och matlagning',
+  },
+  {
+    id: 'drink',
+    name: 'Dryck',
+    icon: '🍷',
+    color: '#8B2FC9',
+    description: 'Testa dina kunskaper om vin, cocktails, kaffe och andra drycker',
+  },
+  {
+    id: 'famous_profiles',
+    name: 'Kända profiler',
+    icon: '🌟',
+    color: '#E8B84B',
+    description: 'Kockar, TV-profiler och restauratörer som format matvärlden',
   },
   {
     id: 'professional',

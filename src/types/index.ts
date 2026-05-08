@@ -1,5 +1,7 @@
 export type CategoryId =
-  | 'food_drink'
+  | 'food'
+  | 'drink'
+  | 'famous_profiles'
   | 'professional'
   | 'service_guests'
   | 'industry_culture'
@@ -19,6 +21,7 @@ export interface Question {
   answers: [string, string, string, string];
   correctIndex: 0 | 1 | 2 | 3;
   difficulty: Difficulty;
+  active?: boolean;
 }
 
 export interface Category {
@@ -103,6 +106,7 @@ export type RootStackParamList = {
     role: 'creator' | 'opponent';
     lastRoundCorrect?: number;
     lastRoundTotal?: number;
+    lastRoundResults?: boolean[];
   };
   BattleResult: {
     battleId: string;

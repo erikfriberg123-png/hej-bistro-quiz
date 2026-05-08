@@ -26,6 +26,18 @@ const PAGES = [
     body: 'Samla XP, bygg din streak och klättra på topplistan. Spela varje dag för att hålla igång!',
     accent: '#F7C948',
   },
+  {
+    emoji: '👥',
+    title: 'Lägg till\nvänner',
+    body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar syns ni på varandras listor och kan utmana varandra.',
+    accent: '#9B5DE5',
+  },
+  {
+    emoji: '⚔️',
+    title: 'Battle-läget',
+    body: 'Utmana en vän på ett ämne du väljer. Ni spelar var för sig och svarar på samma frågor — vinnaren är den med flest poäng när båda är klara. Du ser resultatet direkt på din Battle Board.',
+    accent: '#00C896',
+  },
 ];
 
 export default function OnboardingScreen({ navigation }: Props) {

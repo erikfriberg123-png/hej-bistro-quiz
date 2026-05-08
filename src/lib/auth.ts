@@ -1,7 +1,9 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
 export async function isAppleAuthAvailable(): Promise<boolean> {
+  if (Platform.OS !== 'ios') return false;
   return AppleAuthentication.isAvailableAsync();
 }
 

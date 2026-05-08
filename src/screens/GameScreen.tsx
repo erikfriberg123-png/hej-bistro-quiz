@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
@@ -32,7 +33,7 @@ import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 
-const TIMER_DURATION = 15000;
+const TIMER_DURATION = 20000;
 
 export default function GameScreen({ route, navigation }: Props) {
   const { categoryId, challengeMode, challengeId, questionIds, targetFriendId, targetFriendName } = route.params;
@@ -171,7 +172,7 @@ export default function GameScreen({ route, navigation }: Props) {
         previousHighscore,
       });
     }
-  }, [challengeMode, challengeId, questions, endGame, navigation]);
+  }, [challengeMode, challengeId, targetFriendId, targetFriendName, questions, endGame, navigation]);
 
   const advance = useCallback(() => {
     if (isAdvancingRef.current) return;
@@ -190,7 +191,7 @@ export default function GameScreen({ route, navigation }: Props) {
       setIsAnswered(true);
 
       const elapsed = (Date.now() - questionStartRef.current) / 1000;
-      const timeRemaining = Math.max(0, 15 - elapsed);
+      const timeRemaining = Math.max(0, 20 - elapsed);
       const actualIndex = shuffledIndices[displayIndex];
       const correct = currentQuestion.correctIndex;
       const points = submitAnswer(actualIndex, timeRemaining);
@@ -198,9 +199,9 @@ export default function GameScreen({ route, navigation }: Props) {
 
       if (points > 0) {
         setShowCelebration(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
       const newStates: AnswerState[] = shuffledIndices.map((origIdx, dispIdx) => {
@@ -223,7 +224,7 @@ export default function GameScreen({ route, navigation }: Props) {
     submitAnswer(-1, 0);
     setPointsAwarded(0);
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
@@ -270,15 +271,25 @@ export default function GameScreen({ route, navigation }: Props) {
             total={totalQuestions}
           />
 
-          {shuffledIndices.map((origIdx, dispIdx) => (
-            <AnswerButton
-              key={dispIdx}
-              index={dispIdx}
-              text={currentQuestion.answers[origIdx]}
-              state={answerStates[dispIdx]}
-              onPress={() => handleAnswer(dispIdx)}
-            />
-          ))}
+          <View style={styles.answersGrid}>
+            {[0, 1].map(row => (
+              <View key={row} style={styles.answersRow}>
+                {[0, 1].map(col => {
+                  const dispIdx = row * 2 + col;
+                  return (
+                    <AnswerButton
+                      key={dispIdx}
+                      index={dispIdx}
+                      text={currentQuestion.answers[shuffledIndices[dispIdx]]}
+                      state={answerStates[dispIdx]}
+                      onPress={() => handleAnswer(dispIdx)}
+                      compact
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
 
           <Animated.View
             style={[styles.nextBtnWrapper, nextBtnStyle]}
@@ -348,6 +359,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingBottom: 16,
+  },
+  answersGrid: {
+    gap: 8,
+    marginTop: 4,
+  },
+  answersRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   nextBtnWrapper: {
     marginTop: 14,

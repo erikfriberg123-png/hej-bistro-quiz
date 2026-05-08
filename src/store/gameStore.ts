@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CategoryId, Question, GameResult } from '../types';
-import { QUESTIONS } from '../data/questions';
 import { fetchRemoteQuestions } from '../lib/remoteQuestions';
 import { calculateScore } from '../utils/scoring';
 import { shuffle } from '../utils/shuffle';
@@ -42,7 +41,9 @@ export const useGameStore = create<GameState>()(
       answers: [],
 
       highscores: {
-        food_drink: 0,
+        food: 0,
+        drink: 0,
+        famous_profiles: 0,
         professional: 0,
         service_guests: 0,
         industry_culture: 0,
@@ -64,7 +65,7 @@ export const useGameStore = create<GameState>()(
       },
 
       startGame: (categoryId, count = 10) => {
-        const allQuestions = [...get().remoteQuestions, ...QUESTIONS, ...get().customQuestions];
+        const allQuestions = [...get().remoteQuestions, ...get().customQuestions];
         const pool = allQuestions.filter(q => q.category === categoryId);
         const selected = shuffle(pool).slice(0, count);
         set({
@@ -77,7 +78,7 @@ export const useGameStore = create<GameState>()(
       },
 
       startChallengeGame: (categoryId, questionIds) => {
-        const allQuestions = [...get().remoteQuestions, ...QUESTIONS, ...get().customQuestions];
+        const allQuestions = [...get().remoteQuestions, ...get().customQuestions];
         const ordered = questionIds
           .map(id => allQuestions.find(q => q.id === id))
           .filter((q): q is Question => q !== undefined);

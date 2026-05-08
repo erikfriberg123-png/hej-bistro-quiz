@@ -36,7 +36,7 @@ export default function AdminScreen({ navigation }: Props) {
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food_drink');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food');
   const [questionText, setQuestionText] = useState('');
   const [answers, setAnswers] = useState<[string, string, string, string]>([...EMPTY_ANSWERS]);
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
