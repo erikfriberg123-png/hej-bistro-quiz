@@ -35,6 +35,16 @@ import AdminScreen from './src/screens/AdminScreen';
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 
+const linking = {
+  prefixes: ['https://quizine.se'],
+  config: {
+    screens: {
+      Admin: 'admin',
+      Home: '',
+    },
+  },
+};
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -95,7 +105,7 @@ export default function App() {
       </AuthStack.Navigator>
     </NavigationContainer>
   ) : (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
         <AppStack.Screen name="Home" component={HomeScreen} />
         <AppStack.Screen name="Game" component={GameScreen} />
@@ -115,9 +125,10 @@ export default function App() {
   );
 
   if (Platform.OS === 'web') {
+    const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
     return (
       <View style={styles.webOuter}>
-        <View style={styles.webInner}>
+        <View style={isAdmin ? styles.webInnerAdmin : styles.webInner}>
           {navContent}
         </View>
       </View>
@@ -144,6 +155,12 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 480,
+    overflow: 'hidden',
+  },
+  webInnerAdmin: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 960,
     overflow: 'hidden',
   },
 });
