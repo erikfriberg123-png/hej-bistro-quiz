@@ -10,6 +10,7 @@
     "build:web": "expo export --platform web && node -e \"require('fs').writeFileSync('dist/_redirects', '/* /index.html 200\\n')\""
   },
   "dependencies": {
+    "@expo-google-fonts/dm-sans": "^0.4.2",
     "@expo-google-fonts/poppins": "^0.4.1",
     "@expo/metro-runtime": "~55.0.11",
     "@react-native-async-storage/async-storage": "2.2.0",

@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   seconds: {
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginBottom: 10,
   },
   trackArea: {

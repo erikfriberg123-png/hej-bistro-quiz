@@ -191,20 +191,20 @@ const styles = StyleSheet.create({
   newRecordText: {
     color: '#12082A',
     fontSize: 14,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
     letterSpacing: 1,
   },
   scoreLabel: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 2,
     marginBottom: 4,
   },
   scoreValue: {
     color: '#FFFFFF',
     fontSize: 52,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
     marginBottom: 24,
   },
   statsRow: {
@@ -228,24 +228,24 @@ const styles = StyleSheet.create({
   statValue: {
     color: '#FFFFFF',
     fontSize: 26,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   statLabel: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginTop: 2,
   },
   prevHighscore: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 12,
   },
   tagline: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
     letterSpacing: 1.5,
     marginBottom: 24,
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   btnText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   btnOutline: {
     width: '100%',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   btnOutlineText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   shareBtn: {
     paddingVertical: 8,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   shareText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   complainSection: {
     width: '100%',
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   complainTitle: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.5,
     marginBottom: 4,
   },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#FFFFFF',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 18,
   },
   complainBtn: {
@@ -323,11 +323,11 @@ const styles = StyleSheet.create({
   complainBtnText: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   complainedBadge: {
     color: '#4CAF50',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
 });

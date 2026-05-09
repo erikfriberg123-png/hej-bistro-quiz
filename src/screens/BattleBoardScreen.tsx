@@ -47,8 +47,8 @@ const roundCardStyles = StyleSheet.create({
     borderColor: '#9B5DE5',
   },
   stars: { fontSize: 20, letterSpacing: 4 },
-  text: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_400Regular' },
-  highlight: { color: '#FFFFFF', fontFamily: 'Poppins_700Bold' },
+  text: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_400Regular' },
+  highlight: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
 });
 
 export default function BattleBoardScreen({ route, navigation }: Props) {
@@ -339,7 +339,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
                 <Text style={styles.ctaTitle}>Väntar på motståndare ⏳</Text>
                 <Text style={styles.ctaSub}>
                   Dela koden{' '}
-                  <Text style={{ color: '#9B5DE5', fontFamily: 'Poppins_700Bold' }}>{code}</Text>
+                  <Text style={{ color: '#9B5DE5', fontFamily: 'DMSans_700Bold' }}>{code}</Text>
                   {' '}med din motståndare.
                 </Text>
               </View>
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 16,
   },
   retryBtn: {
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A1A50',
     borderRadius: 12,
   },
-  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'Poppins_600SemiBold' },
+  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -504,8 +504,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   homeBtn: { padding: 8, minWidth: 48 },
-  homeBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
-  title: { color: '#FFFFFF', fontSize: 18, fontFamily: 'Poppins_700Bold' },
+  homeBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  title: { color: '#FFFFFF', fontSize: 18, fontFamily: 'DMSans_700Bold' },
   codePill: {
     backgroundColor: '#2A1860',
     borderRadius: 8,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   codeText: {
     color: '#9B5DE5',
     fontSize: 13,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 2,
   },
   scrollView: { flex: 1 },
@@ -533,16 +533,16 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   scoreCol: { flex: 1, alignItems: 'center', gap: 2 },
-  scoreName: { color: '#B0A8C8', fontSize: 12, fontFamily: 'Poppins_500Medium' },
-  scoreNum: { color: '#FFFFFF', fontSize: 40, fontFamily: 'Poppins_800ExtraBold' },
+  scoreName: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  scoreNum: { color: '#FFFFFF', fontSize: 40, fontFamily: 'DMSans_800ExtraBold' },
   scoreNumMe: { color: '#9B5DE5' },
-  scoreXP: { color: '#6050A0', fontSize: 11, fontFamily: 'Poppins_600SemiBold' },
-  scoreDash: { color: '#3D2870', fontSize: 18, fontFamily: 'Poppins_800ExtraBold' },
+  scoreXP: { color: '#6050A0', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
+  scoreDash: { color: '#3D2870', fontSize: 18, fontFamily: 'DMSans_800ExtraBold' },
   section: { marginBottom: 24 },
   sectionLabel: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -560,13 +560,13 @@ const styles = StyleSheet.create({
   roundNum: {
     color: '#3D2870',
     fontSize: 12,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     width: 24,
   },
   roundHalf: { flex: 1 },
-  roundCat: { color: '#B0A8C8', fontSize: 11, fontFamily: 'Poppins_400Regular' },
-  roundScore: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Poppins_700Bold' },
-  roundPending: { color: '#3D2870', fontSize: 18, fontFamily: 'Poppins_700Bold' },
+  roundCat: { color: '#B0A8C8', fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  roundScore: { color: '#FFFFFF', fontSize: 14, fontFamily: 'DMSans_700Bold' },
+  roundPending: { color: '#3D2870', fontSize: 18, fontFamily: 'DMSans_700Bold' },
   roundDivider: {
     width: 1,
     height: 32,
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   ctaChallengeFrom: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     textAlign: 'center',
   },
   challengeCatBadge: {
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   challengeCatIcon: { fontSize: 28 },
   challengeCatName: {
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   declineBtn: {
     paddingVertical: 10,
@@ -616,20 +616,20 @@ const styles = StyleSheet.create({
   declineBtnText: {
     color: '#6B4A6B',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
   },
   ctaEmoji: { fontSize: 40 },
   ctaTitle: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     textAlign: 'center',
   },
   ctaSub: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
+  primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   refreshBtn: {
     borderWidth: 1.5,
     borderColor: '#3D2870',
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  refreshBtnText: { color: '#B0A8C8', fontSize: 15, fontFamily: 'Poppins_500Medium' },
+  refreshBtnText: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_500Medium' },
   forfeitBtn: {
     alignItems: 'center',
     paddingVertical: 16,
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   forfeitText: {
     color: '#6B4A6B',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
   },
   forfeitConfirmBox: {
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
   forfeitConfirmLabel: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
   },
   forfeitConfirmRow: {
@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
   forfeitCancelText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   forfeitConfirmBtn: {
     flex: 1,
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
   forfeitConfirmBtnText: {
     color: '#FF453A',
     fontSize: 14,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });
 
@@ -735,7 +735,7 @@ const resultCards = StyleSheet.create({
   },
   cardIcon: {
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     color: '#FFFFFF',
     marginTop: 1,
     width: 18,
@@ -743,7 +743,7 @@ const resultCards = StyleSheet.create({
   cardQuestion: {
     flex: 1,
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     lineHeight: 19,
   },
   textCorrect: {
@@ -767,14 +767,14 @@ const resultCards = StyleSheet.create({
   correctLabel: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   correctAnswer: {
     color: '#2EC45C',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     lineHeight: 20,
   },
   complainBtn: {
@@ -787,12 +787,12 @@ const resultCards = StyleSheet.create({
   complainBtnText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   sentText: {
     color: '#4CAF50',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     textAlign: 'center',
     marginTop: 4,
   },

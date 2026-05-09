@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     fontSize: 16,
   },
   topBar: {
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   roundPillText: {
     color: '#9B5DE5',
     fontSize: 10,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 1,
   },
   miniScoreRow: {
@@ -347,17 +347,17 @@ const styles = StyleSheet.create({
   miniScoreMe: {
     color: '#9B5DE5',
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   miniScoreSep: {
     color: '#3D2870',
     fontSize: 14,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   miniScoreThem: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   gameArea: {
     flex: 1,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   nextBtnText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 0.3,
   },
 });

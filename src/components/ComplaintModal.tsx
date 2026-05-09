@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   questionBox: {
     backgroundColor: '#12082A',
@@ -116,13 +116,13 @@ const styles = StyleSheet.create({
   questionText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 20,
   },
   label: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   input: {
     backgroundColor: '#12082A',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3D2870',
     color: '#FFFFFF',
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     fontSize: 14,
     padding: 14,
     minHeight: 90,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   submitBtn: {
     flex: 1,
@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });

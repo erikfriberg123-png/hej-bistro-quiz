@@ -280,7 +280,7 @@ export default function AdminScreen({ navigation }: Props) {
                   </View>
                   <Text style={styles.qText}>{q.question}</Text>
                   {q.answers.map((a, i) => (
-                    <Text key={i} style={[styles.qAnswer, i === q.correctIndex && { color: cat?.color, fontFamily: 'Poppins_600SemiBold' }]}>
+                    <Text key={i} style={[styles.qAnswer, i === q.correctIndex && { color: cat?.color, fontFamily: 'DMSans_600SemiBold' }]}>
                       {i === q.correctIndex ? '✓ ' : '   '}{a}
                     </Text>
                   ))}
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8, width: 40 },
   backText: { color: '#B0A8C8', fontSize: 22 },
-  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'Poppins_700Bold' },
+  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48, paddingTop: 8 },
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   statChip: {
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statEmoji: { fontSize: 13 },
-  statCount: { fontSize: 14, fontFamily: 'Poppins_700Bold' },
+  statCount: { fontSize: 14, fontFamily: 'DMSans_700Bold' },
   addToggle: {
     backgroundColor: '#1E1040',
     borderRadius: 12,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     borderColor: '#3D2870',
   },
   addToggleActive: { borderColor: '#9B5DE5' },
-  addToggleText: { color: '#9B5DE5', fontSize: 15, fontFamily: 'Poppins_600SemiBold' },
+  addToggleText: { color: '#9B5DE5', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
   formCard: {
     backgroundColor: '#1E1040',
     borderRadius: 16,
@@ -342,13 +342,13 @@ const styles = StyleSheet.create({
   label: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 8,
     marginTop: 12,
   },
-  sublabel: { color: '#6050A0', fontSize: 12, fontFamily: 'Poppins_400Regular', marginBottom: 8, marginTop: -4 },
+  sublabel: { color: '#6050A0', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 8, marginTop: -4 },
   catRow: { gap: 8, paddingBottom: 4 },
   catPill: {
     flexDirection: 'row',
@@ -360,8 +360,8 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   catPillIcon: { fontSize: 13 },
-  catPillText: { color: '#B0A8C8', fontSize: 12, fontFamily: 'Poppins_500Medium' },
-  catPillTextActive: { color: '#FFFFFF', fontFamily: 'Poppins_700Bold' },
+  catPillText: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  catPillTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
   diffRow: { flexDirection: 'row', gap: 8 },
   diffChip: {
     flex: 1,
@@ -370,8 +370,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
   },
-  diffText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'Poppins_500Medium' },
-  diffTextActive: { color: '#FFFFFF', fontFamily: 'Poppins_700Bold' },
+  diffText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  diffTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
   input: {
     backgroundColor: '#2A1A50',
     borderRadius: 12,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
     borderColor: '#3D2870',
   },
@@ -400,17 +400,17 @@ const styles = StyleSheet.create({
     minHeight: 48,
     justifyContent: 'center',
   },
-  saveBtnText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'Poppins_700Bold' },
+  saveBtnText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_700Bold' },
   disabled: { opacity: 0.5 },
   sectionTitle: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
   },
-  emptyText: { color: '#6050A0', fontSize: 14, fontFamily: 'Poppins_400Regular', textAlign: 'center', marginTop: 12 },
+  emptyText: { color: '#6050A0', fontSize: 14, fontFamily: 'DMSans_400Regular', textAlign: 'center', marginTop: 12 },
   qCard: {
     backgroundColor: '#1E1040',
     borderRadius: 12,
@@ -422,14 +422,14 @@ const styles = StyleSheet.create({
   qCardInactive: { opacity: 0.45 },
   qCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   catBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  catBadgeText: { fontSize: 11, fontFamily: 'Poppins_600SemiBold' },
+  catBadgeText: { fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
   qActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   toggleBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   toggleBtnOn: { backgroundColor: '#1A3A1A' },
   toggleBtnOff: { backgroundColor: '#2A1A1A' },
-  toggleBtnText: { fontSize: 11, fontFamily: 'Poppins_600SemiBold', color: '#FFFFFF' },
+  toggleBtnText: { fontSize: 11, fontFamily: 'DMSans_600SemiBold', color: '#FFFFFF' },
   deleteBtn: { padding: 4 },
   deleteBtnText: { color: '#6050A0', fontSize: 15 },
-  qText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'Poppins_600SemiBold', marginBottom: 6, lineHeight: 20 },
-  qAnswer: { color: '#B0A8C8', fontSize: 12, fontFamily: 'Poppins_400Regular', marginBottom: 2 },
+  qText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold', marginBottom: 6, lineHeight: 20 },
+  qAnswer: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 2 },
 });

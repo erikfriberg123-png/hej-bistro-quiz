@@ -46,13 +46,13 @@ const styles = StyleSheet.create({
   name: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginBottom: 4,
   },
   description: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 11,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 15,
     flex: 1,
   },
@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
   scoreText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   noScoreText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 11,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
 });

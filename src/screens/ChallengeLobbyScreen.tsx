@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8, width: 40 },
   backText: { color: '#B0A8C8', fontSize: 22 },
-  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'Poppins_700Bold' },
+  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   tabs: {
     flexDirection: 'row',
     marginHorizontal: 16,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48 },
@@ -550,19 +550,19 @@ const styles = StyleSheet.create({
   panelTitle: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   panelSub: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
     marginTop: -8,
   },
   subLabel: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
@@ -585,16 +585,16 @@ const styles = StyleSheet.create({
   friendAvatar: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   friendPillText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   friendPillTextActive: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   actionBtn: {
     backgroundColor: '#9B5DE5',
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   actionBtnText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   randomBtn: {
     backgroundColor: '#00C896',
@@ -632,13 +632,13 @@ const styles = StyleSheet.create({
   orText: {
     color: '#6050A0',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
   },
   noFriendsHint: {
     color: '#6050A0',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 4,
@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     color: '#FFFFFF',
     fontSize: 28,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     borderWidth: 1,
     borderColor: '#3D2870',
     textAlign: 'center',
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -681,13 +681,13 @@ const styles = StyleSheet.create({
   battleCardOpponent: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     marginBottom: 2,
   },
   battleCardMeta: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   battleCardRight: {
     flexDirection: 'row',
@@ -697,13 +697,13 @@ const styles = StyleSheet.create({
   battleCardCode: {
     color: '#6050A0',
     fontSize: 12,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 2,
   },
   battleCardArrow: {
     color: '#9B5DE5',
     fontSize: 18,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   challengeCard: {
     backgroundColor: '#0D2A2A',
@@ -719,13 +719,13 @@ const styles = StyleSheet.create({
   challengeCardName: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     marginBottom: 2,
   },
   challengeCardCode: {
     color: '#6050A0',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   challengeCardBtns: {
     flexDirection: 'row',
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
   declineBtnText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   acceptBtn: {
     flex: 1,
@@ -753,6 +753,6 @@ const styles = StyleSheet.create({
   acceptBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });

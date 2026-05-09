@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   tabs: {
     paddingHorizontal: 12,
@@ -166,21 +166,21 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
-  tabTextActive: { color: '#FFFFFF', fontFamily: 'Poppins_700Bold' },
+  tabTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
   },
   retryBtn: {
@@ -190,12 +190,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'Poppins_600SemiBold' },
+  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   list: { paddingHorizontal: 16, paddingBottom: 24 },
   listHeader: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -217,17 +217,17 @@ const styles = StyleSheet.create({
     width: 36,
     color: '#B0A8C8',
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   username: {
     flex: 1,
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
-  usernameMe: { color: '#9B5DE5', fontFamily: 'Poppins_700Bold' },
+  usernameMe: { color: '#9B5DE5', fontFamily: 'DMSans_700Bold' },
   score: {
     fontSize: 15,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });

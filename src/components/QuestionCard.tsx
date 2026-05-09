@@ -28,13 +28,13 @@ const styles = StyleSheet.create({
   counter: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 8,
   },
   question: {
     color: '#FFFFFF',
     fontSize: 19,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     lineHeight: 28,
   },
 });

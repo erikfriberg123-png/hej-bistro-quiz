@@ -87,6 +87,9 @@ export default function AuthScreen() {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
+          ...(Platform.OS === 'web' && {
+            options: { emailRedirectTo: window.location.origin },
+          }),
         });
         if (error) {
           setError(mapError(error.message));
@@ -336,7 +339,7 @@ const styles = StyleSheet.create({
   tagline: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginTop: 4,
   },
   tabs: {
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   input: {
@@ -366,7 +369,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#3D2870',
@@ -374,7 +377,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#FF6B6B',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -391,7 +394,7 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   divider: {
     flexDirection: 'row',
@@ -407,7 +410,7 @@ const styles = StyleSheet.create({
   dividerText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   appleBtn: {
     width: '100%',
@@ -425,7 +428,7 @@ const styles = StyleSheet.create({
   forgotText: {
     color: '#9B5DE5',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   resetBackRow: {
     marginBottom: 20,
@@ -433,18 +436,18 @@ const styles = StyleSheet.create({
   resetBackText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   resetTitle: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginBottom: 12,
   },
   resetBody: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
     marginBottom: 24,
   },
@@ -458,21 +461,21 @@ const styles = StyleSheet.create({
   confirmTitle: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     textAlign: 'center',
     marginBottom: 16,
   },
   confirmBody: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     lineHeight: 26,
     marginBottom: 32,
   },
   confirmEmail: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   backBtn: {
     backgroundColor: '#1E1040',
@@ -483,6 +486,6 @@ const styles = StyleSheet.create({
   backText: {
     color: '#9B5DE5',
     fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
 });

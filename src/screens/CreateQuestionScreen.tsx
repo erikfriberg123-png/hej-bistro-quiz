@@ -201,7 +201,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                         key={i}
                         style={[
                           styles.savedAnswer,
-                          i === q.correctIndex && { color: cat?.color, fontFamily: 'Poppins_600SemiBold' },
+                          i === q.correctIndex && { color: cat?.color, fontFamily: 'DMSans_600SemiBold' },
                         ]}
                       >
                         {i === q.correctIndex ? '✓ ' : '   '}{a}
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   scroll: {
     paddingHorizontal: 16,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   sublabel: {
     color: '#6050A0',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 10,
     marginTop: -6,
   },
@@ -273,11 +273,11 @@ const styles = StyleSheet.create({
   categoryPillText: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   categoryPillTextActive: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   input: {
     backgroundColor: '#1E1040',
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
     borderColor: '#3D2870',
   },
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   saveBtnText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   savedCard: {
     backgroundColor: '#1E1040',
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   savedCatText: {
     fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   deleteBtn: {
     padding: 4,
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
   savedQuestion: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     marginBottom: 8,
     lineHeight: 20,
   },
   savedAnswer: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     marginBottom: 3,
   },
 });

@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   profileName: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     flexShrink: 1,
   },
   profileBadge: {
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   profileBadgeText: {
     color: '#FFFFFF',
     fontSize: 10,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     lineHeight: 13,
   },
   titleBlock: { flex: 1, alignItems: 'center' },
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   leaderboardBtn: {
     width: 40,
@@ -489,13 +489,13 @@ const styles = StyleSheet.create({
   pendingBattleText: {
     color: '#2EC4B6',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     flex: 1,
   },
   pendingBattleArrow: {
     color: '#2EC4B6',
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginLeft: 8,
   },
   myTurnBanner: {
@@ -513,13 +513,13 @@ const styles = StyleSheet.create({
   myTurnText: {
     color: '#F4C842',
     fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     flex: 1,
   },
   myTurnArrow: {
     color: '#F4C842',
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginLeft: 8,
   },
   streakBanner: {
@@ -530,11 +530,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: 'center',
   },
-  streakText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'Poppins_600SemiBold' },
+  streakText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
   sectionTitle: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -561,18 +561,18 @@ const styles = StyleSheet.create({
   modeCardTitle: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   modeCardSub: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 18,
   },
   modeCardArrow: {
     color: '#6050A0',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   modeBadge: {
     backgroundColor: '#FF3B30',
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   modeBadgeText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     lineHeight: 16,
   },
   backModeBtn: {
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   backModeBtnText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   createBtn: {
     flexDirection: 'row',
@@ -615,15 +615,15 @@ const styles = StyleSheet.create({
   createBtnText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   helpLink: { alignItems: 'center', marginTop: 12, paddingVertical: 12 },
   adminBtn: { alignItems: 'center', paddingVertical: 8, marginBottom: 8 },
-  adminBtnText: { color: '#3D2870', fontSize: 13, fontFamily: 'Poppins_500Medium' },
+  adminBtnText: { color: '#3D2870', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   helpText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
   },
   modalOverlay: {
@@ -640,13 +640,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginBottom: 16,
   },
   modalBody: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 24,
     marginBottom: 20,
   },
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   helpSection: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     marginBottom: 8,
   },
   input: {
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     marginBottom: 8,
     borderWidth: 1,
     borderColor: '#3D2870',
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   usernameError: {
     color: '#FF5555',
     fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     marginBottom: 12,
   },
   modalBtn: {
@@ -689,15 +689,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalBtnDisabled: { opacity: 0.5 },
-  modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
+  modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
-  cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   logoutBtn: { alignItems: 'center', paddingVertical: 8 },
-  logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'Poppins_500Medium' },
+  logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   modalHint: {
     color: '#2EC4B6',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     marginBottom: 8,
   },
   friendsBtn: {
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     gap: 8,
   },
-  friendsBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'Poppins_500Medium' },
+  friendsBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   friendsBadge: {
     backgroundColor: '#FF3B30',
     borderRadius: 9,
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   friendsBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     lineHeight: 14,
   },
 });

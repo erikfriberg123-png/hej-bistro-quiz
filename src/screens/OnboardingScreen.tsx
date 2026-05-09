@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   skipText: {
     color: '#B0A8C8',
     fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   content: {
     flex: 1,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 32,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
     textAlign: 'center',
     lineHeight: 42,
     marginBottom: 20,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   body: {
     color: '#B0A8C8',
     fontSize: 16,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -158,6 +158,6 @@ const styles = StyleSheet.create({
   nextText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });

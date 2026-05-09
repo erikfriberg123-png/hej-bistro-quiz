@@ -272,22 +272,14 @@ export default function GameScreen({ route, navigation }: Props) {
           />
 
           <View style={styles.answersGrid}>
-            {[0, 1].map(row => (
-              <View key={row} style={styles.answersRow}>
-                {[0, 1].map(col => {
-                  const dispIdx = row * 2 + col;
-                  return (
-                    <AnswerButton
-                      key={dispIdx}
-                      index={dispIdx}
-                      text={currentQuestion.answers[shuffledIndices[dispIdx]]}
-                      state={answerStates[dispIdx]}
-                      onPress={() => handleAnswer(dispIdx)}
-                      compact
-                    />
-                  );
-                })}
-              </View>
+            {[0, 1, 2, 3].map(dispIdx => (
+              <AnswerButton
+                key={dispIdx}
+                index={dispIdx}
+                text={currentQuestion.answers[shuffledIndices[dispIdx]]}
+                state={answerStates[dispIdx]}
+                onPress={() => handleAnswer(dispIdx)}
+              />
             ))}
           </View>
 
@@ -324,7 +316,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     fontSize: 16,
   },
   topBar: {
@@ -339,12 +331,12 @@ const styles = StyleSheet.create({
   exitText: {
     color: '#B0A8C8',
     fontSize: 18,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   challengeBadge: {
     color: '#2EC4B6',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   gameArea: {
     flex: 1,
@@ -361,12 +353,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   answersGrid: {
-    gap: 8,
     marginTop: 4,
-  },
-  answersRow: {
-    flexDirection: 'row',
-    gap: 8,
   },
   nextBtnWrapper: {
     marginTop: 14,
@@ -381,7 +368,7 @@ const styles = StyleSheet.create({
   nextBtnText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 0.3,
   },
 });

@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8, width: 40 },
   backText: { color: '#B0A8C8', fontSize: 22 },
-  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'Poppins_700Bold' },
+  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48, paddingTop: 8 },
   searchRow: {
     flexDirection: 'row',
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   searchSpinner: { marginRight: 12 },
   section: { marginBottom: 24 },
   sectionLabel: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   emptyHint: {
     color: '#6050A0',
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 16,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Poppins_700Bold' },
+  avatarText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   usernameBlock: {
     flex: 1,
     justifyContent: 'center',
@@ -368,12 +368,12 @@ const styles = StyleSheet.create({
   username: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   newTag: {
     color: '#9B5DE5',
     fontSize: 10,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.3,
     marginTop: 1,
   },
@@ -385,14 +385,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  btnAddText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'Poppins_600SemiBold' },
+  btnAddText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
   btnAccept: {
     backgroundColor: '#2EC4B6',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  btnAcceptText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'Poppins_600SemiBold' },
+  btnAcceptText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
   btnChallenge: {
     backgroundColor: '#0D2A2A',
     borderRadius: 10,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2EC4B6',
   },
-  btnChallengeText: { color: '#2EC4B6', fontSize: 13, fontFamily: 'Poppins_600SemiBold' },
+  btnChallengeText: { color: '#2EC4B6', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
   btnRemove: {
     width: 32,
     height: 32,
@@ -411,8 +411,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnRemoveText: { color: '#B0A8C8', fontSize: 14 },
-  tagAccepted: { color: '#2EC4B6', fontSize: 13, fontFamily: 'Poppins_500Medium' },
-  tagPending: { color: '#B0A8C8', fontSize: 13, fontFamily: 'Poppins_400Regular' },
+  tagAccepted: { color: '#2EC4B6', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  tagPending: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_400Regular' },
   confirmOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -431,14 +431,14 @@ const styles = StyleSheet.create({
   confirmText: {
     color: '#B0A8C8',
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 24,
     textAlign: 'center',
     marginBottom: 24,
   },
   confirmName: {
     color: '#FFFFFF',
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   confirmBtns: {
     flexDirection: 'row',
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   confirmBtnNejText: {
     color: '#B0A8C8',
     fontSize: 16,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   confirmBtnJa: {
     flex: 1,
@@ -466,6 +466,6 @@ const styles = StyleSheet.create({
   confirmBtnJaText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
 });

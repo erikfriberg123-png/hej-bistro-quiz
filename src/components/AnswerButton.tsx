@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 16,
     minHeight: 56,
   },
   buttonCompact: {
@@ -82,13 +82,13 @@ const styles = StyleSheet.create({
   labelText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   text: {
     flex: 1,
     color: '#FFFFFF',
     fontSize: 15,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
     lineHeight: 20,
   },
   textCompact: {

@@ -24,11 +24,11 @@ const styles = StyleSheet.create({
   score: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   awarded: {
     color: '#4CAF50',
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
 });

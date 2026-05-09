@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   roundPillText: {
     color: '#9B5DE5',
     fontSize: 11,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     letterSpacing: 1.5,
   },
   scoreRow: {
@@ -122,12 +122,12 @@ const styles = StyleSheet.create({
   scoreName: {
     color: '#B0A8C8',
     fontSize: 12,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'DMSans_500Medium',
   },
   scoreNum: {
     color: '#FFFFFF',
     fontSize: 28,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
   },
   scoreNumMe: {
     color: '#9B5DE5',
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   scoreDash: {
     color: '#3D2870',
     fontSize: 20,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
   },
   body: {
     flex: 1,
@@ -145,14 +145,14 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontFamily: 'Poppins_800ExtraBold',
+    fontFamily: 'DMSans_800ExtraBold',
     textAlign: 'center',
     marginBottom: 4,
   },
   sub: {
     color: '#B0A8C8',
     fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -180,13 +180,13 @@ const styles = StyleSheet.create({
   cardName: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'DMSans_700Bold',
     lineHeight: 18,
   },
   cardDesc: {
     color: '#B0A8C8',
     fontSize: 11,
-    fontFamily: 'Poppins_400Regular',
+    fontFamily: 'DMSans_400Regular',
     lineHeight: 16,
   },
 });
