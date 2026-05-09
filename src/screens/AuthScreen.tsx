@@ -61,7 +61,9 @@ export default function AuthScreen() {
     setError(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: Platform.OS === 'web' ? window.location.origin : undefined,
+    });
       if (error) {
         setError(mapError(error.message));
       } else {

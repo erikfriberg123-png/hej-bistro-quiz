@@ -31,6 +31,7 @@ import BattleRoundScreen from './src/screens/BattleRoundScreen';
 import BattleBoardScreen from './src/screens/BattleBoardScreen';
 import BattleResultScreen from './src/screens/BattleResultScreen';
 import AdminScreen from './src/screens/AdminScreen';
+import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -57,6 +58,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [onboardingDone, setOnboardingDone] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
   const loadRemoteQuestions = useGameStore(s => s.loadRemoteQuestions);
 
   useEffect(() => {
@@ -72,8 +74,11 @@ export default function App() {
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+      }
       setSession(session);
-      if (session) {
+      if (session && _event !== 'PASSWORD_RECOVERY') {
         loadRemoteQuestions();
         registerPushToken().catch(() => {});
       }
@@ -85,6 +90,18 @@ export default function App() {
   useEffect(() => {
     if (session) loadRemoteQuestions();
   }, [!!session]);
+
+  if (passwordRecovery) {
+    const inner = <UpdatePasswordScreen onDone={() => setPasswordRecovery(false)} />;
+    if (Platform.OS === 'web') {
+      return (
+        <View style={styles.webOuter}>
+          <View style={styles.webInner}>{inner}</View>
+        </View>
+      );
+    }
+    return inner;
+  }
 
   if (!fontsLoaded || !isReady) {
     return (
