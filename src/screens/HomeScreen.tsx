@@ -121,6 +121,13 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Är du säker på att du vill logga ut?')) {
+        setProfileVisible(false);
+        supabase.auth.signOut();
+      }
+      return;
+    }
     Alert.alert(
       'Logga ut',
       'Är du säker på att du vill logga ut?',

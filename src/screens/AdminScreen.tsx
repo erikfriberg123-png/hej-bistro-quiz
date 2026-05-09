@@ -109,24 +109,24 @@ export default function AdminScreen({ navigation }: Props) {
   };
 
   const handleDelete = (q: Question) => {
-    Alert.alert(
-      'Ta bort fråga',
-      q.question.length > 80 ? q.question.slice(0, 80) + '…' : q.question,
-      [
-        { text: 'Avbryt', style: 'cancel' },
-        {
-          text: 'Ta bort', style: 'destructive', onPress: async () => {
-            try {
-              await deleteRemoteQuestion(q.id);
-              await loadRemoteQuestions();
-              reload();
-            } catch {
-              Alert.alert('Fel', 'Kunde inte ta bort frågan.');
-            }
-          },
-        },
-      ]
-    );
+    const preview = q.question.length > 80 ? q.question.slice(0, 80) + '…' : q.question;
+    const doDelete = async () => {
+      try {
+        await deleteRemoteQuestion(q.id);
+        await loadRemoteQuestions();
+        reload();
+      } catch {
+        Alert.alert('Fel', 'Kunde inte ta bort frågan.');
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Ta bort fråga?\n\n${preview}`)) doDelete();
+      return;
+    }
+    Alert.alert('Ta bort fråga', preview, [
+      { text: 'Avbryt', style: 'cancel' },
+      { text: 'Ta bort', style: 'destructive', onPress: doDelete },
+    ]);
   };
 
   const countsByCategory = CATEGORIES.map(cat => ({
