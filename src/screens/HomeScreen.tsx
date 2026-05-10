@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
   Image,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -41,6 +42,12 @@ export default function HomeScreen({ navigation }: Props) {
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
   const [myTurnBattles, setMyTurnBattles] = useState<Battle[]>([]);
   const [mode, setMode] = useState<'training' | null>(null);
+  const [changePwVisible, setChangePwVisible] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState(false);
 
   const pendingBattleCount = pendingBattles.length;
   const myTurnCount = myTurnBattles.length;
@@ -117,6 +124,41 @@ export default function HomeScreen({ navigation }: Props) {
       setProfileVisible(true);
     } else {
       navigation.navigate('ChallengeLobby', {});
+    }
+  };
+
+  const openChangePw = () => {
+    setCurrentPw('');
+    setNewPw('');
+    setPwError('');
+    setPwSuccess(false);
+    setChangePwVisible(true);
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPw) { setPwError('Ange ditt nuvarande lösenord.'); return; }
+    if (newPw.length < 6) { setPwError('Nytt lösenord måste vara minst 6 tecken.'); return; }
+    if (currentPw === newPw) { setPwError('Det nya lösenordet måste skilja sig från det gamla.'); return; }
+    setPwError('');
+    setPwSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) throw new Error('no email');
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPw,
+      });
+      if (verifyError) {
+        setPwError('Nuvarande lösenord är fel.');
+        return;
+      }
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPw });
+      if (updateError) throw updateError;
+      setPwSuccess(true);
+    } catch {
+      setPwError('Något gick fel. Försök igen.');
+    } finally {
+      setPwSaving(false);
     }
   };
 
@@ -326,6 +368,7 @@ export default function HomeScreen({ navigation }: Props) {
           if (usernameRequired) return;
           setProfileVisible(false);
           setChallengeAfterSave(false);
+          setChangePwVisible(false);
         }}
       >
         <TouchableOpacity
@@ -335,6 +378,7 @@ export default function HomeScreen({ navigation }: Props) {
             if (usernameRequired) return;
             setProfileVisible(false);
             setChallengeAfterSave(false);
+            setChangePwVisible(false);
           }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -379,7 +423,7 @@ export default function HomeScreen({ navigation }: Props) {
                 <Text style={styles.modalBtnText}>{saving ? 'Kontrollerar...' : 'Spara'}</Text>
               </TouchableOpacity>
 
-              {!usernameRequired && (
+              {!usernameRequired && !changePwVisible && (
                 <>
                   <TouchableOpacity
                     onPress={() => {
@@ -404,9 +448,61 @@ export default function HomeScreen({ navigation }: Props) {
                     <Text style={styles.cancelText}>Avbryt</Text>
                   </TouchableOpacity>
 
+                  <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
+                    <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
+                  </TouchableOpacity>
+
                   <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
                     <Text style={styles.logoutText}>Logga ut</Text>
                   </TouchableOpacity>
+                </>
+              )}
+
+              {!usernameRequired && changePwVisible && (
+                <>
+                  {pwSuccess ? (
+                    <>
+                      <Text style={styles.pwSuccessText}>✓ Lösenordet är uppdaterat!</Text>
+                      <TouchableOpacity
+                        onPress={() => setChangePwVisible(false)}
+                        style={styles.modalBtn}
+                      >
+                        <Text style={styles.modalBtnText}>Tillbaka</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <TextInput
+                        style={[styles.input, pwError && styles.inputError]}
+                        value={currentPw}
+                        onChangeText={v => { setCurrentPw(v); setPwError(''); }}
+                        placeholder="Nuvarande lösenord"
+                        placeholderTextColor="#6050A0"
+                        secureTextEntry
+                        autoCapitalize="none"
+                      />
+                      <TextInput
+                        style={[styles.input, pwError && styles.inputError]}
+                        value={newPw}
+                        onChangeText={v => { setNewPw(v); setPwError(''); }}
+                        placeholder="Nytt lösenord (minst 6 tecken)"
+                        placeholderTextColor="#6050A0"
+                        secureTextEntry
+                        autoCapitalize="none"
+                      />
+                      {pwError ? <Text style={styles.usernameError}>{pwError}</Text> : null}
+                      <TouchableOpacity
+                        onPress={handleChangePassword}
+                        style={[styles.modalBtn, (!currentPw || !newPw || pwSaving) && styles.modalBtnDisabled]}
+                        disabled={!currentPw || !newPw || pwSaving}
+                      >
+                        <Text style={styles.modalBtnText}>{pwSaving ? 'Sparar...' : 'Byt lösenord'}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setChangePwVisible(false)} style={styles.cancelBtn}>
+                        <Text style={styles.cancelText}>Avbryt</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </>
               )}
             </View>
@@ -699,8 +795,17 @@ const styles = StyleSheet.create({
   modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
   cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  changePwBtn: { alignItems: 'center', paddingVertical: 8 },
+  changePwText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   logoutBtn: { alignItems: 'center', paddingVertical: 8 },
   logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  pwSuccessText: {
+    color: '#4CAF50',
+    fontSize: 15,
+    fontFamily: 'DMSans_600SemiBold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   modalHint: {
     color: '#2EC4B6',
     fontSize: 13,

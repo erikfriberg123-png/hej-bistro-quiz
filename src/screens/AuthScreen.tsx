@@ -83,7 +83,10 @@ export default function AuthScreen() {
           email: email.trim(),
           password,
         });
-        if (error) setError(mapError(error.message));
+        if (error) {
+          console.error('[Auth] signIn error:', error.status, error.message);
+          setError(mapError(error.message));
+        }
         // On success, App.tsx detects new session and switches to main stack
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -94,6 +97,7 @@ export default function AuthScreen() {
           }),
         });
         if (error) {
+          console.error('[Auth] signUp error:', error.status, error.message, error);
           setError(mapError(error.message));
         } else if (!data.session) {
           // Email confirmation required
@@ -101,6 +105,9 @@ export default function AuthScreen() {
         }
         // If session present, App.tsx switches to main stack automatically
       }
+    } catch (e: any) {
+      console.error('[Auth] unexpected exception:', e);
+      setError('Något gick fel. Försök igen.');
     } finally {
       setLoading(false);
     }
