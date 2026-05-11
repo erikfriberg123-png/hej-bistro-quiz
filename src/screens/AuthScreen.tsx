@@ -13,6 +13,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
 import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
@@ -42,6 +43,7 @@ export default function AuthScreen() {
   const [resetSent, setResetSent] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
 
   useEffect(() => {
     isAppleAuthAvailable().then(setAppleAvailable);
@@ -86,6 +88,8 @@ export default function AuthScreen() {
         if (error) {
           console.error('[Auth] signIn error:', error.status, error.message);
           setError(mapError(error.message));
+        } else {
+          await AsyncStorage.setItem('keepSignedIn', keepSignedIn ? 'true' : 'false');
         }
         // On success, App.tsx detects new session and switches to main stack
       } else {
@@ -272,6 +276,19 @@ export default function AuthScreen() {
                 onSubmitEditing={canSubmit ? handleSubmit : undefined}
               />
 
+              {mode === 'signin' && (
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setKeepSignedIn(v => !v)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, keepSignedIn && styles.checkboxChecked]}>
+                    {keepSignedIn && <Text style={styles.checkboxMark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Håll mig inloggad</Text>
+                </TouchableOpacity>
+              )}
+
               {error && <Text style={styles.errorText}>{error}</Text>}
 
               <TouchableOpacity
@@ -429,6 +446,38 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#6050A0',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: '#9B5DE5',
+    borderColor: '#9B5DE5',
+  },
+  checkboxMark: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'DMSans_700Bold',
+    lineHeight: 16,
+  },
+  checkboxLabel: {
+    color: '#B0A8C8',
+    fontSize: 14,
+    fontFamily: 'DMSans_400Regular',
   },
   forgotBtn: {
     alignItems: 'center',

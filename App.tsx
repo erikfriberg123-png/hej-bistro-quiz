@@ -63,11 +63,17 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
-      const [{ data: { session } }, done] = await Promise.all([
+      const [{ data: { session } }, done, keepSignedIn] = await Promise.all([
         supabase.auth.getSession(),
         AsyncStorage.getItem('onboarding-done'),
+        AsyncStorage.getItem('keepSignedIn'),
       ]);
-      setSession(session);
+      if (session && keepSignedIn === 'false') {
+        await supabase.auth.signOut();
+        setSession(null);
+      } else {
+        setSession(session);
+      }
       setOnboardingDone(!!done);
       setIsReady(true);
     };
