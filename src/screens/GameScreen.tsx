@@ -30,6 +30,8 @@ import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { CelebrationOverlay } from '../components/CelebrationOverlay';
+import { CorrectAnswerEffects } from '../components/CorrectAnswerEffects';
+import type { Difficulty } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 
@@ -54,6 +56,8 @@ export default function GameScreen({ route, navigation }: Props) {
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showStarsEffect, setShowStarsEffect] = useState(false);
+  const [effectDifficulty, setEffectDifficulty] = useState<Difficulty | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
@@ -92,6 +96,8 @@ export default function GameScreen({ route, navigation }: Props) {
     isAdvancingRef.current = false;
     setIsAnswered(false);
     setShowCelebration(false);
+    setShowStarsEffect(false);
+    setEffectDifficulty(null);
     setPointsAwarded(null);
     setAnswerStates(['default', 'default', 'default', 'default']);
     const indices = shuffle([0, 1, 2, 3]);
@@ -199,6 +205,8 @@ export default function GameScreen({ route, navigation }: Props) {
 
       if (points > 0) {
         setShowCelebration(true);
+        setShowStarsEffect(Math.random() < 0.6);
+        setEffectDifficulty(currentQuestion.difficulty);
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -302,6 +310,11 @@ export default function GameScreen({ route, navigation }: Props) {
       </View>
 
       <CelebrationOverlay visible={showCelebration} />
+      <CorrectAnswerEffects
+        visible={isAnswered && (pointsAwarded ?? 0) > 0}
+        showStars={showStarsEffect}
+        difficulty={effectDifficulty}
+      />
     </SafeAreaView>
   );
 }
