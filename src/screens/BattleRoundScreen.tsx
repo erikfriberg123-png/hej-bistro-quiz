@@ -34,7 +34,7 @@ import { CelebrationOverlay } from '../components/CelebrationOverlay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
-const TIMER_DURATION = 15000;
+const TIMER_DURATION = 20000;
 
 export default function BattleRoundScreen({ route, navigation }: Props) {
   const {
@@ -244,30 +244,15 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           />
 
           <View style={styles.answersGrid}>
-            <View style={styles.answersRow}>
-              {[0, 1].map(dispIdx => (
-                <AnswerButton
-                  key={dispIdx}
-                  index={dispIdx}
-                  text={currentQuestion.answers[shuffledIndices[dispIdx]]}
-                  state={answerStates[dispIdx]}
-                  onPress={() => handleAnswer(dispIdx)}
-                  compact
-                />
-              ))}
-            </View>
-            <View style={styles.answersRow}>
-              {[2, 3].map(dispIdx => (
-                <AnswerButton
-                  key={dispIdx}
-                  index={dispIdx}
-                  text={currentQuestion.answers[shuffledIndices[dispIdx]]}
-                  state={answerStates[dispIdx]}
-                  onPress={() => handleAnswer(dispIdx)}
-                  compact
-                />
-              ))}
-            </View>
+            {[0, 1, 2, 3].map(dispIdx => (
+              <AnswerButton
+                key={dispIdx}
+                index={dispIdx}
+                text={currentQuestion.answers[shuffledIndices[dispIdx]]}
+                state={answerStates[dispIdx]}
+                onPress={() => handleAnswer(dispIdx)}
+              />
+            ))}
           </View>
 
           <Animated.View
@@ -374,7 +359,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   answersGrid: { gap: 8 },
-  answersRow: { flexDirection: 'row', gap: 8 },
   nextBtnWrapper: { marginTop: 14 },
   nextBtn: {
     borderRadius: 16,

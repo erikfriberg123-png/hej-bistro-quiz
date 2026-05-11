@@ -52,11 +52,14 @@ export async function getChallengesForMe(): Promise<Challenge[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
+  const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data } = await supabase
     .from('challenges')
     .select('*')
     .eq('target_user_id', user.id)
     .is('opponent_id', null)
+    .gte('created_at', fiveDaysAgo)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -85,11 +88,14 @@ export async function findRandomChallenge(): Promise<Challenge | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+
   const { data } = await supabase
     .from('challenges')
     .select('*')
     .is('opponent_id', null)
     .neq('creator_id', user.id)
+    .gte('created_at', fiveDaysAgo)
     .order('created_at', { ascending: true })
     .limit(1)
     .single();
