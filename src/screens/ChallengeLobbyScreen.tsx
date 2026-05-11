@@ -36,12 +36,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
 
   const [tab, setTab] = useState<'create' | 'join'>('create');
   const [friends, setFriends] = useState<FriendProfile[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<FriendProfile | null>(
-    preselectedFriendId && preselectedFriendName
-      ? { user_id: preselectedFriendId, username: preselectedFriendName }
-      : null,
-  );
-  const [creating, setCreating] = useState(false);
+  const [creatingFor, setCreatingFor] = useState<string | null>(null);
   const [findingRandom, setFindingRandom] = useState(false);
   const [code, setCode] = useState('');
   const [joining, setJoining] = useState(false);
@@ -59,19 +54,18 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
     }, []),
   );
 
-  const handleCreate = async () => {
-    if (!selectedFriend) return;
-    setCreating(true);
+  const handleChallengeFriend = async (friend: FriendProfile) => {
+    setCreatingFor(friend.user_id);
     try {
       const name = (await getUsername()) ?? 'Anonym';
 
-      const existing = await findActiveBattleBetween(selectedFriend.user_id);
+      const existing = await findActiveBattleBetween(friend.user_id);
       if (existing) {
         const { data: { user } } = await supabase.auth.getUser();
         const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
         Alert.alert(
           'Battle pågår redan',
-          `Du har redan en pågående battle med ${selectedFriend.username}. Vill du öppna den?`,
+          `Du har redan en pågående battle med ${friend.username}. Vill du öppna den?`,
           [
             { text: 'Avbryt', style: 'cancel' },
             {
@@ -87,7 +81,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
         return;
       }
 
-      const battle = await createBattle(name, selectedFriend.user_id, 'friend');
+      const battle = await createBattle(name, friend.user_id, 'friend');
       navigation.navigate('BattlePickCategory', {
         battleId: battle.id,
         code: battle.code,
@@ -96,12 +90,12 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
         creatorScore: 0,
         opponentScore: 0,
         creatorName: name,
-        opponentName: selectedFriend.username,
+        opponentName: friend.username,
       });
     } catch {
       Alert.alert('Fel', 'Kunde inte skapa battle. Kontrollera anslutningen och försök igen.');
     } finally {
-      setCreating(false);
+      setCreatingFor(null);
     }
   };
 
@@ -326,57 +320,27 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
             {friends.length > 0 ? (
               <>
                 <Text style={styles.subLabel}>Utmana en vän</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.friendsRow}
-                >
-                  {friends.map(f => (
-                    <TouchableOpacity
-                      key={f.user_id}
-                      onPress={() =>
-                        setSelectedFriend(
-                          selectedFriend?.user_id === f.user_id ? null : f,
-                        )
-                      }
-                      style={[
-                        styles.friendPill,
-                        selectedFriend?.user_id === f.user_id && styles.friendPillActive,
-                      ]}
-                    >
-                      <Text style={styles.friendAvatar}>
-                        {f.username.charAt(0).toUpperCase()}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.friendPillText,
-                          selectedFriend?.user_id === f.user_id && styles.friendPillTextActive,
-                        ]}
-                      >
-                        {f.username}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-
-                <TouchableOpacity
-                  onPress={handleCreate}
-                  style={[
-                    styles.actionBtn,
-                    (!selectedFriend || creating) && styles.actionBtnDisabled,
-                  ]}
-                  disabled={!selectedFriend || creating}
-                >
-                  {creating ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.actionBtnText}>
-                      {selectedFriend
-                        ? `Utmana ${selectedFriend.username}  ⚔️`
-                        : 'Välj en vän ovan'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                {friends.map(f => (
+                  <TouchableOpacity
+                    key={f.user_id}
+                    style={[styles.friendRow, !!creatingFor && creatingFor !== f.user_id && styles.friendRowDim]}
+                    onPress={() => handleChallengeFriend(f)}
+                    disabled={!!creatingFor}
+                    activeOpacity={0.75}
+                  >
+                    <View style={styles.friendAvatarCircle}>
+                      <Text style={styles.friendAvatarText}>{f.username.charAt(0).toUpperCase()}</Text>
+                    </View>
+                    <Text style={styles.friendRowName}>{f.username}</Text>
+                    <View style={styles.challengeBtn}>
+                      {creatingFor === f.user_id ? (
+                        <ActivityIndicator color="#FFFFFF" size="small" />
+                      ) : (
+                        <Text style={styles.challengeBtnText}>Utmana  ⚔️</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                ))}
 
                 <View style={styles.orRow}>
                   <View style={styles.orLine} />
@@ -385,9 +349,12 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
                 </View>
               </>
             ) : (
-              <Text style={styles.noFriendsHint}>
-                Lägg till vänner under fliken Vänner för att utmana dem direkt.
-              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Friends')}
+                style={styles.addFriendsBtn}
+              >
+                <Text style={styles.addFriendsBtnText}>👥  Lägg till vänner</Text>
+              </TouchableOpacity>
             )}
 
             <TouchableOpacity
@@ -566,35 +533,63 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
-  friendsRow: { gap: 8, paddingBottom: 4 },
-  friendPill: {
+  friendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#2A1A50',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#3D2870',
   },
-  friendPillActive: {
-    borderColor: '#9B5DE5',
-    backgroundColor: '#2A1860',
+  friendRowDim: { opacity: 0.45 },
+  friendAvatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#9B5DE5',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  friendAvatar: {
+  friendAvatarText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: 'DMSans_700Bold',
   },
-  friendPillText: {
-    color: '#B0A8C8',
-    fontSize: 13,
+  friendRowName: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontFamily: 'DMSans_500Medium',
   },
-  friendPillTextActive: {
+  challengeBtn: {
+    backgroundColor: '#9B5DE5',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  challengeBtnText: {
     color: '#FFFFFF',
+    fontSize: 13,
     fontFamily: 'DMSans_700Bold',
+  },
+  addFriendsBtn: {
+    backgroundColor: '#2A1A50',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3D2870',
+  },
+  addFriendsBtnText: {
+    color: '#B0A8C8',
+    fontSize: 15,
+    fontFamily: 'DMSans_600SemiBold',
   },
   actionBtn: {
     backgroundColor: '#9B5DE5',
@@ -634,14 +629,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
-  },
-  noFriendsHint: {
-    color: '#6050A0',
-    fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 4,
   },
   codeInput: {
     backgroundColor: '#2A1A50',
