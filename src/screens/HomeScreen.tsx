@@ -441,19 +441,19 @@ export default function HomeScreen({ navigation }: Props) {
                     )}
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
-                    style={styles.cancelBtn}
-                  >
-                    <Text style={styles.cancelText}>Avbryt</Text>
-                  </TouchableOpacity>
-
                   <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
                     <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-                    <Text style={styles.logoutText}>Logga ut</Text>
+                    <Text style={styles.logoutText}>🚪  Logga ut</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
+                    style={styles.cancelBtn}
+                  >
+                    <Text style={styles.cancelText}>✕  Avbryt</Text>
                   </TouchableOpacity>
                 </>
               )}
