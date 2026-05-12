@@ -18,6 +18,7 @@ function rowToQuestion(row: any): Question {
     answers: row.answers as [string, string, string, string],
     correctIndex: row.correct_index as 0 | 1 | 2 | 3,
     difficulty: row.difficulty as Difficulty,
+    active: row.active as boolean,
   };
 }
 
@@ -80,6 +81,21 @@ export async function fetchAllQuestionsAdmin(): Promise<Question[]> {
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map(rowToQuestion);
+}
+
+export async function addRemoteQuestions(qs: Omit<Question, 'id'>[]): Promise<void> {
+  const rows = qs.map(q => ({
+    id: `rq_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    category_id: q.category,
+    question: q.question,
+    answers: q.answers,
+    correct_index: q.correctIndex,
+    difficulty: q.difficulty,
+    active: true,
+  }));
+  const { error } = await supabase.from('remote_questions').insert(rows);
+  if (error) throw error;
+  await invalidateQuestionCache();
 }
 
 export async function addRemoteQuestion(q: Omit<Question, 'id'>): Promise<void> {

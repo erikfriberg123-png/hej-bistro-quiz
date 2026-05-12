@@ -20,12 +20,22 @@ import { useGameStore } from '../store/gameStore';
 import {
   fetchAllQuestionsAdmin,
   addRemoteQuestion,
+  addRemoteQuestions,
   toggleRemoteQuestion,
   deleteRemoteQuestion,
 } from '../lib/remoteQuestions';
 import { Complaint, getComplaints, dismissComplaint } from '../lib/submissions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
+
+interface ParsedQuestion {
+  question: string;
+  answers: [string, string, string, string];
+  correct: 0 | 1 | 2 | 3;
+  difficulty: 'easy' | 'medium' | 'hard';
+  valid: boolean;
+  error?: string;
+}
 
 const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 
@@ -36,6 +46,15 @@ export default function AdminScreen({ navigation }: Props) {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Bulk import state
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkCategory, setBulkCategory] = useState<CategoryId>('food');
+  const [bulkDifficulty, setBulkDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [bulkText, setBulkText] = useState('');
+  const [parsedBulk, setParsedBulk] = useState<ParsedQuestion[] | null>(null);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkImporting, setBulkImporting] = useState(false);
 
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food');
@@ -144,6 +163,72 @@ export default function AdminScreen({ navigation }: Props) {
     }
   };
 
+  const parseBulk = () => {
+    setBulkError('');
+    setParsedBulk(null);
+    const raw = bulkText.trim();
+    if (!raw) { setBulkError('Klistra in JSON-text ovan.'); return; }
+    try {
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) throw new Error('Rotnivån måste vara en JSON-array [ ... ]');
+      const result: ParsedQuestion[] = arr.map((item: any, i: number) => {
+        if (!item.question || typeof item.question !== 'string')
+          return { question: '', answers: ['','','',''], correct: 0, difficulty: 'medium', valid: false, error: `Post ${i+1}: saknar "question"` };
+        if (!Array.isArray(item.answers) || item.answers.length !== 4)
+          return { question: item.question, answers: ['','','',''], correct: 0, difficulty: 'medium', valid: false, error: `Post ${i+1}: "answers" måste vara en array med exakt 4 element` };
+        if (typeof item.correct !== 'number' || item.correct < 0 || item.correct > 3)
+          return { question: item.question, answers: item.answers, correct: 0, difficulty: 'medium', valid: false, error: `Post ${i+1}: "correct" måste vara ett tal 0–3` };
+        return {
+          question: item.question.trim(),
+          answers: item.answers.map((a: string) => String(a).trim()) as [string,string,string,string],
+          correct: item.correct as 0|1|2|3,
+          difficulty: (['easy','medium','hard'].includes(item.difficulty) ? item.difficulty : bulkDifficulty) as 'easy'|'medium'|'hard',
+          valid: true,
+        };
+      });
+      setParsedBulk(result);
+    } catch (e) {
+      setBulkError(e instanceof Error ? e.message : 'Ogiltig JSON');
+    }
+  };
+
+  const handleBulkImport = async () => {
+    if (!parsedBulk) return;
+    const valid = parsedBulk.filter(p => p.valid);
+    if (valid.length === 0) { Alert.alert('Inga giltiga frågor', 'Rätta felen ovan först.'); return; }
+    setBulkImporting(true);
+    try {
+      await addRemoteQuestions(valid.map(p => ({
+        category: bulkCategory,
+        question: p.question,
+        answers: p.answers as [string,string,string,string],
+        correctIndex: p.correct as 0|1|2|3,
+        difficulty: p.difficulty,
+      })));
+      await loadRemoteQuestions();
+      reload();
+      setBulkText('');
+      setParsedBulk(null);
+      setBulkError('');
+      setShowBulkImport(false);
+      Alert.alert('Importerat ✓', `${valid.length} frågor publicerades.`);
+    } catch {
+      Alert.alert('Fel', 'Kunde inte importera frågorna. Försök igen.');
+    } finally {
+      setBulkImporting(false);
+    }
+  };
+
+  const handlePublishPending = async (q: Question) => {
+    try {
+      await toggleRemoteQuestion(q.id, true);
+      await loadRemoteQuestions();
+      reload();
+    } catch {
+      Alert.alert('Fel', 'Kunde inte publicera frågan.');
+    }
+  };
+
   const countsByCategory = CATEGORIES.map(cat => ({
     cat,
     count: questions.filter(q => q.category === cat.id).length,
@@ -175,12 +260,22 @@ export default function AdminScreen({ navigation }: Props) {
           </View>
 
           {/* Add question toggle */}
-          <TouchableOpacity
-            onPress={() => setShowForm(v => !v)}
-            style={[styles.addToggle, showForm && styles.addToggleActive]}
-          >
-            <Text style={styles.addToggleText}>{showForm ? '✕  Avbryt' : '+ Lägg till fråga'}</Text>
-          </TouchableOpacity>
+          <View style={styles.toggleRow}>
+            <TouchableOpacity
+              onPress={() => { setShowForm(v => !v); setShowBulkImport(false); }}
+              style={[styles.addToggle, styles.addToggleHalf, showForm && styles.addToggleActive]}
+            >
+              <Text style={styles.addToggleText}>{showForm ? '✕  Avbryt' : '+ Lägg till fråga'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => { setShowBulkImport(v => !v); setShowForm(false); }}
+              style={[styles.addToggle, styles.addToggleHalf, showBulkImport && styles.addToggleBulkActive]}
+            >
+              <Text style={[styles.addToggleText, showBulkImport && { color: '#FF9A3C' }]}>
+                {showBulkImport ? '✕  Avbryt' : '📋  Massimport (JSON)'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Form */}
           {showForm && (
@@ -261,6 +356,106 @@ export default function AdminScreen({ navigation }: Props) {
             </View>
           )}
 
+          {/* Bulk import form */}
+          {showBulkImport && (
+            <View style={styles.formCard}>
+              <Text style={styles.label}>Kategori</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
+                {CATEGORIES.map(cat => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    onPress={() => setBulkCategory(cat.id)}
+                    style={[styles.catPill, bulkCategory === cat.id && { backgroundColor: cat.color }]}
+                  >
+                    <Text style={styles.catPillIcon}>{cat.icon}</Text>
+                    <Text style={[styles.catPillText, bulkCategory === cat.id && styles.catPillTextActive]}>
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={styles.label}>Standardsvårighetsgrad</Text>
+              <View style={styles.diffRow}>
+                {(['easy', 'medium', 'hard'] as const).map(d => (
+                  <TouchableOpacity
+                    key={d}
+                    onPress={() => setBulkDifficulty(d)}
+                    style={[styles.diffChip, bulkDifficulty === d && { backgroundColor: '#FF9A3C' }]}
+                  >
+                    <Text style={[styles.diffText, bulkDifficulty === d && styles.diffTextActive]}>
+                      {d === 'easy' ? 'Lätt' : d === 'medium' ? 'Medel' : 'Svår'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.label}>Klistra in JSON</Text>
+              <Text style={styles.sublabel}>Format: {`[{"question":"...","answers":["A","B","C","D"],"correct":0}]`}</Text>
+              <TextInput
+                style={[styles.input, styles.bulkInput]}
+                value={bulkText}
+                onChangeText={v => { setBulkText(v); setParsedBulk(null); setBulkError(''); }}
+                placeholder={'[\n  {\n    "question": "Din fråga?",\n    "answers": ["A","B","C","D"],\n    "correct": 0\n  }\n]'}
+                placeholderTextColor="#6050A0"
+                multiline
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              {bulkError ? (
+                <Text style={styles.bulkError}>{bulkError}</Text>
+              ) : null}
+
+              <TouchableOpacity
+                onPress={parseBulk}
+                style={styles.parseBtn}
+                disabled={!bulkText.trim()}
+              >
+                <Text style={styles.parseBtnText}>Förhandsgranska →</Text>
+              </TouchableOpacity>
+
+              {parsedBulk && (
+                <>
+                  <Text style={[styles.label, { marginTop: 16 }]}>
+                    Förhandsgranskning — {parsedBulk.filter(p => p.valid).length}/{parsedBulk.length} giltiga
+                  </Text>
+                  {parsedBulk.map((p, i) => (
+                    <View key={i} style={[styles.bulkPreviewCard, !p.valid && styles.bulkPreviewInvalid]}>
+                      {p.valid ? (
+                        <>
+                          <Text style={styles.bulkPreviewQ}>{p.question}</Text>
+                          {p.answers.map((a, ai) => (
+                            <Text key={ai} style={[styles.bulkPreviewA, ai === p.correct && styles.bulkPreviewCorrect]}>
+                              {ai === p.correct ? '✓ ' : '   '}{a}
+                            </Text>
+                          ))}
+                        </>
+                      ) : (
+                        <Text style={styles.bulkPreviewErr}>⚠ {p.error}</Text>
+                      )}
+                    </View>
+                  ))}
+
+                  {parsedBulk.some(p => p.valid) && (
+                    <TouchableOpacity
+                      onPress={handleBulkImport}
+                      style={[styles.saveBtn, { backgroundColor: '#FF9A3C' }, bulkImporting && styles.disabled]}
+                      disabled={bulkImporting}
+                    >
+                      {bulkImporting
+                        ? <ActivityIndicator color="#FFFFFF" />
+                        : <Text style={styles.saveBtnText}>
+                            Publicera {parsedBulk.filter(p => p.valid).length} frågor →
+                          </Text>
+                      }
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
+            </View>
+          )}
+
           {/* Complaints */}
           <Text style={styles.sectionTitle}>
             Klagomål ({complaints.length} st)
@@ -297,20 +492,64 @@ export default function AdminScreen({ navigation }: Props) {
             })
           )}
 
-          {/* Question list */}
+          {/* Pending review — user-submitted / inactive questions */}
+          {(() => {
+            const pending = questions.filter(q => !q.active);
+            if (loadingList || pending.length === 0) return null;
+            return (
+              <>
+                <Text style={[styles.sectionTitle, { color: '#FF9A3C' }]}>
+                  Väntande granskning ({pending.length} st)
+                </Text>
+                {pending.map(q => {
+                  const cat = CATEGORIES.find(c => c.id === q.category);
+                  return (
+                    <View key={q.id} style={[styles.qCard, styles.qCardPending]}>
+                      <View style={styles.qCardTop}>
+                        <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
+                          <Text style={[styles.catBadgeText, { color: cat?.color }]}>
+                            {cat?.icon} {cat?.name}
+                          </Text>
+                        </View>
+                        <View style={styles.qActions}>
+                          <TouchableOpacity
+                            onPress={() => handlePublishPending(q)}
+                            style={styles.publishBtn}
+                          >
+                            <Text style={styles.publishBtnText}>Publicera ✓</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDelete(q)} style={styles.deleteBtn}>
+                            <Text style={styles.deleteBtnText}>✕</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      <Text style={styles.qText}>{q.question}</Text>
+                      {q.answers.map((a, i) => (
+                        <Text key={i} style={[styles.qAnswer, i === q.correctIndex && { color: cat?.color, fontFamily: 'DMSans_600SemiBold' }]}>
+                          {i === q.correctIndex ? '✓ ' : '   '}{a}
+                        </Text>
+                      ))}
+                    </View>
+                  );
+                })}
+              </>
+            );
+          })()}
+
+          {/* Live question list */}
           <Text style={styles.sectionTitle}>
-            Remote frågor ({questions.length} st)
+            Live frågor ({questions.filter(q => q.active).length} st)
           </Text>
 
           {loadingList ? (
             <ActivityIndicator color="#9B5DE5" style={{ marginTop: 24 }} />
-          ) : questions.length === 0 ? (
-            <Text style={styles.emptyText}>Inga remote frågor ännu. Lägg till din första ovan.</Text>
+          ) : questions.filter(q => q.active).length === 0 ? (
+            <Text style={styles.emptyText}>Inga live-frågor ännu.</Text>
           ) : (
-            questions.map(q => {
+            questions.filter(q => q.active).map(q => {
               const cat = CATEGORIES.find(c => c.id === q.category);
               return (
-                <View key={q.id} style={[styles.qCard, !q.active && styles.qCardInactive]}>
+                <View key={q.id} style={styles.qCard}>
                   <View style={styles.qCardTop}>
                     <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
                       <Text style={[styles.catBadgeText, { color: cat?.color }]}>
@@ -319,10 +558,10 @@ export default function AdminScreen({ navigation }: Props) {
                     </View>
                     <View style={styles.qActions}>
                       <TouchableOpacity
-                        onPress={() => handleToggle(q, !q.active)}
-                        style={[styles.toggleBtn, q.active ? styles.toggleBtnOn : styles.toggleBtnOff]}
+                        onPress={() => handleToggle(q, false)}
+                        style={[styles.toggleBtn, styles.toggleBtnOn]}
                       >
-                        <Text style={styles.toggleBtnText}>{q.active ? 'Live' : 'Av'}</Text>
+                        <Text style={styles.toggleBtnText}>Live</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => handleDelete(q)} style={styles.deleteBtn}>
                         <Text style={styles.deleteBtnText}>✕</Text>
@@ -483,6 +722,37 @@ const styles = StyleSheet.create({
   deleteBtnText: { color: '#6050A0', fontSize: 15 },
   qText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold', marginBottom: 6, lineHeight: 20 },
   qAnswer: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 2 },
+  toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  addToggleHalf: { flex: 1, marginBottom: 0 },
+  addToggleBulkActive: { borderColor: '#FF9A3C' },
+  bulkInput: { minHeight: 160, textAlignVertical: 'top', fontFamily: 'DMSans_400Regular' },
+  bulkError: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium', marginTop: 6 },
+  parseBtn: {
+    backgroundColor: '#2A1A50',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#FF9A3C',
+  },
+  parseBtnText: { color: '#FF9A3C', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  bulkPreviewCard: {
+    backgroundColor: '#12082A',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#2A1A50',
+  },
+  bulkPreviewInvalid: { borderColor: '#FF5555' + '55' },
+  bulkPreviewQ: { color: '#FFFFFF', fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 4 },
+  bulkPreviewA: { color: '#B0A8C8', fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  bulkPreviewCorrect: { color: '#06D6A0', fontFamily: 'DMSans_600SemiBold' },
+  bulkPreviewErr: { color: '#FF5555', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  qCardPending: { borderColor: '#FF9A3C' + '55', borderWidth: 1.5 },
+  publishBtn: { backgroundColor: '#1A3A1A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  publishBtnText: { color: '#4CAF50', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
   complaintCard: {
     backgroundColor: '#1E1040',
     borderRadius: 12,
