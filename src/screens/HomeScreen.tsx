@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -48,6 +48,10 @@ export default function HomeScreen({ navigation }: Props) {
   const [pwError, setPwError] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [pwSuccess, setPwSuccess] = useState(false);
+  const [turnNotification, setTurnNotification] = useState<{ opponentName: string } | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const prevMyTurnIdsRef = useRef<Set<string> | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   const pendingBattleCount = pendingBattles.length;
   const myTurnCount = myTurnBattles.length;
@@ -63,15 +67,65 @@ export default function HomeScreen({ navigation }: Props) {
       }
     });
     checkIsAdmin().then(setIsAdmin);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) { userIdRef.current = user.id; setUserId(user.id); }
+    });
+  }, []);
+
+  // Unified battle refresh — notifyOnNew triggers the toast when a new "your turn" appears
+  const refreshBattleState = useCallback(async (notifyOnNew: boolean) => {
+    const [newMyTurns, newPending] = await Promise.all([
+      getMyActiveTurns().catch((): Battle[] => []),
+      getPendingBattlesForMe().catch((): Battle[] => []),
+    ]);
+
+    if (notifyOnNew && prevMyTurnIdsRef.current !== null) {
+      const added = newMyTurns.filter(b => !prevMyTurnIdsRef.current!.has(b.id));
+      if (added.length > 0) {
+        const b = added[0];
+        const uid = userIdRef.current;
+        const opponentName = uid && b.creator_id === uid
+          ? (b.opponent_name ?? 'din motståndare')
+          : b.creator_name;
+        setTurnNotification({ opponentName });
+      }
+    }
+
+    prevMyTurnIdsRef.current = new Set(newMyTurns.map(b => b.id));
+    setMyTurnBattles(newMyTurns);
+    setPendingBattles(newPending);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       getPendingRequests().then(p => setPendingCount(p.length)).catch(() => {});
-      getPendingBattlesForMe().then(setPendingBattles).catch(() => {});
-      getMyActiveTurns().then(setMyTurnBattles).catch(() => {});
-    }, [])
+      refreshBattleState(false);
+    }, [refreshBattleState])
   );
+
+  // Realtime subscriptions — unique name per effect invocation prevents the
+  // "cannot add callbacks after subscribe()" error if the effect ever re-runs.
+  useEffect(() => {
+    if (!userId) return;
+    const suffix = Date.now();
+    const onUpdate = () => refreshBattleState(true);
+    const ch1 = supabase
+      .channel(`home-cr-${userId}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `creator_id=eq.${userId}` }, onUpdate)
+      .subscribe();
+    const ch2 = supabase
+      .channel(`home-op-${userId}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `opponent_id=eq.${userId}` }, onUpdate)
+      .subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
+  }, [userId, refreshBattleState]);
+
+  // Auto-dismiss the turn toast after 5 s
+  useEffect(() => {
+    if (!turnNotification) return;
+    const t = setTimeout(() => setTurnNotification(null), 5000);
+    return () => clearTimeout(t);
+  }, [turnNotification]);
 
   const handleSaveUsername = async () => {
     if (!inputName.trim()) return;
@@ -217,19 +271,6 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
 
-        {pendingBattleCount > 0 && (
-          <TouchableOpacity
-            style={styles.pendingBattleBanner}
-            onPress={handlePendingBattlePress}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.pendingBattleText}>
-              ⚔️  Du har {pendingBattleCount} utmaning{pendingBattleCount > 1 ? 'ar' : ''} att svara på!
-            </Text>
-            <Text style={styles.pendingBattleArrow}>→</Text>
-          </TouchableOpacity>
-        )}
-
         {myTurnCount > 0 && (
           <TouchableOpacity
             style={styles.myTurnBanner}
@@ -284,6 +325,25 @@ export default function HomeScreen({ navigation }: Props) {
                 <Text style={styles.modeCardArrow}>→</Text>
               )}
             </TouchableOpacity>
+
+            {pendingBattleCount > 0 && (
+              <TouchableOpacity
+                style={styles.challengeCard}
+                onPress={handlePendingBattlePress}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.challengeCardEmoji}>⚔️</Text>
+                <View style={styles.challengeCardBody}>
+                  <Text style={styles.challengeCardTitle}>
+                    {pendingBattles[0]?.creator_name ?? 'Någon'} utmanar dig!
+                  </Text>
+                  {pendingBattleCount > 1 && (
+                    <Text style={styles.challengeCardSub}>+{pendingBattleCount - 1} utmaning{pendingBattleCount - 1 > 1 ? 'ar' : ''} till</Text>
+                  )}
+                </View>
+                <Text style={styles.challengeCardAction}>Svara →</Text>
+              </TouchableOpacity>
+            )}
           </>
         ) : (
           <>
@@ -509,6 +569,21 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
+      {turnNotification && (
+        <TouchableOpacity
+          style={styles.turnToast}
+          onPress={() => { setTurnNotification(null); handleMyTurnPress(); }}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.turnToastEmoji}>⚡</Text>
+          <View style={styles.turnToastBody}>
+            <Text style={styles.turnToastTitle}>Din tur!</Text>
+            <Text style={styles.turnToastSub}>{turnNotification.opponentName} har spelat klart.</Text>
+          </View>
+          <Text style={styles.turnToastArrow}>→</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -577,29 +652,45 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   leaderboardIcon: { fontSize: 18 },
-  pendingBattleBanner: {
+  challengeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#0D2A2A',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    borderWidth: 1.5,
-    borderColor: '#2EC4B6',
+    backgroundColor: '#061818',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    paddingHorizontal: 14,
+    paddingTop: 18,
+    paddingBottom: 12,
+    marginTop: -10,
+    marginBottom: 14,
+    borderTopWidth: 0,
+    borderLeftWidth: 1.5,
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
+    borderLeftColor: '#2EC4B6',
+    borderRightColor: '#2EC4B6',
+    borderBottomColor: '#2EC4B6',
+    gap: 10,
   },
-  pendingBattleText: {
+  challengeCardEmoji: { fontSize: 20 },
+  challengeCardBody: { flex: 1 },
+  challengeCardTitle: {
     color: '#2EC4B6',
     fontSize: 14,
     fontFamily: 'DMSans_600SemiBold',
-    flex: 1,
   },
-  pendingBattleArrow: {
+  challengeCardSub: {
+    color: '#7EEAE4',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    marginTop: 2,
+  },
+  challengeCardAction: {
     color: '#2EC4B6',
-    fontSize: 18,
+    fontSize: 14,
     fontFamily: 'DMSans_700Bold',
-    marginLeft: 8,
   },
   myTurnBanner: {
     flexDirection: 'row',
@@ -728,6 +819,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
+  },
+  turnToast: {
+    position: 'absolute',
+    bottom: 24,
+    left: 12,
+    right: 12,
+    backgroundColor: '#1A1240',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1.5,
+    borderColor: '#F4C842',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  turnToastEmoji: { fontSize: 24 },
+  turnToastBody: { flex: 1 },
+  turnToastTitle: {
+    color: '#F4C842',
+    fontSize: 14,
+    fontFamily: 'DMSans_700Bold',
+  },
+  turnToastSub: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    marginTop: 2,
+  },
+  turnToastArrow: {
+    color: '#F4C842',
+    fontSize: 20,
+    fontFamily: 'DMSans_700Bold',
   },
   modalOverlay: {
     flex: 1,

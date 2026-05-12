@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -9,11 +10,11 @@ import {
   View,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   Easing,
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -30,9 +31,7 @@ import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
-import { CelebrationOverlay } from '../components/CelebrationOverlay';
-import { CorrectAnswerEffects } from '../components/CorrectAnswerEffects';
-import type { Difficulty } from '../types';
+import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
@@ -42,7 +41,6 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
   const {
     battleId, code, role, roundNumber,
     category: categoryId, creatorScore, opponentScore,
-    creatorName, opponentName,
   } = route.params;
 
   const {
@@ -55,23 +53,28 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
   const [shuffledIndices, setShuffledIndices] = useState<number[]>([0, 1, 2, 3]);
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showStarsEffect, setShowStarsEffect] = useState(false);
-  const [effectDifficulty, setEffectDifficulty] = useState<Difficulty | null>(null);
+  const [celebrationEffects, setCelebrationEffects] = useState<EffectType[]>([]);
+  const [showWow, setShowWow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
+
+  // Always-fresh snapshot — read by stable event listeners without stale closures
+  const lockRef = useRef({ isTimerRunning: false, isAnswered: false });
+  lockRef.current = { isTimerRunning, isAnswered };
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
   const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
   const category = getCategoryById(categoryId);
 
+  // Key for persisting mid-round progress across app exits
+  const progressKey = `battle_round_${battleId}_${role}_${roundNumber}`;
+
   const nextBtnProgress = useSharedValue(0);
   const nextBtnStyle = useAnimatedStyle(() => ({
     opacity: nextBtnProgress.value,
-    transform: [{ translateY: interpolate(nextBtnProgress.value, [0, 1], [40, 0]) }],
   }));
 
   useEffect(() => {
@@ -82,22 +85,35 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     }
   }, [isAnswered]);
 
+  // Load questions, then try to restore saved progress from a previous session
   useEffect(() => {
-    const { questionIds } = route.params;
-    if (questionIds && questionIds.length > 0) {
-      startChallengeGame(categoryId, questionIds);
-    } else {
-      startGame(categoryId, 3);
-    }
+    const init = async () => {
+      const { questionIds } = route.params;
+      if (questionIds && questionIds.length > 0) {
+        startChallengeGame(categoryId, questionIds);
+      } else {
+        startGame(categoryId, 3);
+      }
+      try {
+        const saved = await AsyncStorage.getItem(progressKey);
+        if (saved) {
+          const { nextQuestionIndex, score: s, answers: a } = JSON.parse(saved);
+          const { questions: qs } = useGameStore.getState();
+          if (nextQuestionIndex > 0 && nextQuestionIndex < qs.length) {
+            useGameStore.setState({ currentQuestionIndex: nextQuestionIndex, score: s, answers: a });
+          }
+        }
+      } catch {}
+    };
+    init();
   }, []);
 
   useEffect(() => {
     if (!currentQuestion) return;
     isAdvancingRef.current = false;
     setIsAnswered(false);
-    setShowCelebration(false);
-    setShowStarsEffect(false);
-    setEffectDifficulty(null);
+    setCelebrationEffects([]);
+    setShowWow(false);
     setPointsAwarded(null);
     setAnswerStates(['default', 'default', 'default', 'default']);
     setShuffledIndices(shuffle([0, 1, 2, 3]));
@@ -109,6 +125,8 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     setSubmitting(true);
     const { result } = endGame();
     const playedQuestionIds = useGameStore.getState().questions.map(q => q.id);
+    // Round complete — clear saved progress
+    AsyncStorage.removeItem(progressKey).catch(() => {});
     try {
       const myName = role === 'opponent' ? (await getUsername() ?? 'Anonym') : undefined;
       const updatedBattle = await submitTurn(
@@ -118,7 +136,6 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
         myName,
       );
 
-      // Push notification to the other player
       const phase = computeBattlePhase(updatedBattle);
       const targetId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
       const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
@@ -144,7 +161,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
         lastRoundResults,
       });
     }
-  }, [battleId, code, role, roundNumber, categoryId, endGame, navigation]);
+  }, [battleId, code, role, roundNumber, categoryId, progressKey, endGame, navigation]);
 
   const advance = useCallback(() => {
     if (isAdvancingRef.current) return;
@@ -155,6 +172,66 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       nextQuestion();
     }
   }, [isLastQuestion, finishRound, nextQuestion]);
+
+  const handleTimerExpire = useCallback(() => {
+    if (isAnswered) return;
+    setIsTimerRunning(false);
+    setIsAnswered(true);
+    submitAnswer(-1, 0);
+    setPointsAwarded(0);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
+    const correct = currentQuestion.correctIndex;
+    const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
+      origIdx === correct ? 'show-correct' : 'disabled',
+    );
+    setAnswerStates(newStates);
+
+    // Persist so the user can resume from the next question
+    const { score: s, answers: a } = useGameStore.getState();
+    AsyncStorage.setItem(progressKey, JSON.stringify({
+      nextQuestionIndex: currentQuestionIndex + 1,
+      score: s,
+      answers: a,
+    })).catch(() => {});
+  }, [isAnswered, currentQuestion, shuffledIndices, submitAnswer, currentQuestionIndex, progressKey]);
+
+  // Keep a stable ref so event listeners always call the latest handleTimerExpire
+  const handleTimerExpireRef = useRef(handleTimerExpire);
+  handleTimerExpireRef.current = handleTimerExpire;
+
+  // Block React Navigation back gesture / header back while a question is live
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e) => {
+      if (!lockRef.current.isTimerRunning || lockRef.current.isAnswered) return;
+      e.preventDefault();
+      handleTimerExpireRef.current();
+    });
+    return unsub;
+  }, [navigation]);
+
+  // Auto-submit on native app backgrounding while timer is live
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active' && lockRef.current.isTimerRunning && !lockRef.current.isAnswered) {
+        handleTimerExpireRef.current();
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Auto-submit on web tab hide / close while timer is live
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = () => {
+      if (document.hidden && lockRef.current.isTimerRunning && !lockRef.current.isAnswered) {
+        handleTimerExpireRef.current();
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, []);
 
   const handleAnswer = useCallback(
     (displayIndex: number) => {
@@ -170,9 +247,11 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       setPointsAwarded(points);
 
       if (points > 0) {
-        setShowCelebration(true);
-        setShowStarsEffect(Math.random() < 0.6);
-        setEffectDifficulty(currentQuestion.difficulty);
+        const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
+        const count = Math.random() < 0.38 ? 2 : 1;
+        const picked = [...all].sort(() => Math.random() - 0.5).slice(0, count);
+        setCelebrationEffects(picked);
+        setShowWow(currentQuestion.difficulty === 'hard');
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -185,24 +264,17 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       });
       if (points > 0) newStates[displayIndex] = 'correct';
       setAnswerStates(newStates);
+
+      // Persist so the user can resume from the next question if they exit now
+      const { score: s, answers: a } = useGameStore.getState();
+      AsyncStorage.setItem(progressKey, JSON.stringify({
+        nextQuestionIndex: currentQuestionIndex + 1,
+        score: s,
+        answers: a,
+      })).catch(() => {});
     },
-    [isAnswered, currentQuestion, shuffledIndices, submitAnswer],
+    [isAnswered, currentQuestion, shuffledIndices, submitAnswer, currentQuestionIndex, progressKey],
   );
-
-  const handleTimerExpire = useCallback(() => {
-    if (isAnswered) return;
-    setIsTimerRunning(false);
-    setIsAnswered(true);
-    submitAnswer(-1, 0);
-    setPointsAwarded(0);
-    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
-    const correct = currentQuestion.correctIndex;
-    const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
-      origIdx === correct ? 'show-correct' : 'disabled',
-    );
-    setAnswerStates(newStates);
-  }, [isAnswered, currentQuestion, shuffledIndices, submitAnswer]);
 
   if (!currentQuestion) {
     return (
@@ -264,8 +336,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           </View>
 
           <Animated.View
-            style={[styles.nextBtnWrapper, nextBtnStyle]}
-            pointerEvents={isAnswered ? 'auto' : 'none'}
+            style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: isAnswered ? 'auto' : 'none' }]}
           >
             <TouchableOpacity
               onPress={advance}
@@ -289,12 +360,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <CelebrationOverlay visible={showCelebration} />
-      <CorrectAnswerEffects
-        visible={isAnswered && (pointsAwarded ?? 0) > 0}
-        showStars={showStarsEffect}
-        difficulty={effectDifficulty}
-      />
+      <CelebrationOverlay effects={celebrationEffects} showWow={showWow} />
     </SafeAreaView>
   );
 }
@@ -372,7 +438,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   answersGrid: { gap: 8 },
-  nextBtnWrapper: { marginTop: 14 },
+  nextBtnWrapper: { marginTop: 'auto', paddingTop: 8 },
   nextBtn: {
     borderRadius: 16,
     paddingVertical: 16,

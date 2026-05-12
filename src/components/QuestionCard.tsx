@@ -18,23 +18,29 @@ export function QuestionCard({ question, questionNumber, total }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#2A1A62',
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    minHeight: 120,
+    padding: 14,
+    marginBottom: 10,
+    minHeight: 80,
     justifyContent: 'center',
+    // Shadow — lifts the question above the flat answer buttons
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 10,
   },
   counter: {
     color: '#B0A8C8',
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'DMSans_400Regular',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   question: {
     color: '#FFFFFF',
-    fontSize: 19,
+    fontSize: 17,
     fontFamily: 'DMSans_600SemiBold',
-    lineHeight: 28,
+    lineHeight: 24,
   },
 });

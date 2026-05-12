@@ -13,7 +13,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   Easing,
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -29,9 +28,7 @@ import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
-import { CelebrationOverlay } from '../components/CelebrationOverlay';
-import { CorrectAnswerEffects } from '../components/CorrectAnswerEffects';
-import type { Difficulty } from '../types';
+import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 
@@ -55,9 +52,8 @@ export default function GameScreen({ route, navigation }: Props) {
   const [shuffledIndices, setShuffledIndices] = useState<number[]>([0, 1, 2, 3]);
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showStarsEffect, setShowStarsEffect] = useState(false);
-  const [effectDifficulty, setEffectDifficulty] = useState<Difficulty | null>(null);
+  const [celebrationEffects, setCelebrationEffects] = useState<EffectType[]>([]);
+  const [showWow, setShowWow] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
@@ -68,11 +64,10 @@ export default function GameScreen({ route, navigation }: Props) {
   const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
   const category = getCategoryById(categoryId);
 
-  // Animated next button
+  // Animated next button — opacity only so it always holds its layout space
   const nextBtnProgress = useSharedValue(0);
   const nextBtnStyle = useAnimatedStyle(() => ({
     opacity: nextBtnProgress.value,
-    transform: [{ translateY: interpolate(nextBtnProgress.value, [0, 1], [40, 0]) }],
   }));
 
   useEffect(() => {
@@ -95,9 +90,8 @@ export default function GameScreen({ route, navigation }: Props) {
     if (!currentQuestion) return;
     isAdvancingRef.current = false;
     setIsAnswered(false);
-    setShowCelebration(false);
-    setShowStarsEffect(false);
-    setEffectDifficulty(null);
+    setCelebrationEffects([]);
+    setShowWow(false);
     setPointsAwarded(null);
     setAnswerStates(['default', 'default', 'default', 'default']);
     const indices = shuffle([0, 1, 2, 3]);
@@ -204,9 +198,11 @@ export default function GameScreen({ route, navigation }: Props) {
       setPointsAwarded(points);
 
       if (points > 0) {
-        setShowCelebration(true);
-        setShowStarsEffect(Math.random() < 0.6);
-        setEffectDifficulty(currentQuestion.difficulty);
+        const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
+        const count = Math.random() < 0.38 ? 2 : 1;
+        const picked = [...all].sort(() => Math.random() - 0.5).slice(0, count);
+        setCelebrationEffects(picked);
+        setShowWow(currentQuestion.difficulty === 'hard');
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -292,8 +288,7 @@ export default function GameScreen({ route, navigation }: Props) {
           </View>
 
           <Animated.View
-            style={[styles.nextBtnWrapper, nextBtnStyle]}
-            pointerEvents={isAnswered ? 'auto' : 'none'}
+            style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: isAnswered ? 'auto' : 'none' }]}
           >
             <TouchableOpacity
               onPress={advance}
@@ -309,12 +304,7 @@ export default function GameScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <CelebrationOverlay visible={showCelebration} />
-      <CorrectAnswerEffects
-        visible={isAnswered && (pointsAwarded ?? 0) > 0}
-        showStars={showStarsEffect}
-        difficulty={effectDifficulty}
-      />
+      <CelebrationOverlay effects={celebrationEffects} showWow={showWow} />
     </SafeAreaView>
   );
 }
@@ -363,17 +353,18 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   answersGrid: {
-    marginTop: 4,
+    marginTop: 0,
   },
   nextBtnWrapper: {
-    marginTop: 14,
+    marginTop: 'auto',
+    paddingTop: 8,
   },
   nextBtn: {
     borderRadius: 16,
-    paddingVertical: 16,
+    paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },

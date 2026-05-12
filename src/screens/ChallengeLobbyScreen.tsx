@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -42,17 +42,44 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
   const [joining, setJoining] = useState(false);
   const [myBattles, setMyBattles] = useState<Battle[]>([]);
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
+
+  const refreshAll = useCallback(async () => {
+    const [battles, pending] = await Promise.all([
+      getMyBattles().catch((): Battle[] => []),
+      getPendingBattlesForMe().catch((): Battle[] => []),
+    ]);
+    setMyBattles(battles);
+    setPendingBattles(pending);
+  }, []);
 
   useEffect(() => {
     getFriends().then(setFriends).catch(() => {});
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) { userIdRef.current = user.id; setUserId(user.id); }
+    });
   }, []);
 
   useFocusEffect(
-    React.useCallback(() => {
-      getMyBattles().then(setMyBattles).catch(() => {});
-      getPendingBattlesForMe().then(setPendingBattles).catch(() => {});
-    }, []),
+    useCallback(() => { refreshAll(); }, [refreshAll]),
   );
+
+  // Realtime — unique suffix per effect invocation prevents channel-reuse crash
+  useEffect(() => {
+    const uid = userId;
+    if (!uid) return;
+    const suffix = Date.now();
+    const ch1 = supabase
+      .channel(`lobby-cr-${uid}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `creator_id=eq.${uid}` }, refreshAll)
+      .subscribe();
+    const ch2 = supabase
+      .channel(`lobby-op-${uid}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `opponent_id=eq.${uid}` }, refreshAll)
+      .subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
+  }, [userId, refreshAll]);
 
   const handleChallengeFriend = async (friend: FriendProfile) => {
     setCreatingFor(friend.user_id);
@@ -405,6 +432,20 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
           </View>
         )}
 
+        {/* Active battles — shown first so resuming is always the top action */}
+        {myBattles.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PÅGÅENDE BATTLES</Text>
+            {myBattles.map(b => (
+              <ActiveBattleCard
+                key={b.id}
+                battle={b}
+                onPress={() => resumeBattle(b)}
+              />
+            ))}
+          </View>
+        )}
+
         {/* Incoming challenges */}
         {pendingBattles.length > 0 && (
           <View style={styles.section}>
@@ -434,19 +475,6 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
           </View>
         )}
 
-        {/* Active battles */}
-        {myBattles.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>PÅGÅENDE BATTLES</Text>
-            {myBattles.map(b => (
-              <ActiveBattleCard
-                key={b.id}
-                battle={b}
-                onPress={() => resumeBattle(b)}
-              />
-            ))}
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );

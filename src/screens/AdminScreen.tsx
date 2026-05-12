@@ -23,6 +23,7 @@ import {
   toggleRemoteQuestion,
   deleteRemoteQuestion,
 } from '../lib/remoteQuestions';
+import { Complaint, getComplaints, dismissComplaint } from '../lib/submissions';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
@@ -32,6 +33,7 @@ export default function AdminScreen({ navigation }: Props) {
   const { loadRemoteQuestions } = useGameStore();
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -48,8 +50,12 @@ export default function AdminScreen({ navigation }: Props) {
   const reload = useCallback(async () => {
     setLoadingList(true);
     try {
-      const qs = await fetchAllQuestionsAdmin();
+      const [qs, cs] = await Promise.all([
+        fetchAllQuestionsAdmin(),
+        getComplaints(),
+      ]);
       setQuestions(qs);
+      setComplaints(cs);
     } catch {
       Alert.alert('Fel', 'Kunde inte hämta frågor.');
     } finally {
@@ -127,6 +133,15 @@ export default function AdminScreen({ navigation }: Props) {
       { text: 'Avbryt', style: 'cancel' },
       { text: 'Ta bort', style: 'destructive', onPress: doDelete },
     ]);
+  };
+
+  const handleDismissComplaint = async (complaint: Complaint) => {
+    try {
+      await dismissComplaint(complaint.id);
+      setComplaints(prev => prev.filter(c => c.id !== complaint.id));
+    } catch {
+      Alert.alert('Fel', 'Kunde inte stänga klagomålet.');
+    }
   };
 
   const countsByCategory = CATEGORIES.map(cat => ({
@@ -244,6 +259,42 @@ export default function AdminScreen({ navigation }: Props) {
                 }
               </TouchableOpacity>
             </View>
+          )}
+
+          {/* Complaints */}
+          <Text style={styles.sectionTitle}>
+            Klagomål ({complaints.length} st)
+          </Text>
+
+          {complaints.length === 0 ? (
+            <Text style={[styles.emptyText, { marginBottom: 24 }]}>Inga klagomål. 🎉</Text>
+          ) : (
+            complaints.map(c => {
+              const cat = CATEGORIES.find(cat => cat.id === c.category_id);
+              const date = new Date(c.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+              return (
+                <View key={c.id} style={styles.complaintCard}>
+                  <View style={styles.complaintHeader}>
+                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
+                      <Text style={[styles.catBadgeText, { color: cat?.color }]}>
+                        {cat?.icon} {cat?.name ?? c.category_id}
+                      </Text>
+                    </View>
+                    <Text style={styles.complaintMeta}>{c.complained_username} · {date}</Text>
+                  </View>
+                  <Text style={styles.complaintQuestion} numberOfLines={3}>{c.question_text}</Text>
+                  <View style={styles.complaintMsgBox}>
+                    <Text style={styles.complaintMsg}>"{c.message}"</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDismissComplaint(c)}
+                    style={styles.dismissBtn}
+                  >
+                    <Text style={styles.dismissBtnText}>Stäng ✓</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })
           )}
 
           {/* Question list */}
@@ -432,4 +483,57 @@ const styles = StyleSheet.create({
   deleteBtnText: { color: '#6050A0', fontSize: 15 },
   qText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold', marginBottom: 6, lineHeight: 20 },
   qAnswer: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 2 },
+  complaintCard: {
+    backgroundColor: '#1E1040',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FF5555' + '44',
+    gap: 10,
+  },
+  complaintHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  complaintMeta: {
+    color: '#6050A0',
+    fontSize: 11,
+    fontFamily: 'DMSans_400Regular',
+  },
+  complaintQuestion: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'DMSans_600SemiBold',
+    lineHeight: 19,
+  },
+  complaintMsgBox: {
+    backgroundColor: '#12082A',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#2A1A50',
+  },
+  complaintMsg: {
+    color: '#B0A8C8',
+    fontSize: 13,
+    fontFamily: 'DMSans_400Regular',
+    lineHeight: 19,
+    fontStyle: 'italic',
+  },
+  dismissBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#1A3A1A',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  dismissBtnText: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontFamily: 'DMSans_600SemiBold',
+  },
 });

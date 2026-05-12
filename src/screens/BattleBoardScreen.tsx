@@ -111,7 +111,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     const ct = battle.creator_turns.length;
     const ot = battle.opponent_turns.length;
     const roundNumber = Math.min(ct, ot) + 1;
-    navigation.navigate('BattlePickCategory', {
+    navigation.replace('BattlePickCategory', {
       battleId,
       code,
       role,
@@ -143,7 +143,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     const ct = current.creator_turns.length;
     const ot = current.opponent_turns.length;
     const roundNumber = Math.max(ct, ot);
-    navigation.navigate('BattleRound', {
+    navigation.replace('BattleRound', {
       battleId,
       code,
       role,
@@ -231,6 +231,24 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
         <Text style={styles.title}>⚔️  Battle</Text>
         <View style={styles.codePill}>
           <Text style={styles.codeText}>{code}</Text>
+        </View>
+      </View>
+
+      <View style={styles.scoreCard}>
+        <View style={styles.scoreCol}>
+          <Text style={styles.scoreName} numberOfLines={1}>{myName}</Text>
+          <Text style={[styles.scoreNum, styles.scoreNumMe]}>
+            {role === 'creator' ? state.creatorScore : state.opponentScore}
+          </Text>
+          <Text style={styles.scoreXP}>XP</Text>
+        </View>
+        <Text style={styles.scoreDash}>–</Text>
+        <View style={styles.scoreCol}>
+          <Text style={styles.scoreName} numberOfLines={1}>{theirName}</Text>
+          <Text style={styles.scoreNum}>
+            {role === 'creator' ? state.opponentScore : state.creatorScore}
+          </Text>
+          <Text style={styles.scoreXP}>XP</Text>
         </View>
       </View>
 

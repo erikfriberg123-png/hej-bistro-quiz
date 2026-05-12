@@ -15,6 +15,7 @@ import { useGameStore } from '../store/gameStore';
 import { getCategoryById } from '../data/categories';
 import { submitComplaint } from '../lib/submissions';
 import { ComplaintModal } from '../components/ComplaintModal';
+import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
@@ -25,8 +26,15 @@ export default function ResultScreen({ route, navigation }: Props) {
   const { startGame, questions } = useGameStore();
   const category = getCategoryById(categoryId);
   const [displayScore, setDisplayScore] = useState(0);
+  const [celebrationEffects, setCelebrationEffects] = useState<EffectType[]>([]);
   const [complainedIds, setComplainedIds] = useState<Set<string>>(new Set());
   const [complaintTarget, setComplaintTarget] = useState<{ id: string; question: string; category: string } | null>(null);
+
+  useEffect(() => {
+    // Pick 3 random effects for the end-of-round celebration
+    const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
+    setCelebrationEffects([...all].sort(() => Math.random() - 0.5).slice(0, 3));
+  }, []);
 
   useEffect(() => {
     const target = totalScore;
@@ -155,6 +163,7 @@ export default function ResultScreen({ route, navigation }: Props) {
         )}
       </ScrollView>
 
+      <CelebrationOverlay effects={celebrationEffects} />
       <ComplaintModal
         visible={complaintTarget !== null}
         questionText={complaintTarget?.question ?? ''}

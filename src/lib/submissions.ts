@@ -1,6 +1,16 @@
 import { supabase } from './supabase';
 import type { CategoryId, Difficulty } from '../types';
 
+export interface Complaint {
+  id: string;
+  question_id: string;
+  question_text: string;
+  category_id: string;
+  message: string;
+  complained_username: string;
+  created_at: string;
+}
+
 export interface QuestionSubmission {
   category: CategoryId;
   question: string;
@@ -58,4 +68,18 @@ export async function submitComplaint(
   });
 
   return error ? { error: error.message } : {};
+}
+
+export async function getComplaints(): Promise<Complaint[]> {
+  const { data, error } = await supabase
+    .from('question_complaints')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Complaint[];
+}
+
+export async function dismissComplaint(id: string): Promise<void> {
+  const { error } = await supabase.from('question_complaints').delete().eq('id', id);
+  if (error) throw error;
 }
