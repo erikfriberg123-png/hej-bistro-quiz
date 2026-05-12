@@ -26,6 +26,7 @@ import {
 } from '../lib/remoteQuestions';
 import { Complaint, getComplaints, dismissComplaint } from '../lib/submissions';
 import { getQuestionStats, getBattlesPerDay, QuestionStat, DailyBattleStat } from '../lib/stats';
+import { supabase } from '../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
@@ -43,7 +44,7 @@ const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 export default function AdminScreen({ navigation }: Props) {
   const { loadRemoteQuestions } = useGameStore();
 
-  const [adminTab, setAdminTab] = useState<'questions' | 'stats'>('questions');
+  const [adminTab, setAdminTab] = useState<'questions' | 'stats' | 'daily'>('questions');
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -53,6 +54,11 @@ export default function AdminScreen({ navigation }: Props) {
   const [questionStats, setQuestionStats] = useState<QuestionStat[]>([]);
   const [battleStats, setBattleStats] = useState<DailyBattleStat[]>([]);
   const [loadingStats, setLoadingStats] = useState(false);
+
+  interface DailyEntry { id: string; username: string; score: number; correct: number; total: number; created_at: string }
+  const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
+  const [loadingDaily, setLoadingDaily] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   // Bulk import state
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -102,10 +108,60 @@ export default function AdminScreen({ navigation }: Props) {
     }
   }, []);
 
+  const todayParis = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+
+  const loadDaily = useCallback(async () => {
+    setLoadingDaily(true);
+    try {
+      const { data, error } = await supabase
+        .from('daily_scores')
+        .select('id, username, score, correct, total, created_at')
+        .eq('date', todayParis)
+        .order('score', { ascending: false });
+      if (error) throw error;
+      setDailyEntries((data ?? []) as DailyEntry[]);
+    } catch {
+      Alert.alert('Fel', 'Kunde inte hämta dagliga speldata.');
+    } finally {
+      setLoadingDaily(false);
+    }
+  }, [todayParis]);
+
+  const handleResetDaily = () => {
+    const doReset = async () => {
+      setResetting(true);
+      try {
+        const { error } = await supabase
+          .from('daily_scores')
+          .delete()
+          .eq('date', todayParis);
+        if (error) throw error;
+        setDailyEntries([]);
+        Alert.alert('Återställt ✓', `Alla speldata för ${todayParis} är borttagna. Spelare kan nu spela om.`);
+      } catch {
+        Alert.alert('Fel', 'Kunde inte återställa.');
+      } finally {
+        setResetting(false);
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Återställ dagens quiz (${todayParis})?\n\nDetta tar bort alla spelresultat för idag från databasen.`)) doReset();
+      return;
+    }
+    Alert.alert(
+      'Återställ dagligt quiz',
+      `Ta bort alla resultat för ${todayParis}? Spelare kan då spela om.`,
+      [{ text: 'Avbryt', style: 'cancel' }, { text: 'Återställ', style: 'destructive', onPress: doReset }],
+    );
+  };
+
   useEffect(() => { reload(); }, []);
 
   useEffect(() => {
     if (adminTab === 'stats') loadStats();
+    if (adminTab === 'daily') loadDaily();
   }, [adminTab]);
 
   const updateAnswer = (i: number, v: string) => {
@@ -272,21 +328,66 @@ export default function AdminScreen({ navigation }: Props) {
 
       {/* Tab bar */}
       <View style={styles.tabBar}>
-        {(['questions', 'stats'] as const).map(tab => (
+        {(['questions', 'stats', 'daily'] as const).map(tab => (
           <TouchableOpacity
             key={tab}
             onPress={() => setAdminTab(tab)}
             style={[styles.tabBtn, adminTab === tab && styles.tabBtnActive]}
           >
             <Text style={[styles.tabBtnText, adminTab === tab && styles.tabBtnTextActive]}>
-              {tab === 'questions' ? 'Frågor' : 'Statistik'}
+              {tab === 'questions' ? 'Frågor' : tab === 'stats' ? 'Statistik' : 'Daglig'}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {adminTab === 'stats' ? (
+        {adminTab === 'daily' ? (
+          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Dagligt quiz — {todayParis}</Text>
+
+            {/* Reset button */}
+            <TouchableOpacity
+              onPress={handleResetDaily}
+              style={[styles.resetDailyBtn, resetting && styles.disabled]}
+              disabled={resetting}
+            >
+              {resetting
+                ? <ActivityIndicator color="#FFFFFF" />
+                : <Text style={styles.resetDailyBtnText}>🔄  Återställ dagens quiz</Text>
+              }
+            </TouchableOpacity>
+            <Text style={styles.resetDailyHint}>
+              Tar bort alla spelresultat för idag ur databasen — spelare kan sedan spela om.
+              Obs: spelaren behöver även rensa sin webbläsares localStorage för daily.quizine.se.
+            </Text>
+
+            {/* Refresh */}
+            <TouchableOpacity onPress={loadDaily} style={styles.refreshBtn}>
+              <Text style={styles.refreshBtnText}>↻  Uppdatera</Text>
+            </TouchableOpacity>
+
+            {/* Today's players */}
+            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+              Spelade idag ({dailyEntries.length} st)
+            </Text>
+
+            {loadingDaily ? (
+              <ActivityIndicator color="#9B5DE5" style={{ marginTop: 16 }} />
+            ) : dailyEntries.length === 0 ? (
+              <Text style={styles.emptyText}>Ingen har spelat ännu idag.</Text>
+            ) : (
+              dailyEntries.map((entry, i) => (
+                <View key={entry.id} style={styles.dailyEntryRow}>
+                  <Text style={styles.dailyRank}>#{i + 1}</Text>
+                  <Text style={styles.dailyName} numberOfLines={1}>{entry.username}</Text>
+                  <Text style={styles.dailyCorrect}>{entry.correct}/{entry.total}</Text>
+                  <Text style={styles.dailyScore}>{entry.score} p</Text>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        ) : adminTab === 'stats' ? (
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             {loadingStats ? (
               <ActivityIndicator color="#9B5DE5" style={{ marginTop: 40 }} />
@@ -1024,5 +1125,76 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 18,
+  },
+  resetDailyBtn: {
+    backgroundColor: '#C0392B',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    marginBottom: 10,
+  },
+  resetDailyBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: 'DMSans_700Bold',
+  },
+  resetDailyHint: {
+    color: '#6050A0',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  refreshBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#1E1040',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3D2870',
+  },
+  refreshBtnText: {
+    color: '#9B5DE5',
+    fontSize: 13,
+    fontFamily: 'DMSans_600SemiBold',
+  },
+  dailyEntryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E1040',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+    gap: 8,
+  },
+  dailyRank: {
+    color: '#6050A0',
+    fontSize: 12,
+    fontFamily: 'DMSans_700Bold',
+    width: 28,
+  },
+  dailyName: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'DMSans_500Medium',
+    flex: 1,
+  },
+  dailyCorrect: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    width: 36,
+    textAlign: 'center',
+  },
+  dailyScore: {
+    color: '#9B5DE5',
+    fontSize: 13,
+    fontFamily: 'DMSans_700Bold',
+    width: 44,
+    textAlign: 'right',
   },
 });
