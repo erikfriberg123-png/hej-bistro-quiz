@@ -24,6 +24,7 @@ import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { submitTurn, computeBattlePhase } from '../lib/battles';
 import { getUsername } from '../lib/scores';
+import { trackAttempt } from '../lib/stats';
 import { sendPushToUser } from '../lib/pushNotifications';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
@@ -181,6 +182,8 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     setPointsAwarded(0);
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
+    trackAttempt(currentQuestion.id, false, 'battle');
+
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
       origIdx === correct ? 'show-correct' : 'disabled',
@@ -245,6 +248,8 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       const correct = currentQuestion.correctIndex;
       const points = submitAnswer(actualIndex, timeRemaining);
       setPointsAwarded(points);
+
+      trackAttempt(currentQuestion.id, points > 0, 'battle');
 
       if (points > 0) {
         const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];

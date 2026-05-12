@@ -25,6 +25,7 @@ import {
   deleteRemoteQuestion,
 } from '../lib/remoteQuestions';
 import { Complaint, getComplaints, dismissComplaint } from '../lib/submissions';
+import { getQuestionStats, getBattlesPerDay, QuestionStat, DailyBattleStat } from '../lib/stats';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
@@ -42,10 +43,16 @@ const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 export default function AdminScreen({ navigation }: Props) {
   const { loadRemoteQuestions } = useGameStore();
 
+  const [adminTab, setAdminTab] = useState<'questions' | 'stats'>('questions');
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const [questionStats, setQuestionStats] = useState<QuestionStat[]>([]);
+  const [battleStats, setBattleStats] = useState<DailyBattleStat[]>([]);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   // Bulk import state
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -82,7 +89,24 @@ export default function AdminScreen({ navigation }: Props) {
     }
   }, []);
 
+  const loadStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      const [qs, bs] = await Promise.all([getQuestionStats(), getBattlesPerDay()]);
+      setQuestionStats(qs);
+      setBattleStats(bs);
+    } catch {
+      Alert.alert('Fel', 'Kunde inte hämta statistik.');
+    } finally {
+      setLoadingStats(false);
+    }
+  }, []);
+
   useEffect(() => { reload(); }, []);
+
+  useEffect(() => {
+    if (adminTab === 'stats') loadStats();
+  }, [adminTab]);
 
   const updateAnswer = (i: number, v: string) => {
     const next = [...answers] as [string, string, string, string];
@@ -246,7 +270,117 @@ export default function AdminScreen({ navigation }: Props) {
         <View style={{ width: 40 }} />
       </View>
 
+      {/* Tab bar */}
+      <View style={styles.tabBar}>
+        {(['questions', 'stats'] as const).map(tab => (
+          <TouchableOpacity
+            key={tab}
+            onPress={() => setAdminTab(tab)}
+            style={[styles.tabBtn, adminTab === tab && styles.tabBtnActive]}
+          >
+            <Text style={[styles.tabBtnText, adminTab === tab && styles.tabBtnTextActive]}>
+              {tab === 'questions' ? 'Frågor' : 'Statistik'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {adminTab === 'stats' ? (
+          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            {loadingStats ? (
+              <ActivityIndicator color="#9B5DE5" style={{ marginTop: 40 }} />
+            ) : (
+              <>
+                {/* Battle activity */}
+                <Text style={styles.sectionTitle}>Battles per dag (30 dagar)</Text>
+                {battleStats.length === 0 ? (
+                  <Text style={styles.emptyText}>Ingen data ännu.</Text>
+                ) : (
+                  battleStats.slice(0, 14).map(row => {
+                    const maxBattles = Math.max(...battleStats.map(r => r.battle_count));
+                    const barW = maxBattles > 0 ? Math.round((row.battle_count / maxBattles) * 100) : 0;
+                    return (
+                      <View key={row.day} style={styles.battleRow}>
+                        <Text style={styles.battleDay}>{row.day}</Text>
+                        <View style={styles.battleBarBg}>
+                          <View style={[styles.battleBarFill, { width: `${barW}%` as any }]} />
+                        </View>
+                        <Text style={styles.battleVal}>{row.battle_count}⚔ {row.player_count}👤</Text>
+                      </View>
+                    );
+                  })
+                )}
+
+                {/* Top 10 easiest */}
+                <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Top 10 lättaste frågorna</Text>
+                {questionStats.length === 0 ? (
+                  <Text style={styles.emptyText}>Minst 3 försök krävs per fråga.</Text>
+                ) : (
+                  [...questionStats]
+                    .sort((a, b) => b.correct_rate - a.correct_rate)
+                    .slice(0, 10)
+                    .map((stat, i) => {
+                      const q = questions.find(x => x.id === stat.question_id);
+                      const cat = q ? CATEGORIES.find(c => c.id === q.category) : undefined;
+                      return (
+                        <View key={stat.question_id} style={styles.statQCard}>
+                          <View style={styles.statQTop}>
+                            <Text style={styles.statQRank}>#{i + 1}</Text>
+                            <Text style={[styles.statQRate, { color: '#06D6A0' }]}>
+                              {Math.round(stat.correct_rate * 100)}% rätt
+                            </Text>
+                            <Text style={styles.statQTotal}>{stat.total} försök</Text>
+                            {cat && (
+                              <View style={[styles.catBadge, { backgroundColor: cat.color + '33' }]}>
+                                <Text style={[styles.catBadgeText, { color: cat.color }]}>{cat.icon}</Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.statQText} numberOfLines={2}>
+                            {q?.question ?? stat.question_id}
+                          </Text>
+                        </View>
+                      );
+                    })
+                )}
+
+                {/* Top 10 hardest */}
+                <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Top 10 svåraste frågorna</Text>
+                {questionStats.length === 0 ? (
+                  <Text style={styles.emptyText}>Minst 3 försök krävs per fråga.</Text>
+                ) : (
+                  [...questionStats]
+                    .sort((a, b) => a.correct_rate - b.correct_rate)
+                    .slice(0, 10)
+                    .map((stat, i) => {
+                      const q = questions.find(x => x.id === stat.question_id);
+                      const cat = q ? CATEGORIES.find(c => c.id === q.category) : undefined;
+                      return (
+                        <View key={stat.question_id} style={styles.statQCard}>
+                          <View style={styles.statQTop}>
+                            <Text style={styles.statQRank}>#{i + 1}</Text>
+                            <Text style={[styles.statQRate, { color: '#FF5555' }]}>
+                              {Math.round(stat.correct_rate * 100)}% rätt
+                            </Text>
+                            <Text style={styles.statQTotal}>{stat.total} försök</Text>
+                            {cat && (
+                              <View style={[styles.catBadge, { backgroundColor: cat.color + '33' }]}>
+                                <Text style={[styles.catBadgeText, { color: cat.color }]}>{cat.icon}</Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.statQText} numberOfLines={2}>
+                            {q?.question ?? stat.question_id}
+                          </Text>
+                        </View>
+                      );
+                    })
+                )}
+              </>
+            )}
+          </ScrollView>
+        ) : (
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
           {/* Stats */}
@@ -579,6 +713,7 @@ export default function AdminScreen({ navigation }: Props) {
             })
           )}
         </ScrollView>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -805,5 +940,89 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: '#1E1040',
+    borderRadius: 12,
+    padding: 3,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  tabBtnActive: { backgroundColor: '#9B5DE5' },
+  tabBtnText: { color: '#6050A0', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  tabBtnTextActive: { color: '#FFFFFF' },
+  battleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  battleDay: {
+    color: '#B0A8C8',
+    fontSize: 11,
+    fontFamily: 'DMSans_400Regular',
+    width: 80,
+  },
+  battleBarBg: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#2A1A50',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  battleBarFill: {
+    height: 8,
+    backgroundColor: '#9B5DE5',
+    borderRadius: 4,
+  },
+  battleVal: {
+    color: '#B0A8C8',
+    fontSize: 11,
+    fontFamily: 'DMSans_400Regular',
+    width: 80,
+    textAlign: 'right',
+  },
+  statQCard: {
+    backgroundColor: '#1E1040',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#2A1A50',
+  },
+  statQTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  statQRank: {
+    color: '#6050A0',
+    fontSize: 12,
+    fontFamily: 'DMSans_700Bold',
+    width: 28,
+  },
+  statQRate: {
+    fontSize: 13,
+    fontFamily: 'DMSans_700Bold',
+  },
+  statQTotal: {
+    color: '#6050A0',
+    fontSize: 11,
+    fontFamily: 'DMSans_400Regular',
+    flex: 1,
+  },
+  statQText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    lineHeight: 18,
   },
 });

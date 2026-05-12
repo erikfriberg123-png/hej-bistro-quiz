@@ -21,6 +21,7 @@ import Animated, {
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { submitScore, getUsername } from '../lib/scores';
+import { trackAttempt } from '../lib/stats';
 import { createChallenge, joinChallenge, getChallengeById } from '../lib/challenges';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
@@ -208,6 +209,8 @@ export default function GameScreen({ route, navigation }: Props) {
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
+      trackAttempt(currentQuestion.id, points > 0, 'game');
+
       const newStates: AnswerState[] = shuffledIndices.map((origIdx, dispIdx) => {
         if (origIdx === correct) return 'show-correct';
         if (dispIdx === displayIndex && origIdx !== correct) return 'wrong';
@@ -229,6 +232,8 @@ export default function GameScreen({ route, navigation }: Props) {
     setPointsAwarded(0);
 
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
+    trackAttempt(currentQuestion.id, false, 'game');
 
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
