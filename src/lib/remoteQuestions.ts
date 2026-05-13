@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { Question, CategoryId, Difficulty } from '../types';
 
 const CACHE_KEY = 'remote-questions-v1';
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface Cache {
   questions: Question[];
