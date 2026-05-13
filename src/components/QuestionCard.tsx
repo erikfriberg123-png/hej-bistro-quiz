@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface Props {
@@ -18,7 +18,7 @@ export function QuestionCard({ question, questionNumber, total }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#2A1A62',
+    backgroundColor: '#112540',
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   counter: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 6,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   AppState,
@@ -294,7 +294,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.topBar}>
         <View style={styles.battleInfo}>
@@ -347,7 +347,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
               onPress={advance}
               style={[
                 styles.nextBtn,
-                { backgroundColor: category?.color ?? '#9B5DE5' },
+                { backgroundColor: category?.color ?? '#1D6FE8' },
                 submitting && styles.nextBtnDisabled,
               ]}
               activeOpacity={0.85}
@@ -371,10 +371,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   loading: {
     flex: 1,
-    backgroundColor: '#12082A',
+    backgroundColor: '#030C1A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -397,13 +397,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   roundPill: {
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   roundPillText: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 10,
     fontFamily: 'DMSans_700Bold',
     letterSpacing: 1,
@@ -414,12 +414,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   miniScoreMe: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 16,
     fontFamily: 'DMSans_700Bold',
   },
   miniScoreSep: {
-    color: '#3D2870',
+    color: '#1B3A5C',
     fontSize: 14,
     fontFamily: 'DMSans_700Bold',
   },

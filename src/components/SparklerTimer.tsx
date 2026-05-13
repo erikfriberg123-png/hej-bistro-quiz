@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: TRACK_W,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: TRACK_W / 2,
   },
   fill: {

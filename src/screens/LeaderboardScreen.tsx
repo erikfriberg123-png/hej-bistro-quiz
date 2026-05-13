@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -58,7 +58,7 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
         <Text style={[styles.username, isMe && styles.usernameMe]} numberOfLines={1}>
           {item.username}{isMe ? ' (du)' : ''}
         </Text>
-        <Text style={[styles.score, { color: category?.color ?? '#9B5DE5' }]}>
+        <Text style={[styles.score, { color: category?.color ?? '#1D6FE8' }]}>
           {item.best_score} XP
         </Text>
       </View>
@@ -67,7 +67,7 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -101,7 +101,7 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={category?.color ?? '#9B5DE5'} size="large" />
+          <ActivityIndicator color={category?.color ?? '#1D6FE8'} size="large" />
         </View>
       ) : error ? (
         <View style={styles.center}>
@@ -131,7 +131,7 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#B0A8C8', fontSize: 22 },
+  backText: { color: '#7B9EC4', fontSize: 22 },
   title: {
     color: '#FFFFFF',
     fontSize: 20,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   tabIcon: { fontSize: 14 },
   tabText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_500Medium',
   },
@@ -178,22 +178,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptySubtext: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
   },
   retryBtn: {
     marginTop: 16,
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  retryText: { color: '#1D6FE8', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   list: { paddingHorizontal: 16, paddingBottom: 24 },
   listHeader: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -211,11 +211,11 @@ const styles = StyleSheet.create({
   },
   rowHighlight: {
     borderWidth: 1.5,
-    borderColor: '#9B5DE5',
+    borderColor: '#1D6FE8',
   },
   rank: {
     width: 36,
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 16,
     fontFamily: 'DMSans_700Bold',
   },
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'DMSans_500Medium',
   },
-  usernameMe: { color: '#9B5DE5', fontFamily: 'DMSans_700Bold' },
+  usernameMe: { color: '#1D6FE8', fontFamily: 'DMSans_700Bold' },
   score: {
     fontSize: 15,
     fontFamily: 'DMSans_700Bold',

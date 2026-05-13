@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -127,7 +127,7 @@ export default function FriendsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -146,12 +146,12 @@ export default function FriendsScreen({ navigation }: Props) {
             value={query}
             onChangeText={setQuery}
             placeholder="Sök efter smeknamn..."
-            placeholderTextColor="#6050A0"
+            placeholderTextColor="#254A72"
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
           />
-          {searching && <ActivityIndicator color="#9B5DE5" style={styles.searchSpinner} />}
+          {searching && <ActivityIndicator color="#1D6FE8" style={styles.searchSpinner} />}
         </View>
 
         {/* Search results */}
@@ -236,7 +236,7 @@ export default function FriendsScreen({ navigation }: Props) {
           </View>
         )}
 
-        {loading && <ActivityIndicator color="#9B5DE5" style={{ marginTop: 32 }} />}
+        {loading && <ActivityIndicator color="#1D6FE8" style={{ marginTop: 32 }} />}
 
       </ScrollView>
 
@@ -294,7 +294,7 @@ function UserRow({ username, right, isNew }: { username: string; right: React.Re
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -304,16 +304,16 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#B0A8C8', fontSize: 22 },
+  backText: { color: '#7B9EC4', fontSize: 22 },
   title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48, paddingTop: 8 },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
     marginBottom: 20,
   },
   searchInput: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   searchSpinner: { marginRight: 12 },
   section: { marginBottom: 24 },
   sectionLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   emptyHint: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#3D2870',
+    backgroundColor: '#1B3A5C',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
   },
   newTag: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 10,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.3,
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   userRowRight: { flexShrink: 0 },
   friendActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   btnAdd: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 7,
@@ -406,13 +406,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnRemoveText: { color: '#B0A8C8', fontSize: 14 },
+  btnRemoveText: { color: '#7B9EC4', fontSize: 14 },
   tagAccepted: { color: '#2EC4B6', fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  tagPending: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_400Regular' },
+  tagPending: { color: '#7B9EC4', fontSize: 13, fontFamily: 'DMSans_400Regular' },
   confirmOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -421,15 +421,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   confirmCard: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     padding: 24,
     width: '100%',
     borderWidth: 1,
-    borderColor: '#2A1860',
+    borderColor: '#0C1E35',
   },
   confirmText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 24,
@@ -446,13 +446,13 @@ const styles = StyleSheet.create({
   },
   confirmBtnNej: {
     flex: 1,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
   },
   confirmBtnNejText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 16,
     fontFamily: 'DMSans_600SemiBold',
   },

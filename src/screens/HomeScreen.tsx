@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -260,7 +260,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.header}>
@@ -472,7 +472,7 @@ export default function HomeScreen({ navigation }: Props) {
                   value={feedbackText}
                   onChangeText={v => { setFeedbackText(v); setFeedbackError(''); }}
                   placeholder="Skriv ditt meddelande..."
-                  placeholderTextColor="#6050A0"
+                  placeholderTextColor="#254A72"
                   multiline
                   maxLength={1000}
                 />
@@ -539,7 +539,7 @@ export default function HomeScreen({ navigation }: Props) {
                 value={inputName}
                 onChangeText={v => { setInputName(v); setUsernameError(''); }}
                 placeholder="Ditt smeknamn..."
-                placeholderTextColor="#6050A0"
+                placeholderTextColor="#254A72"
                 maxLength={20}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -595,7 +595,7 @@ export default function HomeScreen({ navigation }: Props) {
                         value={currentPw}
                         onChangeText={v => { setCurrentPw(v); setPwError(''); }}
                         placeholder="Nuvarande lösenord"
-                        placeholderTextColor="#6050A0"
+                        placeholderTextColor="#254A72"
                         secureTextEntry
                         autoCapitalize="none"
                       />
@@ -604,7 +604,7 @@ export default function HomeScreen({ navigation }: Props) {
                         value={newPw}
                         onChangeText={v => { setNewPw(v); setPwError(''); }}
                         placeholder="Nytt lösenord (minst 6 tecken)"
-                        placeholderTextColor="#6050A0"
+                        placeholderTextColor="#254A72"
                         secureTextEntry
                         autoCapitalize="none"
                       />
@@ -647,7 +647,7 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   scroll: { paddingHorizontal: 16, paddingBottom: 32 },
   header: {
     flexDirection: 'row',
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   profileBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
   },
   profileIcon: { fontSize: 14 },
   profileName: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_500Medium',
     flexShrink: 1,
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   subtitle: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
   },
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
   },
   leaderboardIcon: { fontSize: 18 },
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   streakBanner: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
   },
   streakText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
   sectionTitle: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -796,13 +796,13 @@ const styles = StyleSheet.create({
   modeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 18,
     padding: 20,
     marginBottom: 14,
     gap: 14,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   modeCardBattle: {
     backgroundColor: '#0D2A2A',
@@ -816,13 +816,13 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   modeCardSub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 18,
   },
   modeCardArrow: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 20,
     fontFamily: 'DMSans_700Bold',
   },
@@ -847,7 +847,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backModeBtnText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -855,13 +855,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingVertical: 14,
     marginTop: 16,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   createBtnIcon: { fontSize: 16 },
   createBtnText: {
@@ -871,9 +871,9 @@ const styles = StyleSheet.create({
   },
   helpLink: { alignItems: 'center', marginTop: 12, paddingVertical: 12 },
   adminBtn: { alignItems: 'center', paddingVertical: 8, marginBottom: 8 },
-  adminBtnText: { color: '#3D2870', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  adminBtnText: { color: '#1B3A5C', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   helpText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: 12,
     right: 12,
-    backgroundColor: '#1A1240',
+    backgroundColor: '#0C1E35',
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -906,7 +906,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   turnToastSub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginTop: 2,
@@ -922,7 +922,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 28,
@@ -934,7 +934,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalBody: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 24,
@@ -951,7 +951,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -960,19 +960,19 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   inputError: {
-    borderColor: '#FF5555',
+    borderColor: '#FF4757',
   },
   usernameError: {
-    color: '#FF5555',
+    color: '#FF4757',
     fontSize: 13,
     fontFamily: 'DMSans_500Medium',
     marginBottom: 12,
   },
   modalBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
@@ -981,11 +981,11 @@ const styles = StyleSheet.create({
   modalBtnDisabled: { opacity: 0.5 },
   modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
-  cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  cancelText: { color: '#7B9EC4', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   changePwBtn: { alignItems: 'center', paddingVertical: 8 },
-  changePwText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  changePwText: { color: '#7B9EC4', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   logoutBtn: { alignItems: 'center', paddingVertical: 8 },
-  logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  logoutText: { color: '#FF4757', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   pwSuccessText: {
     color: '#4CAF50',
     fontSize: 15,
@@ -1005,11 +1005,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#2A1A50',
+    borderTopColor: '#112540',
     marginTop: 4,
     gap: 8,
   },
-  friendsBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  friendsBtnText: { color: '#7B9EC4', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   friendsBadge: {
     backgroundColor: '#FF3B30',
     borderRadius: 9,

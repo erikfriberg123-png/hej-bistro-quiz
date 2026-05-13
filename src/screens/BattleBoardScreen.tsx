@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -36,7 +36,7 @@ function RoundResultCard({ correct, total }: { correct: number; total: number })
 
 const roundCardStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -44,10 +44,10 @@ const roundCardStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#9B5DE5',
+    borderColor: '#1D6FE8',
   },
   stars: { fontSize: 20, letterSpacing: 4 },
-  text: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_400Regular' },
+  text: { color: '#7B9EC4', fontSize: 14, fontFamily: 'DMSans_400Regular' },
   highlight: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
 });
 
@@ -196,7 +196,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color="#9B5DE5" size="large" />
+        <ActivityIndicator color="#1D6FE8" size="large" />
       </View>
     );
   }
@@ -222,7 +222,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.homeBtn}>
@@ -357,7 +357,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
                 <Text style={styles.ctaTitle}>Väntar på motståndare ⏳</Text>
                 <Text style={styles.ctaSub}>
                   Dela koden{' '}
-                  <Text style={{ color: '#9B5DE5', fontFamily: 'DMSans_700Bold' }}>{code}</Text>
+                  <Text style={{ color: '#1D6FE8', fontFamily: 'DMSans_700Bold' }}>{code}</Text>
                   {' '}med din motståndare.
                 </Text>
               </View>
@@ -493,15 +493,15 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   centered: {
     flex: 1,
-    backgroundColor: '#12082A',
+    backgroundColor: '#030C1A',
     alignItems: 'center',
     justifyContent: 'center',
   },
   errorText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 16,
@@ -509,10 +509,10 @@ const styles = StyleSheet.create({
   retryBtn: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 12,
   },
-  retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  retryText: { color: '#1D6FE8', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -522,10 +522,10 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   homeBtn: { padding: 8, minWidth: 48 },
-  homeBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  homeBtnText: { color: '#7B9EC4', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   title: { color: '#FFFFFF', fontSize: 18, fontFamily: 'DMSans_700Bold' },
   codePill: {
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   codeText: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 13,
     fontFamily: 'DMSans_700Bold',
     letterSpacing: 2,
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   scoreCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     paddingVertical: 20,
     paddingHorizontal: 16,
@@ -551,14 +551,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   scoreCol: { flex: 1, alignItems: 'center', gap: 2 },
-  scoreName: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  scoreName: { color: '#7B9EC4', fontSize: 12, fontFamily: 'DMSans_500Medium' },
   scoreNum: { color: '#FFFFFF', fontSize: 40, fontFamily: 'DMSans_800ExtraBold' },
-  scoreNumMe: { color: '#9B5DE5' },
-  scoreXP: { color: '#6050A0', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
-  scoreDash: { color: '#3D2870', fontSize: 18, fontFamily: 'DMSans_800ExtraBold' },
+  scoreNumMe: { color: '#1D6FE8' },
+  scoreXP: { color: '#254A72', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
+  scoreDash: { color: '#1B3A5C', fontSize: 18, fontFamily: 'DMSans_800ExtraBold' },
   section: { marginBottom: 24 },
   sectionLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
   roundRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -576,22 +576,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   roundNum: {
-    color: '#3D2870',
+    color: '#1B3A5C',
     fontSize: 12,
     fontFamily: 'DMSans_700Bold',
     width: 24,
   },
   roundHalf: { flex: 1 },
-  roundCat: { color: '#B0A8C8', fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  roundCat: { color: '#7B9EC4', fontSize: 11, fontFamily: 'DMSans_400Regular' },
   roundScore: { color: '#FFFFFF', fontSize: 14, fontFamily: 'DMSans_700Bold' },
-  roundPending: { color: '#3D2870', fontSize: 18, fontFamily: 'DMSans_700Bold' },
+  roundPending: { color: '#1B3A5C', fontSize: 18, fontFamily: 'DMSans_700Bold' },
   roundDivider: {
     width: 1,
     height: 32,
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
   },
   ctaBox: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
   },
   ctaBoxChallenge: {
     borderWidth: 1.5,
-    borderColor: '#9B5DE5',
+    borderColor: '#1D6FE8',
   },
   ctaChallengeFrom: {
     color: '#FFFFFF',
@@ -645,14 +645,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ctaSub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
   primaryBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 14,
     paddingVertical: 14,
     width: '100%',
@@ -662,19 +662,19 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   refreshBtn: {
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
     borderRadius: 14,
     paddingVertical: 12,
     width: '100%',
     alignItems: 'center',
     marginTop: 4,
   },
-  refreshBtnText: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_500Medium' },
+  refreshBtnText: { color: '#7B9EC4', fontSize: 15, fontFamily: 'DMSans_500Medium' },
   forfeitBtn: {
     alignItems: 'center',
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#1E1040',
+    borderTopColor: '#0C1E35',
   },
   forfeitText: {
     color: '#6B4A6B',
@@ -684,13 +684,13 @@ const styles = StyleSheet.create({
   },
   forfeitConfirmBox: {
     borderTopWidth: 1,
-    borderTopColor: '#1E1040',
+    borderTopColor: '#0C1E35',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 10,
   },
   forfeitConfirmLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -703,11 +703,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     alignItems: 'center',
   },
   forfeitCancelText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_600SemiBold',
   },
@@ -771,7 +771,7 @@ const resultCards = StyleSheet.create({
     color: '#FF8A80',
   },
   chevron: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 10,
     marginTop: 4,
   },
@@ -779,11 +779,11 @@ const resultCards = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#2A1A50',
+    borderTopColor: '#112540',
     gap: 8,
   },
   correctLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.5,
@@ -797,13 +797,13 @@ const resultCards = StyleSheet.create({
   },
   complainBtn: {
     marginTop: 4,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
   complainBtnText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },

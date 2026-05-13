@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -36,7 +36,7 @@ export default function BattlePickCategoryScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.topBar}>
         <View style={styles.roundPill}>
@@ -84,7 +84,7 @@ export default function BattlePickCategoryScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   topBar: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -93,13 +93,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   roundPill: {
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 6,
   },
   roundPillText: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 11,
     fontFamily: 'DMSans_700Bold',
     letterSpacing: 1.5,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   scoreName: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_500Medium',
   },
@@ -130,10 +130,10 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_800ExtraBold',
   },
   scoreNumMe: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
   },
   scoreDash: {
-    color: '#3D2870',
+    color: '#1B3A5C',
     fontSize: 20,
     fontFamily: 'DMSans_700Bold',
   },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '47%',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 18,
     borderWidth: 2,
     padding: 16,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   cardDesc: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 16,

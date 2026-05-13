@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -140,7 +140,7 @@ export default function AuthScreen() {
   if (awaitingConfirm) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+        <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>📧</Text>
           <Text style={styles.confirmTitle}>Kontrollera din e-post</Text>
@@ -163,7 +163,7 @@ export default function AuthScreen() {
   if (mode === 'reset' && resetSent) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+        <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>🔑</Text>
           <Text style={styles.confirmTitle}>Länk skickad!</Text>
@@ -185,7 +185,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
       <KeyboardAvoidingView
         style={styles.kav}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -214,7 +214,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor="#254A72"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -259,7 +259,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor="#254A72"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -270,7 +270,7 @@ export default function AuthScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Lösenord"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor="#254A72"
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={canSubmit ? handleSubmit : undefined}
@@ -344,7 +344,7 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   kav: { flex: 1 },
   scroll: {
     flexGrow: 1,
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagline: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     padding: 4,
     marginBottom: 24,
@@ -381,15 +381,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 11,
   },
-  tabActive: { backgroundColor: '#9B5DE5' },
+  tabActive: { backgroundColor: '#1D6FE8' },
   tabText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   input: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   errorText: {
     color: '#FF6B6B',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   submitBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -431,10 +431,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#3D2870',
+    backgroundColor: '#1B3A5C',
   },
   dividerText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
   },
@@ -458,15 +458,15 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#6050A0',
+    borderColor: '#254A72',
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   checkboxChecked: {
-    backgroundColor: '#9B5DE5',
-    borderColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
+    borderColor: '#1D6FE8',
   },
   checkboxMark: {
     color: '#FFFFFF',
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   checkboxLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
   },
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   forgotText: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   resetBackText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   resetBody: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   confirmBody: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -536,13 +536,13 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_600SemiBold',
   },
   backBtn: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 32,
   },
   backText: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },

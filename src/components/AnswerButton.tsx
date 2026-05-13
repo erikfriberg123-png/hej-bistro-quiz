@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 
 export type AnswerState = 'default' | 'correct' | 'wrong' | 'show-correct' | 'disabled';
@@ -21,21 +21,21 @@ export function AnswerButton({ text, state, onPress, index, compact }: Props) {
       ? '#4CAF50'
       : state === 'wrong'
       ? '#F44336'
-      : '#3D2870';
+      : '#1B3A5C';
 
   const bgColor =
     state === 'correct' || state === 'show-correct'
       ? 'rgba(76,175,80,0.18)'
       : state === 'wrong'
       ? 'rgba(244,67,54,0.18)'
-      : '#1E1040';
+      : '#0C1E35';
 
   const labelBg =
     state === 'correct' || state === 'show-correct'
       ? '#4CAF50'
       : state === 'wrong'
       ? '#F44336'
-      : '#3D2870';
+      : '#1B3A5C';
 
   return (
     <TouchableOpacity
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   dimmed: {
-    color: '#7060A0',
+    color: '#1B3A5C',
   },
 });

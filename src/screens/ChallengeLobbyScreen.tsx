@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -305,7 +305,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -410,7 +410,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
               value={code}
               onChangeText={v => setCode(v.toUpperCase())}
               placeholder="XXXXXX"
-              placeholderTextColor="#6050A0"
+              placeholderTextColor="#254A72"
               autoCapitalize="characters"
               maxLength={6}
               autoCorrect={false}
@@ -501,7 +501,7 @@ function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => 
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -511,12 +511,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#B0A8C8', fontSize: 22 },
+  backText: { color: '#7B9EC4', fontSize: 22 },
   title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   tabs: {
     flexDirection: 'row',
     marginHorizontal: 16,
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     padding: 4,
     marginBottom: 16,
@@ -527,16 +527,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: '#9B5DE5' },
+  tabActive: { backgroundColor: '#1D6FE8' },
   tabText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48 },
   panel: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 16,
     padding: 20,
     gap: 16,
@@ -548,14 +548,14 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   panelSub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
     marginTop: -8,
   },
   subLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.2,
@@ -564,20 +564,20 @@ const styles = StyleSheet.create({
   friendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   friendRowDim: { opacity: 0.45 },
   friendAvatarCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
   },
   challengeBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -607,20 +607,20 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   addFriendsBtn: {
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   addFriendsBtnText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
   actionBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -650,16 +650,16 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#2A1860',
+    backgroundColor: '#0C1E35',
   },
   orText: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
   },
   codeInput: {
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -667,13 +667,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'DMSans_700Bold',
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
     textAlign: 'center',
     letterSpacing: 8,
   },
   section: { marginBottom: 24 },
   sectionLabel: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -683,13 +683,13 @@ const styles = StyleSheet.create({
   battleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#2A1860',
+    borderColor: '#0C1E35',
     gap: 12,
   },
   battleCardLeft: { flex: 1 },
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   battleCardMeta: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
   },
@@ -710,13 +710,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   battleCardCode: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 12,
     fontFamily: 'DMSans_700Bold',
     letterSpacing: 2,
   },
   battleCardArrow: {
-    color: '#9B5DE5',
+    color: '#1D6FE8',
     fontSize: 18,
     fontFamily: 'DMSans_600SemiBold',
   },
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   challengeCardCode: {
-    color: '#6050A0',
+    color: '#254A72',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
   },
@@ -748,13 +748,13 @@ const styles = StyleSheet.create({
   },
   declineBtn: {
     flex: 1,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
   declineBtnText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },

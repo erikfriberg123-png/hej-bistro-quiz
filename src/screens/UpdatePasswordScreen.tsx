@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -39,7 +39,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
       <View style={styles.container}>
         {done ? (
           <>
@@ -59,7 +59,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
               value={password}
               onChangeText={setPassword}
               placeholder="Nytt lösenord"
-              placeholderTextColor="#6050A0"
+              placeholderTextColor="#254A72"
               secureTextEntry
               autoFocus
               returnKeyType="done"
@@ -84,7 +84,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: '#030C1A' },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   sub: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
   },
   input: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
   },
   error: {
     color: '#FF6B6B',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
   },
   btn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',

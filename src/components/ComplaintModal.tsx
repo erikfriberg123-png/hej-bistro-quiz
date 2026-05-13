@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -54,7 +54,7 @@ export function ComplaintModal({ visible, questionText, onClose, onSubmit }: Pro
           <TextInput
             style={styles.input}
             placeholder="T.ex. Fel svar, felaktig stavning..."
-            placeholderTextColor="#6050A0"
+            placeholderTextColor="#254A72"
             value={message}
             onChangeText={setMessage}
             multiline
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sheet: {
-    backgroundColor: '#1E1040',
+    backgroundColor: '#0C1E35',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -107,28 +107,28 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   questionBox: {
-    backgroundColor: '#12082A',
+    backgroundColor: '#030C1A',
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#2A1A50',
+    borderColor: '#112540',
   },
   questionText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 20,
   },
   label: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },
   input: {
-    backgroundColor: '#12082A',
+    backgroundColor: '#030C1A',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: '#1B3A5C',
     color: '#FFFFFF',
     fontFamily: 'DMSans_400Regular',
     fontSize: 14,
@@ -144,11 +144,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#2A1A50',
+    backgroundColor: '#112540',
     alignItems: 'center',
   },
   cancelText: {
-    color: '#B0A8C8',
+    color: '#7B9EC4',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#9B5DE5',
+    backgroundColor: '#1D6FE8',
     alignItems: 'center',
   },
   submitDisabled: {
