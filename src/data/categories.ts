@@ -1,4 +1,4 @@
-import { Category } from '../types';
+﻿import { Category } from '../types';
 
 export const CATEGORIES: Category[] = [
   {
@@ -82,7 +82,7 @@ export const CATEGORIES: Category[] = [
     id: 'service_pressure',
     name: 'Service Under Tryck',
     icon: '⚡',
-    color: '#FF4757',
+    color: '#FF5555',
     description: 'Hantera stress, rush-situationer och kriser under service',
   },
 ];

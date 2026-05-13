@@ -45,7 +45,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.container}>
         <Text style={styles.emoji}>{resultEmoji}</Text>
@@ -96,7 +96,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
                 <Text style={styles.playerLabel} numberOfLines={1}>
                   {challengerName ?? 'Motståndare'}
                 </Text>
-                <Text style={[styles.playerScore, { color: '#7B9EC4' }]}>
+                <Text style={[styles.playerScore, { color: '#B0A8C8' }]}>
                   {challengerScore ?? '?'}
                 </Text>
                 <Text style={styles.xpLabel}>XP</Text>
@@ -130,7 +130,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sub: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   codeLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 3,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   scoreLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_500Medium',
   },
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   scoreCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 16,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   playerLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_500Medium',
   },
@@ -214,17 +214,17 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_800ExtraBold',
   },
   xpLabel: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
   },
   vs: {
-    color: '#1B3A5C',
+    color: '#3D2870',
     fontSize: 16,
     fontFamily: 'DMSans_800ExtraBold',
   },
   pendingSub: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   ghostBtn: { paddingVertical: 10 },
   ghostBtnText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },

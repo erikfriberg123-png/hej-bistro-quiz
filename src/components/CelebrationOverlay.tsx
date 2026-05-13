@@ -93,7 +93,7 @@ const FW_COLORS = [
   '#FF6B6B', '#FFE66D', '#4ECDC4', '#A29BFE',
   '#FF9F43', '#96E6A1', '#F8A5C2', '#45AAF2',
   '#FC5C65', '#FD9644', '#FFDD59', '#26de81',
-  '#2bcbba', '#1D6FE8', '#FF6B35', '#f7b731',
+  '#2bcbba', '#9B5DE5', '#FF6B35', '#f7b731',
 ];
 
 function makeParticles(count: number, offset: number) {

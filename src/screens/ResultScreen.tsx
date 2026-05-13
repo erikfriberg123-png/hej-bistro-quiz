@@ -80,7 +80,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -121,7 +121,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 
         <TouchableOpacity
           onPress={handlePlayAgain}
-          style={[styles.btn, { backgroundColor: category?.color ?? '#1D6FE8' }]}
+          style={[styles.btn, { backgroundColor: category?.color ?? '#9B5DE5' }]}
         >
           <Text style={styles.btnText}>Spela igen</Text>
         </TouchableOpacity>
@@ -177,7 +177,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
   },
   container: {
     flexGrow: 1,
@@ -198,13 +198,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   newRecordText: {
-    color: '#030C1A',
+    color: '#12082A',
     fontSize: 14,
     fontFamily: 'DMSans_800ExtraBold',
     letterSpacing: 1,
   },
   scoreLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 2,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   statDivider: {
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   statValue: {
     color: '#FFFFFF',
@@ -240,19 +240,19 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   statLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginTop: 2,
   },
   prevHighscore: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 12,
   },
   tagline: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_800ExtraBold',
     letterSpacing: 1.5,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
     marginBottom: 12,
   },
   btnOutlineText: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   shareText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -296,12 +296,12 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 24,
     borderTopWidth: 1,
-    borderTopColor: '#112540',
+    borderTopColor: '#2A1A50',
     paddingTop: 16,
     gap: 10,
   },
   complainTitle: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 0.5,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   complainRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -324,13 +324,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   complainBtn: {
-    backgroundColor: '#1B3A5C',
+    backgroundColor: '#3D2870',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   complainBtnText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
   },

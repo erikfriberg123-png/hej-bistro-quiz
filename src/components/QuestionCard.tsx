@@ -18,7 +18,7 @@ export function QuestionCard({ question, questionNumber, total }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   counter: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 6,

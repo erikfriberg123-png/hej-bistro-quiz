@@ -84,7 +84,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -137,7 +137,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
             value={questionText}
             onChangeText={setQuestionText}
             placeholder="Skriv din fråga här..."
-            placeholderTextColor="#254A72"
+            placeholderTextColor="#6050A0"
             multiline
             maxLength={200}
           />
@@ -162,7 +162,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                 value={answer}
                 onChangeText={v => updateAnswer(i, v)}
                 placeholder={`Alternativ ${i + 1}`}
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 maxLength={100}
               />
             </View>
@@ -219,7 +219,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#7B9EC4', fontSize: 22 },
+  backText: { color: '#B0A8C8', fontSize: 22 },
   title: {
     color: '#FFFFFF',
     fontSize: 20,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   label: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sublabel: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 10,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   categoryPillIcon: { fontSize: 14 },
   categoryPillText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_500Medium',
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   input: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   questionInput: {
     minHeight: 90,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -331,12 +331,12 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   savedCard: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   savedCardHeader: {
     flexDirection: 'row',
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   deleteBtnText: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 16,
   },
   savedQuestion: {
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   savedAnswer: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 3,

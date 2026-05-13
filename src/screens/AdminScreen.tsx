@@ -316,7 +316,7 @@ export default function AdminScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -373,7 +373,7 @@ export default function AdminScreen({ navigation }: Props) {
             </Text>
 
             {loadingDaily ? (
-              <ActivityIndicator color="#1D6FE8" style={{ marginTop: 16 }} />
+              <ActivityIndicator color="#9B5DE5" style={{ marginTop: 16 }} />
             ) : dailyEntries.length === 0 ? (
               <Text style={styles.emptyText}>Ingen har spelat ännu idag.</Text>
             ) : (
@@ -390,7 +390,7 @@ export default function AdminScreen({ navigation }: Props) {
         ) : adminTab === 'stats' ? (
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             {loadingStats ? (
-              <ActivityIndicator color="#1D6FE8" style={{ marginTop: 40 }} />
+              <ActivityIndicator color="#9B5DE5" style={{ marginTop: 40 }} />
             ) : (
               <>
                 {/* Battle activity */}
@@ -461,7 +461,7 @@ export default function AdminScreen({ navigation }: Props) {
                         <View key={stat.question_id} style={styles.statQCard}>
                           <View style={styles.statQTop}>
                             <Text style={styles.statQRank}>#{i + 1}</Text>
-                            <Text style={[styles.statQRate, { color: '#FF4757' }]}>
+                            <Text style={[styles.statQRate, { color: '#FF5555' }]}>
                               {Math.round(stat.correct_rate * 100)}% rätt
                             </Text>
                             <Text style={styles.statQTotal}>{stat.total} försök</Text>
@@ -506,7 +506,7 @@ export default function AdminScreen({ navigation }: Props) {
               onPress={() => { setShowBulkImport(v => !v); setShowForm(false); }}
               style={[styles.addToggle, styles.addToggleHalf, showBulkImport && styles.addToggleBulkActive]}
             >
-              <Text style={[styles.addToggleText, showBulkImport && { color: '#FF6B2B' }]}>
+              <Text style={[styles.addToggleText, showBulkImport && { color: '#FF9A3C' }]}>
                 {showBulkImport ? '✕  Avbryt' : '📋  Massimport (JSON)'}
               </Text>
             </TouchableOpacity>
@@ -552,7 +552,7 @@ export default function AdminScreen({ navigation }: Props) {
                 value={questionText}
                 onChangeText={setQuestionText}
                 placeholder="Skriv din fråga här..."
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 multiline
                 maxLength={200}
               />
@@ -572,7 +572,7 @@ export default function AdminScreen({ navigation }: Props) {
                     value={answer}
                     onChangeText={v => updateAnswer(i, v)}
                     placeholder={`Alternativ ${i + 1}`}
-                    placeholderTextColor="#254A72"
+                    placeholderTextColor="#6050A0"
                     maxLength={100}
                   />
                 </View>
@@ -616,7 +616,7 @@ export default function AdminScreen({ navigation }: Props) {
                   <TouchableOpacity
                     key={d}
                     onPress={() => setBulkDifficulty(d)}
-                    style={[styles.diffChip, bulkDifficulty === d && { backgroundColor: '#FF6B2B' }]}
+                    style={[styles.diffChip, bulkDifficulty === d && { backgroundColor: '#FF9A3C' }]}
                   >
                     <Text style={[styles.diffText, bulkDifficulty === d && styles.diffTextActive]}>
                       {d === 'easy' ? 'Lätt' : d === 'medium' ? 'Medel' : 'Svår'}
@@ -632,7 +632,7 @@ export default function AdminScreen({ navigation }: Props) {
                 value={bulkText}
                 onChangeText={v => { setBulkText(v); setParsedBulk(null); setBulkError(''); }}
                 placeholder={'[\n  {\n    "question": "Din fråga?",\n    "answers": ["A","B","C","D"],\n    "correct": 0\n  }\n]'}
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 multiline
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -675,7 +675,7 @@ export default function AdminScreen({ navigation }: Props) {
                   {parsedBulk.some(p => p.valid) && (
                     <TouchableOpacity
                       onPress={handleBulkImport}
-                      style={[styles.saveBtn, { backgroundColor: '#FF6B2B' }, bulkImporting && styles.disabled]}
+                      style={[styles.saveBtn, { backgroundColor: '#FF9A3C' }, bulkImporting && styles.disabled]}
                       disabled={bulkImporting}
                     >
                       {bulkImporting
@@ -705,7 +705,7 @@ export default function AdminScreen({ navigation }: Props) {
               return (
                 <View key={c.id} style={styles.complaintCard}>
                   <View style={styles.complaintHeader}>
-                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#1D6FE8') + '33' }]}>
+                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
                       <Text style={[styles.catBadgeText, { color: cat?.color }]}>
                         {cat?.icon} {cat?.name ?? c.category_id}
                       </Text>
@@ -733,7 +733,7 @@ export default function AdminScreen({ navigation }: Props) {
             if (loadingList || pending.length === 0) return null;
             return (
               <>
-                <Text style={[styles.sectionTitle, { color: '#FF6B2B' }]}>
+                <Text style={[styles.sectionTitle, { color: '#FF9A3C' }]}>
                   Väntande granskning ({pending.length} st)
                 </Text>
                 {pending.map(q => {
@@ -741,7 +741,7 @@ export default function AdminScreen({ navigation }: Props) {
                   return (
                     <View key={q.id} style={[styles.qCard, styles.qCardPending]}>
                       <View style={styles.qCardTop}>
-                        <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#1D6FE8') + '33' }]}>
+                        <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
                           <Text style={[styles.catBadgeText, { color: cat?.color }]}>
                             {cat?.icon} {cat?.name}
                           </Text>
@@ -777,7 +777,7 @@ export default function AdminScreen({ navigation }: Props) {
           </Text>
 
           {loadingList ? (
-            <ActivityIndicator color="#1D6FE8" style={{ marginTop: 24 }} />
+            <ActivityIndicator color="#9B5DE5" style={{ marginTop: 24 }} />
           ) : questions.filter(q => q.active).length === 0 ? (
             <Text style={styles.emptyText}>Inga live-frågor ännu.</Text>
           ) : (
@@ -786,7 +786,7 @@ export default function AdminScreen({ navigation }: Props) {
               return (
                 <View key={q.id} style={styles.qCard}>
                   <View style={styles.qCardTop}>
-                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#1D6FE8') + '33' }]}>
+                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#9B5DE5') + '33' }]}>
                       <Text style={[styles.catBadgeText, { color: cat?.color }]}>
                         {cat?.icon} {cat?.name}
                       </Text>
@@ -821,7 +821,7 @@ export default function AdminScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -831,7 +831,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#7B9EC4', fontSize: 22 },
+  backText: { color: '#B0A8C8', fontSize: 22 },
   title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48, paddingTop: 8 },
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -848,25 +848,25 @@ const styles = StyleSheet.create({
   statEmoji: { fontSize: 13 },
   statCount: { fontSize: 14, fontFamily: 'DMSans_700Bold' },
   addToggle: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
-  addToggleActive: { borderColor: '#1D6FE8' },
-  addToggleText: { color: '#1D6FE8', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  addToggleActive: { borderColor: '#9B5DE5' },
+  addToggleText: { color: '#9B5DE5', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
   formCard: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
     gap: 4,
   },
   label: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -874,32 +874,32 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 12,
   },
-  sublabel: { color: '#254A72', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 8, marginTop: -4 },
+  sublabel: { color: '#6050A0', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 8, marginTop: -4 },
   catRow: { gap: 8, paddingBottom: 4 },
   catPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 7,
     gap: 5,
   },
   catPillIcon: { fontSize: 13 },
-  catPillText: { color: '#7B9EC4', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  catPillText: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_500Medium' },
   catPillTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
   diffRow: { flexDirection: 'row', gap: 8 },
   diffChip: {
     flex: 1,
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 10,
     paddingVertical: 8,
     alignItems: 'center',
   },
-  diffText: { color: '#7B9EC4', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  diffText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   diffTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
   input: {
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -907,13 +907,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   questionInput: { minHeight: 80, textAlignVertical: 'top' },
   answerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   radio: {
     width: 26, height: 26, borderRadius: 13,
-    borderWidth: 2, borderColor: '#1B3A5C',
+    borderWidth: 2, borderColor: '#3D2870',
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFFFFF' },
@@ -929,21 +929,21 @@ const styles = StyleSheet.create({
   saveBtnText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_700Bold' },
   disabled: { opacity: 0.5 },
   sectionTitle: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
   },
-  emptyText: { color: '#254A72', fontSize: 14, fontFamily: 'DMSans_400Regular', textAlign: 'center', marginTop: 12 },
+  emptyText: { color: '#6050A0', fontSize: 14, fontFamily: 'DMSans_400Regular', textAlign: 'center', marginTop: 12 },
   qCard: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   qCardInactive: { opacity: 0.45 },
   qCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
@@ -955,47 +955,47 @@ const styles = StyleSheet.create({
   toggleBtnOff: { backgroundColor: '#2A1A1A' },
   toggleBtnText: { fontSize: 11, fontFamily: 'DMSans_600SemiBold', color: '#FFFFFF' },
   deleteBtn: { padding: 4 },
-  deleteBtnText: { color: '#254A72', fontSize: 15 },
+  deleteBtnText: { color: '#6050A0', fontSize: 15 },
   qText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold', marginBottom: 6, lineHeight: 20 },
-  qAnswer: { color: '#7B9EC4', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 2 },
+  qAnswer: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_400Regular', marginBottom: 2 },
   toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   addToggleHalf: { flex: 1, marginBottom: 0 },
-  addToggleBulkActive: { borderColor: '#FF6B2B' },
+  addToggleBulkActive: { borderColor: '#FF9A3C' },
   bulkInput: { minHeight: 160, textAlignVertical: 'top', fontFamily: 'DMSans_400Regular' },
-  bulkError: { color: '#FF4757', fontSize: 13, fontFamily: 'DMSans_500Medium', marginTop: 6 },
+  bulkError: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium', marginTop: 6 },
   parseBtn: {
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#FF6B2B',
+    borderColor: '#FF9A3C',
   },
-  parseBtnText: { color: '#FF6B2B', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  parseBtnText: { color: '#FF9A3C', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   bulkPreviewCard: {
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
     borderRadius: 10,
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
-  bulkPreviewInvalid: { borderColor: '#FF4757' + '55' },
+  bulkPreviewInvalid: { borderColor: '#FF5555' + '55' },
   bulkPreviewQ: { color: '#FFFFFF', fontSize: 12, fontFamily: 'DMSans_600SemiBold', marginBottom: 4 },
-  bulkPreviewA: { color: '#7B9EC4', fontSize: 11, fontFamily: 'DMSans_400Regular' },
+  bulkPreviewA: { color: '#B0A8C8', fontSize: 11, fontFamily: 'DMSans_400Regular' },
   bulkPreviewCorrect: { color: '#06D6A0', fontFamily: 'DMSans_600SemiBold' },
-  bulkPreviewErr: { color: '#FF4757', fontSize: 12, fontFamily: 'DMSans_500Medium' },
-  qCardPending: { borderColor: '#FF6B2B' + '55', borderWidth: 1.5 },
+  bulkPreviewErr: { color: '#FF5555', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  qCardPending: { borderColor: '#FF9A3C' + '55', borderWidth: 1.5 },
   publishBtn: { backgroundColor: '#1A3A1A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   publishBtnText: { color: '#4CAF50', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
   complaintCard: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#FF4757' + '44',
+    borderColor: '#FF5555' + '44',
     gap: 10,
   },
   complaintHeader: {
@@ -1006,7 +1006,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   complaintMeta: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
   },
@@ -1017,14 +1017,14 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   complaintMsgBox: {
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   complaintMsg: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 19,
@@ -1046,7 +1046,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 12,
     padding: 3,
   },
@@ -1056,8 +1056,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  tabBtnActive: { backgroundColor: '#1D6FE8' },
-  tabBtnText: { color: '#254A72', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  tabBtnActive: { backgroundColor: '#9B5DE5' },
+  tabBtnText: { color: '#6050A0', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
   tabBtnTextActive: { color: '#FFFFFF' },
   battleRow: {
     flexDirection: 'row',
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   battleDay: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
     width: 80,
@@ -1074,29 +1074,29 @@ const styles = StyleSheet.create({
   battleBarBg: {
     flex: 1,
     height: 8,
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 4,
     overflow: 'hidden',
   },
   battleBarFill: {
     height: 8,
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 4,
   },
   battleVal: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
     width: 80,
     textAlign: 'right',
   },
   statQCard: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   statQTop: {
     flexDirection: 'row',
@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statQRank: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_700Bold',
     width: 28,
@@ -1115,7 +1115,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   statQTotal: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
     flex: 1,
@@ -1141,7 +1141,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   resetDailyHint: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 18,
@@ -1151,20 +1151,20 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   refreshBtnText: {
-    color: '#1D6FE8',
+    color: '#9B5DE5',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },
   dailyEntryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -1172,7 +1172,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dailyRank: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_700Bold',
     width: 28,
@@ -1184,14 +1184,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dailyCorrect: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     width: 36,
     textAlign: 'center',
   },
   dailyScore: {
-    color: '#1D6FE8',
+    color: '#9B5DE5',
     fontSize: 13,
     fontFamily: 'DMSans_700Bold',
     width: 44,

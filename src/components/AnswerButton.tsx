@@ -21,21 +21,21 @@ export function AnswerButton({ text, state, onPress, index, compact }: Props) {
       ? '#4CAF50'
       : state === 'wrong'
       ? '#F44336'
-      : '#1B3A5C';
+      : '#3D2870';
 
   const bgColor =
     state === 'correct' || state === 'show-correct'
       ? 'rgba(76,175,80,0.18)'
       : state === 'wrong'
       ? 'rgba(244,67,54,0.18)'
-      : '#0C1E35';
+      : '#1E1040';
 
   const labelBg =
     state === 'correct' || state === 'show-correct'
       ? '#4CAF50'
       : state === 'wrong'
       ? '#F44336'
-      : '#1B3A5C';
+      : '#3D2870';
 
   return (
     <TouchableOpacity
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   dimmed: {
-    color: '#1B3A5C',
+    color: '#3D2870',
   },
 });

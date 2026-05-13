@@ -140,7 +140,7 @@ export default function AuthScreen() {
   if (awaitingConfirm) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>📧</Text>
           <Text style={styles.confirmTitle}>Kontrollera din e-post</Text>
@@ -163,7 +163,7 @@ export default function AuthScreen() {
   if (mode === 'reset' && resetSent) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>🔑</Text>
           <Text style={styles.confirmTitle}>Länk skickad!</Text>
@@ -185,7 +185,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
       <KeyboardAvoidingView
         style={styles.kav}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -214,7 +214,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -259,7 +259,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -270,7 +270,7 @@ export default function AuthScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Lösenord"
-                placeholderTextColor="#254A72"
+                placeholderTextColor="#6050A0"
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={canSubmit ? handleSubmit : undefined}
@@ -344,7 +344,7 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   kav: { flex: 1 },
   scroll: {
     flexGrow: 1,
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagline: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     padding: 4,
     marginBottom: 24,
@@ -381,15 +381,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 11,
   },
-  tabActive: { backgroundColor: '#1D6FE8' },
+  tabActive: { backgroundColor: '#9B5DE5' },
   tabText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   input: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   errorText: {
     color: '#FF6B6B',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   submitBtn: {
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -431,10 +431,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#1B3A5C',
+    backgroundColor: '#3D2870',
   },
   dividerText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_400Regular',
   },
@@ -458,15 +458,15 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#254A72',
+    borderColor: '#6050A0',
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   checkboxChecked: {
-    backgroundColor: '#1D6FE8',
-    borderColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
+    borderColor: '#9B5DE5',
   },
   checkboxMark: {
     color: '#FFFFFF',
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   checkboxLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
   },
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   forgotText: {
-    color: '#1D6FE8',
+    color: '#9B5DE5',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   resetBackText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   resetBody: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   confirmBody: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -536,13 +536,13 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_600SemiBold',
   },
   backBtn: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 32,
   },
   backText: {
-    color: '#1D6FE8',
+    color: '#9B5DE5',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },

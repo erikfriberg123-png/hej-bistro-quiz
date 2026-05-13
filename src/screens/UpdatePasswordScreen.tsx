@@ -39,7 +39,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
       <View style={styles.container}>
         {done ? (
           <>
@@ -59,7 +59,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
               value={password}
               onChangeText={setPassword}
               placeholder="Nytt lösenord"
-              placeholderTextColor="#254A72"
+              placeholderTextColor="#6050A0"
               secureTextEntry
               autoFocus
               returnKeyType="done"
@@ -84,7 +84,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   sub: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
   },
   input: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'DMSans_400Regular',
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   error: {
     color: '#FF6B6B',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
   },
   btn: {
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',

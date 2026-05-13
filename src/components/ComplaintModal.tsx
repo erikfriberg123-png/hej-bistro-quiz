@@ -54,7 +54,7 @@ export function ComplaintModal({ visible, questionText, onClose, onSubmit }: Pro
           <TextInput
             style={styles.input}
             placeholder="T.ex. Fel svar, felaktig stavning..."
-            placeholderTextColor="#254A72"
+            placeholderTextColor="#6050A0"
             value={message}
             onChangeText={setMessage}
             multiline
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sheet: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -107,28 +107,28 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   questionBox: {
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#112540',
+    borderColor: '#2A1A50',
   },
   questionText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 20,
   },
   label: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },
   input: {
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
     color: '#FFFFFF',
     fontFamily: 'DMSans_400Regular',
     fontSize: 14,
@@ -144,11 +144,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     alignItems: 'center',
   },
   cancelText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     alignItems: 'center',
   },
   submitDisabled: {

@@ -30,7 +30,7 @@ const PAGES = [
     emoji: '👥',
     title: 'Lägg till\nvänner',
     body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar syns ni på varandras listor och kan utmana varandra.',
-    accent: '#1D6FE8',
+    accent: '#9B5DE5',
   },
   {
     emoji: '⚔️',
@@ -60,7 +60,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <TouchableOpacity onPress={finish} style={styles.skipBtn}>
         <Text style={styles.skipText}>Hoppa över</Text>
@@ -97,7 +97,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   skipBtn: {
     alignSelf: 'flex-end',
     paddingHorizontal: 20,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   skipText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_500Medium',
   },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   body: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 16,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#1B3A5C',
+    backgroundColor: '#3D2870',
   },
   footer: {
     paddingHorizontal: 24,

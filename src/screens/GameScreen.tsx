@@ -252,7 +252,7 @@ export default function GameScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitBtn}>
@@ -297,7 +297,7 @@ export default function GameScreen({ route, navigation }: Props) {
           >
             <TouchableOpacity
               onPress={advance}
-              style={[styles.nextBtn, { backgroundColor: category?.color ?? '#1D6FE8' }, isFinishing && styles.nextBtnDisabled]}
+              style={[styles.nextBtn, { backgroundColor: category?.color ?? '#9B5DE5' }, isFinishing && styles.nextBtnDisabled]}
               activeOpacity={0.85}
               disabled={isFinishing}
             >
@@ -315,10 +315,10 @@ export default function GameScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   loading: {
     flex: 1,
-    backgroundColor: '#030C1A',
+    backgroundColor: '#12082A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   exitBtn: { padding: 8 },
   exitText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 18,
     fontFamily: 'DMSans_600SemiBold',
   },

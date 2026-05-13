@@ -112,7 +112,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.container}>
         <Text style={styles.emoji}>{emoji}</Text>
@@ -122,7 +122,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
         <View style={styles.scoreCard}>
           <View style={styles.scoreCol}>
             <Text style={styles.playerName} numberOfLines={1}>{myName}</Text>
-            <Text style={[styles.playerScore, { color: '#1D6FE8' }]}>{myScore}</Text>
+            <Text style={[styles.playerScore, { color: '#9B5DE5' }]}>{myScore}</Text>
             <Text style={styles.xpLabel}>XP</Text>
           </View>
           <Text style={styles.vs}>VS</Text>
@@ -183,7 +183,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
             disabled={addingFriend}
           >
             {addingFriend ? (
-              <ActivityIndicator color="#1D6FE8" />
+              <ActivityIndicator color="#9B5DE5" />
             ) : (
               <Text style={styles.friendBtnText}>Lägg till {theirName} som vän  👋</Text>
             )}
@@ -217,7 +217,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sub: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     textAlign: 'center',
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   scoreCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 16,
@@ -252,23 +252,23 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   scoreCol: { flex: 1, alignItems: 'center', gap: 4 },
-  playerName: { color: '#7B9EC4', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  playerName: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   playerScore: {
     color: '#FFFFFF',
     fontSize: 42,
     fontFamily: 'DMSans_800ExtraBold',
   },
-  xpLabel: { color: '#254A72', fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
-  vs: { color: '#1B3A5C', fontSize: 16, fontFamily: 'DMSans_800ExtraBold' },
+  xpLabel: { color: '#6050A0', fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+  vs: { color: '#3D2870', fontSize: 16, fontFamily: 'DMSans_800ExtraBold' },
   rounds: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_500Medium',
     marginBottom: 16,
   },
   statsCard: {
     width: '100%',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statsTitle: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -295,20 +295,20 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: 'DMSans_800ExtraBold',
   },
-  statNumDraw: { color: '#254A72', fontSize: 24 },
+  statNumDraw: { color: '#6050A0', fontSize: 24 },
   statLabel: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 11,
     fontFamily: 'DMSans_500Medium',
     textAlign: 'center',
   },
   statsTotal: {
-    color: '#1B3A5C',
+    color: '#3D2870',
     fontSize: 11,
     fontFamily: 'DMSans_400Regular',
   },
   primaryBtn: {
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 14,
     paddingVertical: 15,
     width: '100%',
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   ghostBtn: { paddingVertical: 10 },
-  ghostBtnText: { color: '#7B9EC4', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  ghostBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
   friendBtn: {
     backgroundColor: 'transparent',
     borderRadius: 14,
@@ -328,11 +328,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     borderWidth: 1.5,
-    borderColor: '#1D6FE8',
+    borderColor: '#9B5DE5',
     minHeight: 50,
     justifyContent: 'center',
   },
-  friendBtnText: { color: '#1D6FE8', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  friendBtnText: { color: '#9B5DE5', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
   friendSentBadge: {
     width: '100%',
     alignItems: 'center',

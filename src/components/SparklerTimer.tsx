@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: TRACK_W,
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: TRACK_W / 2,
   },
   fill: {

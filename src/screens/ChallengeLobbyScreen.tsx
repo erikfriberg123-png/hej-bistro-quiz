@@ -305,7 +305,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#030C1A" />
+      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -410,7 +410,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
               value={code}
               onChangeText={v => setCode(v.toUpperCase())}
               placeholder="XXXXXX"
-              placeholderTextColor="#254A72"
+              placeholderTextColor="#6050A0"
               autoCapitalize="characters"
               maxLength={6}
               autoCorrect={false}
@@ -501,7 +501,7 @@ function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => 
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#030C1A' },
+  safe: { flex: 1, backgroundColor: '#12082A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -511,12 +511,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#7B9EC4', fontSize: 22 },
+  backText: { color: '#B0A8C8', fontSize: 22 },
   title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   tabs: {
     flexDirection: 'row',
     marginHorizontal: 16,
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     padding: 4,
     marginBottom: 16,
@@ -527,16 +527,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: '#1D6FE8' },
+  tabActive: { backgroundColor: '#9B5DE5' },
   tabText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_600SemiBold',
   },
   tabTextActive: { color: '#FFFFFF' },
   scroll: { paddingHorizontal: 16, paddingBottom: 48 },
   panel: {
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 16,
     padding: 20,
     gap: 16,
@@ -548,14 +548,14 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   panelSub: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 14,
     fontFamily: 'DMSans_400Regular',
     lineHeight: 22,
     marginTop: -8,
   },
   subLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.2,
@@ -564,20 +564,20 @@ const styles = StyleSheet.create({
   friendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   friendRowDim: { opacity: 0.45 },
   friendAvatarCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
   },
   challengeBtn: {
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -607,20 +607,20 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_700Bold',
   },
   addFriendsBtn: {
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
   },
   addFriendsBtnText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 15,
     fontFamily: 'DMSans_600SemiBold',
   },
   actionBtn: {
-    backgroundColor: '#1D6FE8',
+    backgroundColor: '#9B5DE5',
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -650,16 +650,16 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
   },
   orText: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
   },
   codeInput: {
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -667,13 +667,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'DMSans_700Bold',
     borderWidth: 1,
-    borderColor: '#1B3A5C',
+    borderColor: '#3D2870',
     textAlign: 'center',
     letterSpacing: 8,
   },
   section: { marginBottom: 24 },
   sectionLabel: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
     letterSpacing: 1.5,
@@ -683,13 +683,13 @@ const styles = StyleSheet.create({
   battleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0C1E35',
+    backgroundColor: '#1E1040',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#0C1E35',
+    borderColor: '#1E1040',
     gap: 12,
   },
   battleCardLeft: { flex: 1 },
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   battleCardMeta: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
   },
@@ -710,13 +710,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   battleCardCode: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_700Bold',
     letterSpacing: 2,
   },
   battleCardArrow: {
-    color: '#1D6FE8',
+    color: '#9B5DE5',
     fontSize: 18,
     fontFamily: 'DMSans_600SemiBold',
   },
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   challengeCardCode: {
-    color: '#254A72',
+    color: '#6050A0',
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
   },
@@ -748,13 +748,13 @@ const styles = StyleSheet.create({
   },
   declineBtn: {
     flex: 1,
-    backgroundColor: '#112540',
+    backgroundColor: '#2A1A50',
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
   declineBtnText: {
-    color: '#7B9EC4',
+    color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_600SemiBold',
   },
