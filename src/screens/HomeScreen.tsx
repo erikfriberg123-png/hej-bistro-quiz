@@ -24,6 +24,7 @@ import { checkIsAdmin } from '../lib/remoteQuestions';
 import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
+import { submitFeedback } from '../lib/feedback';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -50,6 +51,11 @@ export default function HomeScreen({ navigation }: Props) {
   const [pwSuccess, setPwSuccess] = useState(false);
   const [turnNotification, setTurnNotification] = useState<{ opponentName: string } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackSent, setFeedbackSent] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
   const prevMyTurnIdsRef = useRef<Set<string> | null>(null);
   const userIdRef = useRef<string | null>(null);
 
@@ -242,6 +248,16 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
 
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackSending(true);
+    setFeedbackError('');
+    const { error } = await submitFeedback(feedbackText, userId, username);
+    setFeedbackSending(false);
+    if (error) { setFeedbackError('Något gick fel. Försök igen.'); return; }
+    setFeedbackSent(true);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#12082A" />
@@ -368,11 +384,28 @@ export default function HomeScreen({ navigation }: Props) {
         )}
 
         <TouchableOpacity
+          onPress={() => navigation.navigate('Friends')}
+          style={styles.createBtn}
+        >
+          <Text style={styles.createBtnIcon}>👥</Text>
+          <Text style={styles.createBtnText}>Mina vänner</Text>
+          {pendingCount > 0 && (
+            <View style={styles.friendsBadge}>
+              <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => navigation.navigate('CreateQuestion')}
           style={styles.createBtn}
         >
           <Text style={styles.createBtnIcon}>✏️</Text>
           <Text style={styles.createBtnText}>Skapa egna frågor</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { setFeedbackText(''); setFeedbackSent(false); setFeedbackError(''); setFeedbackVisible(true); }} style={styles.helpLink}>
+          <Text style={styles.helpText}>Feedback</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.helpLink}>
@@ -415,6 +448,47 @@ export default function HomeScreen({ navigation }: Props) {
             <TouchableOpacity onPress={() => setHelpVisible(false)} style={styles.modalBtn}>
               <Text style={styles.modalBtnText}>Förstått!</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Feedback modal */}
+      <Modal visible={feedbackVisible} transparent animationType="slide" onRequestClose={() => setFeedbackVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Feedback</Text>
+            {feedbackSent ? (
+              <>
+                <Text style={styles.feedbackSuccess}>Tack för din feedback! 🙏</Text>
+                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.modalBtn}>
+                  <Text style={styles.modalBtnText}>Stäng</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalBody}>Har du förslag, hittat en bugg eller vill säga något? Vi läser allt!</Text>
+                <TextInput
+                  style={[styles.input, styles.feedbackInput]}
+                  value={feedbackText}
+                  onChangeText={v => { setFeedbackText(v); setFeedbackError(''); }}
+                  placeholder="Skriv ditt meddelande..."
+                  placeholderTextColor="#6050A0"
+                  multiline
+                  maxLength={1000}
+                />
+                {feedbackError ? <Text style={styles.usernameError}>{feedbackError}</Text> : null}
+                <TouchableOpacity
+                  onPress={handleFeedbackSubmit}
+                  style={[styles.modalBtn, (!feedbackText.trim() || feedbackSending) && styles.modalBtnDisabled]}
+                  disabled={!feedbackText.trim() || feedbackSending}
+                >
+                  <Text style={styles.modalBtnText}>{feedbackSending ? 'Skickar...' : 'Skicka'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.cancelBtn}>
+                  <Text style={styles.cancelText}>Avbryt</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -485,22 +559,6 @@ export default function HomeScreen({ navigation }: Props) {
 
               {!usernameRequired && !changePwVisible && (
                 <>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setProfileVisible(false);
-                      setChallengeAfterSave(false);
-                      navigation.navigate('Friends');
-                    }}
-                    style={styles.friendsBtn}
-                  >
-                    <Text style={styles.friendsBtnText}>👥  Mina vänner</Text>
-                    {pendingCount > 0 && (
-                      <View style={styles.friendsBadge}>
-                        <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-
                   <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
                     <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
@@ -966,5 +1024,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'DMSans_700Bold',
     lineHeight: 14,
+  },
+  feedbackInput: {
+    height: 120,
+    textAlignVertical: 'top',
+    paddingTop: 12,
+  },
+  feedbackSuccess: {
+    color: '#A0F0B0',
+    fontSize: 16,
+    fontFamily: 'DMSans_600SemiBold',
+    textAlign: 'center',
+    marginVertical: 20,
   },
 });
