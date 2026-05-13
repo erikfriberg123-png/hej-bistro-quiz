@@ -276,7 +276,7 @@ export default function HomeScreen({ navigation }: Props) {
             )}
           </TouchableOpacity>
           <View style={styles.titleBlock}>
-            <Image source={require('../../assets/appicon.png')} style={styles.logo} />
+            <Image source={require('../../assets/logo.png')} style={styles.logo} />
             <Text style={styles.subtitle}>Quiz för restaurangfolk</Text>
           </View>
           <TouchableOpacity
@@ -692,9 +692,8 @@ const styles = StyleSheet.create({
   },
   titleBlock: { flex: 1, alignItems: 'center' },
   logo: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    width: 48,
+    height: 48,
   },
   subtitle: {
     color: '#7B9EC4',
