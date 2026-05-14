@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,17 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { CATEGORIES } from '../data/categories';
-import { fetchLeaderboard, getCurrentUserId, LeaderboardEntry } from '../lib/scores';
-import { getCategoryById } from '../data/categories';
+import { fetchBattleLeaderboard, getCurrentUserId, BattleLeaderboardEntry } from '../lib/scores';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Leaderboard'>;
 
-export default function LeaderboardScreen({ navigation, route }: Props) {
-  const initialCategory = route.params?.categoryId ?? 'food';
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+const MEDALS = ['🥇', '🥈', '🥉'];
+
+export default function LeaderboardScreen({ navigation }: Props) {
+  const [entries, setEntries] = useState<BattleLeaderboardEntry[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -34,33 +31,31 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
     setLoading(true);
     setError(false);
     try {
-      const data = await fetchLeaderboard(selectedCategory);
-      setEntries(data);
+      setEntries(await fetchBattleLeaderboard());
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const category = getCategoryById(selectedCategory);
-
-  const renderItem = ({ item, index }: { item: LeaderboardEntry; index: number }) => {
+  const renderItem = ({ item, index }: { item: BattleLeaderboardEntry; index: number }) => {
     const isMe = item.user_id === currentUserId;
-    const medals = ['🥇', '🥈', '🥉'];
     const rank = index + 1;
+    const medal = MEDALS[rank - 1];
 
     return (
       <View style={[styles.row, isMe && styles.rowHighlight]}>
-        <Text style={styles.rank}>{rank <= 3 ? medals[rank - 1] : `${rank}.`}</Text>
-        <Text style={[styles.username, isMe && styles.usernameMe]} numberOfLines={1}>
-          {item.username}{isMe ? ' (du)' : ''}
-        </Text>
-        <Text style={[styles.score, { color: category?.color ?? '#9B5DE5' }]}>
-          {item.best_score} XP
-        </Text>
+        <Text style={styles.rank}>{medal ?? `${rank}.`}</Text>
+        <View style={styles.info}>
+          <Text style={[styles.username, isMe && styles.usernameMe]} numberOfLines={1}>
+            {item.username}{isMe ? ' (du)' : ''}
+          </Text>
+          <Text style={styles.sub}>{item.wins}V · {item.battles} battles</Text>
+        </View>
+        <Text style={styles.score}>{item.total_score.toLocaleString('sv-SE')} XP</Text>
       </View>
     );
   };
@@ -73,35 +68,13 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Topplista</Text>
+        <Text style={styles.title}>Topplista ⚔️</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabs}
-      >
-        {CATEGORIES.map(cat => (
-          <TouchableOpacity
-            key={cat.id}
-            onPress={() => setSelectedCategory(cat.id)}
-            style={[
-              styles.tab,
-              selectedCategory === cat.id && { backgroundColor: cat.color },
-            ]}
-          >
-            <Text style={styles.tabIcon}>{cat.icon}</Text>
-            <Text style={[styles.tabText, selectedCategory === cat.id && styles.tabTextActive]}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={category?.color ?? '#9B5DE5'} size="large" />
+          <ActivityIndicator color="#9B5DE5" size="large" />
         </View>
       ) : error ? (
         <View style={styles.center}>
@@ -112,8 +85,8 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
         </View>
       ) : entries.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyText}>Inga poäng ännu.</Text>
-          <Text style={styles.emptySubtext}>Bli den första att sätta ett rekord!</Text>
+          <Text style={styles.emptyText}>Inga battles ännu.</Text>
+          <Text style={styles.emptySubtext}>Utmana en vän för att hamna på listan!</Text>
         </View>
       ) : (
         <FlatList
@@ -122,7 +95,7 @@ export default function LeaderboardScreen({ navigation, route }: Props) {
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           ListHeaderComponent={
-            <Text style={styles.listHeader}>Topp {entries.length} — {category?.name}</Text>
+            <Text style={styles.listHeader}>Globalt — totalt battle-XP</Text>
           }
         />
       )}
@@ -142,63 +115,26 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8, width: 40 },
   backText: { color: '#B0A8C8', fontSize: 22 },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
-  },
-  tabs: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    gap: 8,
-    flexDirection: 'row',
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  tabIcon: { fontSize: 14 },
-  tabText: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
-  },
-  tabTextActive: { color: '#FFFFFF', fontFamily: 'DMSans_700Bold' },
+  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
-    marginBottom: 8,
-    textAlign: 'center',
+    color: '#FFFFFF', fontSize: 16,
+    fontFamily: 'DMSans_600SemiBold', marginBottom: 8, textAlign: 'center',
   },
   emptySubtext: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
-    textAlign: 'center',
+    color: '#B0A8C8', fontSize: 14,
+    fontFamily: 'DMSans_400Regular', textAlign: 'center',
   },
   retryBtn: {
-    marginTop: 16,
-    backgroundColor: '#1E1040',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginTop: 16, backgroundColor: '#1E1040',
+    borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10,
   },
   retryText: { color: '#9B5DE5', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   list: { paddingHorizontal: 16, paddingBottom: 24 },
   listHeader: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 12,
+    color: '#B0A8C8', fontSize: 11,
+    fontFamily: 'DMSans_600SemiBold', letterSpacing: 1.5,
+    textTransform: 'uppercase', marginBottom: 12,
   },
   row: {
     flexDirection: 'row',
@@ -206,28 +142,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E1040',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     marginBottom: 8,
   },
-  rowHighlight: {
-    borderWidth: 1.5,
-    borderColor: '#9B5DE5',
-  },
-  rank: {
-    width: 36,
-    color: '#B0A8C8',
-    fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
-  },
-  username: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
-  },
-  usernameMe: { color: '#9B5DE5', fontFamily: 'DMSans_700Bold' },
-  score: {
-    fontSize: 15,
-    fontFamily: 'DMSans_700Bold',
-  },
+  rowHighlight: { borderWidth: 1.5, borderColor: '#9B5DE5' },
+  rank: { width: 36, color: '#B0A8C8', fontSize: 16, fontFamily: 'DMSans_700Bold' },
+  info: { flex: 1 },
+  username: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  usernameMe: { color: '#9B5DE5' },
+  sub: { color: '#6050A0', fontSize: 11, fontFamily: 'DMSans_400Regular', marginTop: 2 },
+  score: { color: '#9B5DE5', fontSize: 15, fontFamily: 'DMSans_700Bold' },
 });
