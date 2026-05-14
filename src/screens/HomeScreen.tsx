@@ -25,6 +25,7 @@ import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
 import { submitFeedback } from '../lib/feedback';
+import { StoryModal } from '../components/StoryModal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -56,6 +57,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [feedbackError, setFeedbackError] = useState('');
+  const [storyVisible, setStoryVisible] = useState(false);
   const prevMyTurnIdsRef = useRef<Set<string> | null>(null);
   const userIdRef = useRef<string | null>(null);
 
@@ -431,6 +433,14 @@ export default function HomeScreen({ navigation }: Props) {
           <Text style={styles.createBtnText}>Skapa egna frågor</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => setStoryVisible(true)}
+          style={styles.createBtn}
+        >
+          <Text style={styles.createBtnIcon}>🍽️</Text>
+          <Text style={styles.createBtnText}>Berätta en kroghistoria</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={() => { setFeedbackText(''); setFeedbackSent(false); setFeedbackError(''); setFeedbackVisible(true); }} style={styles.helpLink}>
           <Text style={styles.helpText}>Feedback</Text>
         </TouchableOpacity>
@@ -668,6 +678,14 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
           <Text style={styles.turnToastArrow}>→</Text>
         </TouchableOpacity>
+      )}
+
+      {storyVisible && (
+        <StoryModal
+          userId={userId}
+          username={username}
+          onClose={() => setStoryVisible(false)}
+        />
       )}
     </SafeAreaView>
   );
