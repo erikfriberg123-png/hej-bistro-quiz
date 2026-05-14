@@ -42,7 +42,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
   const [myTurnBattles, setMyTurnBattles] = useState<Battle[]>([]);
-  const [mode, setMode] = useState<'training' | null>(null);
+  const [mode, setMode] = useState<'training' | 'survival' | null>(null);
   const [changePwVisible, setChangePwVisible] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -324,6 +324,19 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
 
             <TouchableOpacity
+              style={[styles.modeCard, styles.modeCardSurvival]}
+              onPress={() => setMode('survival')}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modeCardIcon}>❤️</Text>
+              <View style={styles.modeCardBody}>
+                <Text style={styles.modeCardTitle}>Överlevnadsläge</Text>
+                <Text style={styles.modeCardSub}>3 liv — svara rätt och håll sviten vid liv</Text>
+              </View>
+              <Text style={styles.modeCardArrow}>→</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.modeCard, styles.modeCardBattle]}
               onPress={handleChallengePress}
               activeOpacity={0.85}
@@ -369,13 +382,27 @@ export default function HomeScreen({ navigation }: Props) {
 
             <Text style={styles.sectionTitle}>Välj kategori</Text>
 
+            {mode === 'survival' && (
+              <TouchableOpacity
+                style={styles.allCategoriesCard}
+                onPress={() => navigation.navigate('Survival', { categoryId: 'all' })}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.allCategoriesIcon}>🎲</Text>
+                <Text style={styles.allCategoriesText}>Alla kategorier (mix)</Text>
+              </TouchableOpacity>
+            )}
+
             <View style={styles.grid}>
               {CATEGORIES.map((cat) => (
                 <View key={cat.id} style={styles.gridItem}>
                   <CategoryCard
                     category={cat}
                     highscore={highscores[cat.id] ?? 0}
-                    onPress={() => navigation.navigate('Game', { categoryId: cat.id })}
+                    onPress={() => mode === 'survival'
+                      ? navigation.navigate('Survival', { categoryId: cat.id })
+                      : navigation.navigate('Game', { categoryId: cat.id })
+                    }
                   />
                 </View>
               ))}
@@ -803,9 +830,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3D2870',
   },
+  modeCardSurvival: {
+    backgroundColor: '#2A0A1A',
+    borderColor: '#E84393',
+  },
   modeCardBattle: {
     backgroundColor: '#0D2A2A',
     borderColor: '#2EC4B6',
+  },
+  allCategoriesCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#1E1040',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E84393',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 10,
+  },
+  allCategoriesIcon: { fontSize: 24 },
+  allCategoriesText: {
+    color: '#E84393',
+    fontSize: 15,
+    fontFamily: 'DMSans_700Bold',
   },
   modeCardIcon: { fontSize: 32 },
   modeCardBody: { flex: 1, gap: 3 },

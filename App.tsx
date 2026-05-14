@@ -31,6 +31,8 @@ import BattleRoundScreen from './src/screens/BattleRoundScreen';
 import BattleBoardScreen from './src/screens/BattleBoardScreen';
 import BattleResultScreen from './src/screens/BattleResultScreen';
 import AdminScreen from './src/screens/AdminScreen';
+import SurvivalScreen from './src/screens/SurvivalScreen';
+import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
 import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
@@ -141,6 +143,8 @@ export default function App() {
         <AppStack.Screen name="BattleRound" component={BattleRoundScreen} />
         <AppStack.Screen name="BattleBoard" component={BattleBoardScreen} />
         <AppStack.Screen name="BattleResult" component={BattleResultScreen} />
+        <AppStack.Screen name="Survival" component={SurvivalScreen} />
+        <AppStack.Screen name="SurvivalResult" component={SurvivalResultScreen} />
         <AppStack.Screen name="Friends" component={FriendsScreen} />
         <AppStack.Screen name="Admin" component={AdminScreen} />
       </AppStack.Navigator>

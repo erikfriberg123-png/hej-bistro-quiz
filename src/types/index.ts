@@ -119,6 +119,13 @@ export type RootStackParamList = {
     winner: 'creator' | 'opponent' | 'draw';
     totalRounds: number;
   };
+  Survival: { categoryId: CategoryId | 'all' };
+  SurvivalResult: {
+    score: number;
+    correctAnswers: number;
+    maxStreak: number;
+    categoryId: CategoryId | 'all';
+  };
   Friends: undefined;
   Admin: undefined;
 };

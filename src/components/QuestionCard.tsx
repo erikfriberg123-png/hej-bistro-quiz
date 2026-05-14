@@ -4,14 +4,16 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 interface Props {
   question: string;
   questionNumber: number;
-  total: number;
+  total?: number;
   imageUrl?: string;
 }
 
 export function QuestionCard({ question, questionNumber, total, imageUrl }: Props) {
   return (
     <View style={styles.card}>
-      <Text style={styles.counter}>{questionNumber} / {total}</Text>
+      <Text style={styles.counter}>
+        {total != null ? `${questionNumber} / ${total}` : `Fråga ${questionNumber}`}
+      </Text>
       {imageUrl ? (
         <Image
           source={{ uri: imageUrl }}
