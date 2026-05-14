@@ -418,7 +418,7 @@ export default function HomeScreen({ navigation }: Props) {
         ) : (
           <>
             <TouchableOpacity onPress={() => setMode(null)} style={styles.backModeBtn}>
-              <Text style={styles.backModeBtnText}>← Spelläge</Text>
+              <Text style={styles.backModeBtnText}>← Tillbaka</Text>
             </TouchableOpacity>
 
             <Text style={styles.sectionTitle}>Välj kategori</Text>
