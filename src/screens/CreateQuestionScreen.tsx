@@ -2,6 +2,7 @@
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   SafeAreaView,
   StatusBar,
@@ -11,12 +12,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId, Question } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { useGameStore } from '../store/gameStore';
 import { submitQuestion } from '../lib/submissions';
+import { pickAndUploadQuestionImage } from '../lib/imageUpload';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateQuestion'>;
 
@@ -30,7 +33,22 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   const [answers, setAnswers] = useState<[string, string, string, string]>([...EMPTY_ANSWERS]);
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
 
-  const category = CATEGORIES.find(c => c.id === selectedCategory)!;
+  const [hasImage, setHasImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const category = CATEGORIES.find(c => c.id === selectedCategory)!
+
+  const handlePickImage = async () => {
+    setUploadingImage(true);
+    const result = await pickAndUploadQuestionImage();
+    setUploadingImage(false);
+    if ('error' in result) {
+      if (result.error !== 'cancelled') Alert.alert('Fel', result.error);
+      return;
+    }
+    setImageUrl(result.url);
+  };;
 
   const updateAnswer = (index: number, value: string) => {
     const next = [...answers] as [string, string, string, string];
@@ -58,6 +76,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       answers: answers.map(a => a.trim()) as [string, string, string, string],
       correctIndex: correctIndex as 0 | 1 | 2 | 3,
       difficulty: 'medium',
+      ...(imageUrl ? { imageUrl } : {}),
     });
 
     if (error) {
@@ -68,6 +87,8 @@ export default function CreateQuestionScreen({ navigation }: Props) {
     setQuestionText('');
     setAnswers([...EMPTY_ANSWERS]);
     setCorrectIndex(null);
+    setHasImage(false);
+    setImageUrl(null);
     Alert.alert('Skickad! ✓', 'Din fråga har skickats för granskning. Tack!');
   };
 
@@ -141,6 +162,37 @@ export default function CreateQuestionScreen({ navigation }: Props) {
             multiline
             maxLength={200}
           />
+
+          {/* Optional image */}
+          <TouchableOpacity
+            onPress={() => { setHasImage(v => !v); if (hasImage) setImageUrl(null); }}
+            style={styles.checkboxRow}
+          >
+            <View style={[styles.checkbox, hasImage && { backgroundColor: category.color, borderColor: category.color }]}>
+              {hasImage && <Text style={styles.checkboxTick}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Lägg till bild</Text>
+          </TouchableOpacity>
+
+          {hasImage && (
+            <>
+              <TouchableOpacity
+                onPress={handlePickImage}
+                style={[styles.imagePickBtn, { borderColor: category.color }, uploadingImage && styles.disabled]}
+                disabled={uploadingImage}
+              >
+                {uploadingImage
+                  ? <ActivityIndicator color={category.color} />
+                  : <Text style={[styles.imagePickBtnText, { color: category.color }]}>
+                      {imageUrl ? '🖼  Byt bild' : '📁  Välj bild från biblioteket'}
+                    </Text>
+                }
+              </TouchableOpacity>
+              {imageUrl && (
+                <Image source={{ uri: imageUrl }} style={styles.imagePreview} resizeMode="cover" />
+              )}
+            </>
+          )}
 
           {/* Answer inputs */}
           <Text style={styles.label}>Svarsalternativ</Text>
@@ -373,4 +425,27 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
     marginBottom: 3,
   },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, marginBottom: 4 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 6,
+    borderWidth: 2, borderColor: '#3D2870',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#1E1040',
+  },
+  checkboxTick: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_700Bold' },
+  checkboxLabel: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  imagePickBtn: {
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    backgroundColor: '#1E1040',
+    minHeight: 52,
+    justifyContent: 'center',
+  },
+  imagePickBtnText: { fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  imagePreview: { width: '100%', height: 150, borderRadius: 12, marginTop: 10 },
+  disabled: { opacity: 0.5 },
 });

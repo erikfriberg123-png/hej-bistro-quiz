@@ -22,6 +22,7 @@ export interface Question {
   correctIndex: 0 | 1 | 2 | 3;
   difficulty: Difficulty;
   active?: boolean;
+  imageUrl?: string;
 }
 
 export interface Category {

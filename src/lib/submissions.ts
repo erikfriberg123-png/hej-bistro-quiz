@@ -17,6 +17,7 @@ export interface QuestionSubmission {
   answers: [string, string, string, string];
   correctIndex: 0 | 1 | 2 | 3;
   difficulty: Difficulty;
+  imageUrl?: string;
 }
 
 export async function submitQuestion(data: QuestionSubmission): Promise<{ error?: string }> {
@@ -38,6 +39,7 @@ export async function submitQuestion(data: QuestionSubmission): Promise<{ error?
     submitted_by: user.id,
     submitted_username: (profile as any)?.username ?? 'Anonym',
     status: 'pending',
+    ...(data.imageUrl ? { image_url: data.imageUrl } : {}),
   });
 
   return error ? { error: error.message } : {};
@@ -81,5 +83,57 @@ export async function getComplaints(): Promise<Complaint[]> {
 
 export async function dismissComplaint(id: string): Promise<void> {
   const { error } = await supabase.from('question_complaints').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export interface SubmittedQuestion {
+  id: string;
+  category_id: CategoryId;
+  question: string;
+  answers: [string, string, string, string];
+  correct_index: 0 | 1 | 2 | 3;
+  difficulty: Difficulty;
+  submitted_by: string;
+  submitted_username: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  image_url?: string;
+}
+
+export async function getPendingSubmissions(): Promise<SubmittedQuestion[]> {
+  const { data, error } = await supabase
+    .from('submitted_questions')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as SubmittedQuestion[];
+}
+
+export async function approveSubmission(sub: SubmittedQuestion): Promise<void> {
+  const id = `rq_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const { error: insertErr } = await supabase.from('remote_questions').insert({
+    id,
+    category_id: sub.category_id,
+    question: sub.question,
+    answers: sub.answers,
+    correct_index: sub.correct_index,
+    difficulty: sub.difficulty,
+    active: true,
+    ...(sub.image_url ? { image_url: sub.image_url } : {}),
+  });
+  if (insertErr) throw insertErr;
+  const { error: updateErr } = await supabase
+    .from('submitted_questions')
+    .update({ status: 'approved' })
+    .eq('id', sub.id);
+  if (updateErr) throw updateErr;
+}
+
+export async function rejectSubmission(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('submitted_questions')
+    .update({ status: 'rejected' })
+    .eq('id', id);
   if (error) throw error;
 }

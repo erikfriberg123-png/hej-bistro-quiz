@@ -2,6 +2,7 @@
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   SafeAreaView,
   StatusBar,
@@ -24,7 +25,11 @@ import {
   toggleRemoteQuestion,
   deleteRemoteQuestion,
 } from '../lib/remoteQuestions';
-import { Complaint, getComplaints, dismissComplaint } from '../lib/submissions';
+import { pickAndUploadQuestionImage } from '../lib/imageUpload';
+import {
+  Complaint, getComplaints, dismissComplaint,
+  SubmittedQuestion, getPendingSubmissions, approveSubmission, rejectSubmission,
+} from '../lib/submissions';
 import { getQuestionStats, getBattlesPerDay, QuestionStat, DailyBattleStat } from '../lib/stats';
 import { supabase } from '../lib/supabase';
 
@@ -48,6 +53,7 @@ export default function AdminScreen({ navigation }: Props) {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [submissions, setSubmissions] = useState<SubmittedQuestion[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -77,17 +83,23 @@ export default function AdminScreen({ navigation }: Props) {
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [showForm, setShowForm] = useState(false);
 
+  const [hasImage, setHasImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const category = CATEGORIES.find(c => c.id === selectedCategory)!;
 
   const reload = useCallback(async () => {
     setLoadingList(true);
     try {
-      const [qs, cs] = await Promise.all([
+      const [qs, cs, subs] = await Promise.all([
         fetchAllQuestionsAdmin(),
         getComplaints(),
+        getPendingSubmissions(),
       ]);
       setQuestions(qs);
       setComplaints(cs);
+      setSubmissions(subs);
     } catch {
       Alert.alert('Fel', 'Kunde inte hämta frågor.');
     } finally {
@@ -175,7 +187,20 @@ export default function AdminScreen({ navigation }: Props) {
     setAnswers([...EMPTY_ANSWERS]);
     setCorrectIndex(null);
     setDifficulty('medium');
+    setHasImage(false);
+    setImageUrl(null);
     setShowForm(false);
+  };
+
+  const handlePickImage = async () => {
+    setUploadingImage(true);
+    const result = await pickAndUploadQuestionImage();
+    setUploadingImage(false);
+    if ('error' in result) {
+      if (result.error !== 'cancelled') Alert.alert('Fel', result.error);
+      return;
+    }
+    setImageUrl(result.url);
   };
 
   const handleSave = async () => {
@@ -191,6 +216,7 @@ export default function AdminScreen({ navigation }: Props) {
         answers: answers.map(a => a.trim()) as [string, string, string, string],
         correctIndex: correctIndex as 0 | 1 | 2 | 3,
         difficulty,
+        ...(imageUrl ? { imageUrl } : {}),
       });
       await loadRemoteQuestions();
       resetForm();
@@ -231,6 +257,37 @@ export default function AdminScreen({ navigation }: Props) {
     Alert.alert('Ta bort fråga', preview, [
       { text: 'Avbryt', style: 'cancel' },
       { text: 'Ta bort', style: 'destructive', onPress: doDelete },
+    ]);
+  };
+
+  const handleApproveSubmission = async (sub: SubmittedQuestion) => {
+    try {
+      await approveSubmission(sub);
+      setSubmissions(prev => prev.filter(s => s.id !== sub.id));
+      await loadRemoteQuestions();
+      reload();
+    } catch {
+      Alert.alert('Fel', 'Kunde inte godkänna frågan.');
+    }
+  };
+
+  const handleRejectSubmission = (sub: SubmittedQuestion) => {
+    const preview = sub.question.length > 80 ? sub.question.slice(0, 80) + '…' : sub.question;
+    const doReject = async () => {
+      try {
+        await rejectSubmission(sub.id);
+        setSubmissions(prev => prev.filter(s => s.id !== sub.id));
+      } catch {
+        Alert.alert('Fel', 'Kunde inte avslå frågan.');
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Avslå fråga?\n\n${preview}`)) doReject();
+      return;
+    }
+    Alert.alert('Avslå fråga', preview, [
+      { text: 'Avbryt', style: 'cancel' },
+      { text: 'Avslå', style: 'destructive', onPress: doReject },
     ]);
   };
 
@@ -557,6 +614,41 @@ export default function AdminScreen({ navigation }: Props) {
                 maxLength={200}
               />
 
+              {/* Image toggle */}
+              <TouchableOpacity
+                onPress={() => { setHasImage(v => !v); if (hasImage) setImageUrl(null); }}
+                style={styles.checkboxRow}
+              >
+                <View style={[styles.checkbox, hasImage && styles.checkboxActive]}>
+                  {hasImage && <Text style={styles.checkboxTick}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Lägg till bild</Text>
+              </TouchableOpacity>
+
+              {hasImage && (
+                <>
+                  <TouchableOpacity
+                    onPress={handlePickImage}
+                    style={[styles.imagePickBtn, uploadingImage && styles.disabled]}
+                    disabled={uploadingImage}
+                  >
+                    {uploadingImage
+                      ? <ActivityIndicator color="#2EC4B6" />
+                      : <Text style={styles.imagePickBtnText}>
+                          {imageUrl ? '🖼  Byt bild' : '📁  Välj bild från biblioteket'}
+                        </Text>
+                    }
+                  </TouchableOpacity>
+                  {imageUrl && (
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.imagePreview}
+                      resizeMode="cover"
+                    />
+                  )}
+                </>
+              )}
+
               <Text style={styles.label}>Svarsalternativ</Text>
               <Text style={styles.sublabel}>Tryck på cirkeln för att markera rätt svar</Text>
               {answers.map((answer, i) => (
@@ -689,6 +781,52 @@ export default function AdminScreen({ navigation }: Props) {
                 </>
               )}
             </View>
+          )}
+
+          {/* User-submitted questions */}
+          <Text style={[styles.sectionTitle, submissions.length > 0 && { color: '#2EC4B6' }]}>
+            Inskickade frågor ({submissions.length} st)
+          </Text>
+
+          {loadingList ? null : submissions.length === 0 ? (
+            <Text style={[styles.emptyText, { marginBottom: 24 }]}>Inga inskickade frågor.</Text>
+          ) : (
+            submissions.map(sub => {
+              const cat = CATEGORIES.find(c => c.id === sub.category_id);
+              const date = new Date(sub.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+              return (
+                <View key={sub.id} style={styles.submissionCard}>
+                  <View style={styles.qCardTop}>
+                    <View style={[styles.catBadge, { backgroundColor: (cat?.color ?? '#2EC4B6') + '33' }]}>
+                      <Text style={[styles.catBadgeText, { color: cat?.color ?? '#2EC4B6' }]}>
+                        {cat?.icon} {cat?.name ?? sub.category_id}
+                      </Text>
+                    </View>
+                    <View style={styles.qActions}>
+                      <TouchableOpacity
+                        onPress={() => handleApproveSubmission(sub)}
+                        style={styles.approveBtn}
+                      >
+                        <Text style={styles.approveBtnText}>Godkänn ✓</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRejectSubmission(sub)} style={styles.deleteBtn}>
+                        <Text style={styles.deleteBtnText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <Text style={styles.submissionMeta}>{sub.submitted_username} · {date}</Text>
+                  {sub.image_url && (
+                    <Image source={{ uri: sub.image_url }} style={styles.submissionImage} resizeMode="cover" />
+                  )}
+                  <Text style={styles.qText}>{sub.question}</Text>
+                  {sub.answers.map((a, i) => (
+                    <Text key={i} style={[styles.qAnswer, i === sub.correct_index && { color: '#2EC4B6', fontFamily: 'DMSans_600SemiBold' }]}>
+                      {i === sub.correct_index ? '✓ ' : '   '}{a}
+                    </Text>
+                  ))}
+                </View>
+              );
+            })
           )}
 
           {/* Complaints */}
@@ -987,6 +1125,48 @@ const styles = StyleSheet.create({
   bulkPreviewCorrect: { color: '#06D6A0', fontFamily: 'DMSans_600SemiBold' },
   bulkPreviewErr: { color: '#FF5555', fontSize: 12, fontFamily: 'DMSans_500Medium' },
   qCardPending: { borderColor: '#FF9A3C' + '55', borderWidth: 1.5 },
+  submissionCard: {
+    backgroundColor: '#1E1040',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: '#2EC4B6' + '66',
+  },
+  submissionMeta: {
+    color: '#2EC4B6',
+    fontSize: 11,
+    fontFamily: 'DMSans_400Regular',
+    marginBottom: 6,
+    opacity: 0.8,
+  },
+  submissionImage: { width: '100%', height: 120, borderRadius: 8, marginBottom: 8 },
+  approveBtn: { backgroundColor: '#0D2E2C', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  approveBtnText: { color: '#2EC4B6', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, marginBottom: 4 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 6,
+    borderWidth: 2, borderColor: '#3D2870',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#2A1A50',
+  },
+  checkboxActive: { backgroundColor: '#2EC4B6', borderColor: '#2EC4B6' },
+  checkboxTick: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_700Bold' },
+  checkboxLabel: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  imagePickBtn: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#2EC4B6',
+    borderStyle: 'dashed',
+    backgroundColor: '#0D2E2C',
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  imagePickBtnText: { color: '#2EC4B6', fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  imagePreview: { width: '100%', height: 140, borderRadius: 10, marginTop: 8 },
   publishBtn: { backgroundColor: '#1A3A1A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   publishBtnText: { color: '#4CAF50', fontSize: 11, fontFamily: 'DMSans_600SemiBold' },
   complaintCard: {

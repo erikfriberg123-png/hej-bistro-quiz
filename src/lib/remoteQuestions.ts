@@ -19,6 +19,7 @@ function rowToQuestion(row: any): Question {
     correctIndex: row.correct_index as 0 | 1 | 2 | 3,
     difficulty: row.difficulty as Difficulty,
     active: row.active as boolean,
+    ...(row.image_url ? { imageUrl: row.image_url as string } : {}),
   };
 }
 
@@ -92,6 +93,7 @@ export async function addRemoteQuestions(qs: Omit<Question, 'id'>[]): Promise<vo
     correct_index: q.correctIndex,
     difficulty: q.difficulty,
     active: true,
+    ...(q.imageUrl ? { image_url: q.imageUrl } : {}),
   }));
   const { error } = await supabase.from('remote_questions').insert(rows);
   if (error) throw error;
@@ -108,6 +110,7 @@ export async function addRemoteQuestion(q: Omit<Question, 'id'>): Promise<void> 
     correct_index: q.correctIndex,
     difficulty: q.difficulty,
     active: true,
+    ...(q.imageUrl ? { image_url: q.imageUrl } : {}),
   });
   if (error) throw error;
   await invalidateQuestionCache();

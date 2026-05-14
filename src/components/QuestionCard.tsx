@@ -1,16 +1,24 @@
 ﻿import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface Props {
   question: string;
   questionNumber: number;
   total: number;
+  imageUrl?: string;
 }
 
-export function QuestionCard({ question, questionNumber, total }: Props) {
+export function QuestionCard({ question, questionNumber, total, imageUrl }: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.counter}>{questionNumber} / {total}</Text>
+      {imageUrl ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      ) : null}
       <Text style={styles.question}>{question}</Text>
     </View>
   );
@@ -36,6 +44,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     marginBottom: 6,
+  },
+  image: {
+    width: '100%',
+    height: 160,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   question: {
     color: '#FFFFFF',

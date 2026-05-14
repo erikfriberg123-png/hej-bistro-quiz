@@ -278,6 +278,7 @@ export default function GameScreen({ route, navigation }: Props) {
             question={currentQuestion.question}
             questionNumber={currentQuestionIndex + 1}
             total={totalQuestions}
+            imageUrl={currentQuestion.imageUrl}
           />
 
           <View style={styles.answersGrid}>
