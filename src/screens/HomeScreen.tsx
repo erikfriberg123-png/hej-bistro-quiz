@@ -315,8 +315,10 @@ export default function HomeScreen({ navigation }: Props) {
             )}
           </TouchableOpacity>
           <View style={styles.titleBlock}>
-            <Image source={require('../../assets/logo.png')} style={styles.logo} />
-            <Text style={styles.subtitle}>Quiz för restaurangfolk</Text>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setMode('training')}>
+              <Image source={require('../../assets/logo.png')} style={styles.logo} />
+            </TouchableOpacity>
+            <Text style={styles.subtitle}>Quiz för kroganställda</Text>
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Leaderboard', {})}
@@ -360,19 +362,6 @@ export default function HomeScreen({ navigation }: Props) {
                 <Text style={styles.modeCardSub}>Dagens quiz — ett nytt utmaningsset varje dag</Text>
               </View>
               <Text style={styles.modeCardArrowDaily}>↗</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modeCard}
-              onPress={() => setMode('training')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.modeCardIcon}>🎯</Text>
-              <View style={styles.modeCardBody}>
-                <Text style={styles.modeCardTitle}>Träningsläge</Text>
-                <Text style={styles.modeCardSub}>Välj en kategori och öva på dina kunskaper</Text>
-              </View>
-              <Text style={styles.modeCardArrow}>→</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
