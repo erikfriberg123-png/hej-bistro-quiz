@@ -28,7 +28,7 @@ const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 export default function CreateQuestionScreen({ navigation }: Props) {
   const { customQuestions, addCustomQuestion, deleteCustomQuestion } = useGameStore();
 
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('food');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [questionText, setQuestionText] = useState('');
   const [answers, setAnswers] = useState<[string, string, string, string]>([...EMPTY_ANSWERS]);
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
@@ -37,7 +37,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const category = CATEGORIES.find(c => c.id === selectedCategory)!
+  const category = CATEGORIES.find(c => c.id === selectedCategory) ?? CATEGORIES[0]
 
   const handlePickImage = async () => {
     setUploadingImage(true);
@@ -57,6 +57,10 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   };
 
   const handleSave = async () => {
+    if (!selectedCategory) {
+      Alert.alert('Ingen kategori', 'Välj en kategori för frågan.');
+      return;
+    }
     if (!questionText.trim()) {
       Alert.alert('Saknad fråga', 'Skriv in en fråga.');
       return;
@@ -71,7 +75,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
     }
 
     const { error } = await submitQuestion({
-      category: selectedCategory,
+      category: selectedCategory!,
       question: questionText.trim(),
       answers: answers.map(a => a.trim()) as [string, string, string, string],
       correctIndex: correctIndex as 0 | 1 | 2 | 3,
@@ -84,6 +88,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       return;
     }
 
+    setSelectedCategory(null);
     setQuestionText('');
     setAnswers([...EMPTY_ANSWERS]);
     setCorrectIndex(null);
