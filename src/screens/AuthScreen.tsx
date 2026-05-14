@@ -19,6 +19,38 @@ import { supabase } from '../lib/supabase';
 import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
 import { setUsername } from '../lib/scores';
 
+const RL_KEY = 'auth_rate_limit';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_SCHEDULE = [30, 60, 120, 300, 900, 3600];
+
+async function getLockedSeconds(): Promise<number> {
+  try {
+    const raw = await AsyncStorage.getItem(RL_KEY);
+    if (!raw) return 0;
+    const s = JSON.parse(raw);
+    return s.lockedUntil > Date.now() ? Math.ceil((s.lockedUntil - Date.now()) / 1000) : 0;
+  } catch { return 0; }
+}
+
+async function recordAuthFailure(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(RL_KEY);
+    const s = raw ? JSON.parse(raw) : { failures: 0, lockouts: 0, lockedUntil: 0 };
+    s.failures = (s.failures || 0) + 1;
+    if (s.failures >= MAX_ATTEMPTS) {
+      const idx = Math.min(s.lockouts || 0, LOCKOUT_SCHEDULE.length - 1);
+      s.lockedUntil = Date.now() + LOCKOUT_SCHEDULE[idx] * 1000;
+      s.lockouts = (s.lockouts || 0) + 1;
+      s.failures = 0;
+    }
+    await AsyncStorage.setItem(RL_KEY, JSON.stringify(s));
+  } catch {}
+}
+
+async function clearAuthRateLimit(): Promise<void> {
+  try { await AsyncStorage.removeItem(RL_KEY); } catch {}
+}
+
 type Mode = 'signin' | 'signup' | 'reset';
 
 const ERROR_MAP: Record<string, string> = {
@@ -60,13 +92,21 @@ export default function AuthScreen() {
       setError('Ange din e-postadress.');
       return;
     }
+
+    const secondsLocked = await getLockedSeconds();
+    if (secondsLocked > 0) {
+      setError(`För många misslyckade försök. Vänta ${secondsLocked} sekunder.`);
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: Platform.OS === 'web' ? window.location.origin : undefined,
-    });
+        redirectTo: Platform.OS === 'web' ? window.location.origin : undefined,
+      });
       if (error) {
+        await recordAuthFailure();
         setError(mapError(error.message));
       } else {
         setResetSent(true);
@@ -77,6 +117,12 @@ export default function AuthScreen() {
   };
 
   const handleSubmit = async () => {
+    const secondsLocked = await getLockedSeconds();
+    if (secondsLocked > 0) {
+      setError(`För många misslyckade försök. Vänta ${secondsLocked} sekunder.`);
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
@@ -87,11 +133,12 @@ export default function AuthScreen() {
         });
         if (error) {
           console.error('[Auth] signIn error:', error.status, error.message);
+          await recordAuthFailure();
           setError(mapError(error.message));
         } else {
+          await clearAuthRateLimit();
           await AsyncStorage.setItem('keepSignedIn', keepSignedIn ? 'true' : 'false');
         }
-        // On success, App.tsx detects new session and switches to main stack
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -102,15 +149,15 @@ export default function AuthScreen() {
         });
         if (error) {
           console.error('[Auth] signUp error:', error.status, error.message, error);
+          await recordAuthFailure();
           setError(mapError(error.message));
         } else if (!data.session) {
-          // Email confirmation required
           setAwaitingConfirm(true);
         }
-        // If session present, App.tsx switches to main stack automatically
       }
     } catch (e: any) {
       console.error('[Auth] unexpected exception:', e);
+      await recordAuthFailure();
       setError('Något gick fel. Försök igen.');
     } finally {
       setLoading(false);

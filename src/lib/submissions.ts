@@ -24,6 +24,16 @@ export async function submitQuestion(data: QuestionSubmission): Promise<{ error?
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Inte inloggad' };
 
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from('submitted_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('submitted_by', user.id)
+    .gt('created_at', oneHourAgo);
+  if ((count ?? 0) >= 3) {
+    return { error: 'Du kan max skicka in 3 frågor per timme.' };
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('username')
@@ -53,6 +63,27 @@ export async function submitComplaint(
 ): Promise<{ error?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Inte inloggad' };
+
+  // No duplicate complaints on the same question
+  const { count: dupCount } = await supabase
+    .from('question_complaints')
+    .select('id', { count: 'exact', head: true })
+    .eq('complained_by', user.id)
+    .eq('question_id', questionId);
+  if ((dupCount ?? 0) > 0) {
+    return { error: 'Du har redan rapporterat den här frågan.' };
+  }
+
+  // Max 5 complaints per hour across all questions
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from('question_complaints')
+    .select('id', { count: 'exact', head: true })
+    .eq('complained_by', user.id)
+    .gt('created_at', oneHourAgo);
+  if ((count ?? 0) >= 5) {
+    return { error: 'För många rapporter. Försök igen om en stund.' };
+  }
 
   const { data: profile } = await supabase
     .from('profiles')

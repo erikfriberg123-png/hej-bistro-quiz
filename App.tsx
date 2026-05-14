@@ -30,7 +30,6 @@ import BattlePickCategoryScreen from './src/screens/BattlePickCategoryScreen';
 import BattleRoundScreen from './src/screens/BattleRoundScreen';
 import BattleBoardScreen from './src/screens/BattleBoardScreen';
 import BattleResultScreen from './src/screens/BattleResultScreen';
-import AdminScreen from './src/screens/AdminScreen';
 import SurvivalScreen from './src/screens/SurvivalScreen';
 import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
 import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
@@ -42,7 +41,6 @@ const linking = {
   prefixes: ['https://quizine.se'],
   config: {
     screens: {
-      Admin: 'admin',
       Home: '',
     },
   },
@@ -146,16 +144,14 @@ export default function App() {
         <AppStack.Screen name="Survival" component={SurvivalScreen} />
         <AppStack.Screen name="SurvivalResult" component={SurvivalResultScreen} />
         <AppStack.Screen name="Friends" component={FriendsScreen} />
-        <AppStack.Screen name="Admin" component={AdminScreen} />
       </AppStack.Navigator>
     </NavigationContainer>
   );
 
   if (Platform.OS === 'web') {
-    const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
     return (
       <View style={styles.webOuter}>
-        <View style={isAdmin ? styles.webInnerAdmin : styles.webInner}>
+        <View style={styles.webInner}>
           {navContent}
         </View>
       </View>
@@ -182,12 +178,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 480,
-    overflow: 'hidden',
-  },
-  webInnerAdmin: {
-    flex: 1,
-    width: '100%',
-    maxWidth: 960,
     overflow: 'hidden',
   },
 });

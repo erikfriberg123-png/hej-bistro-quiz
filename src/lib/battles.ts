@@ -239,10 +239,12 @@ export async function findActiveBattleBetween(targetOpponentId: string): Promise
 }
 
 export async function getBattleByCode(code: string): Promise<Battle | null> {
+  const normalized = code.toUpperCase().trim();
+  if (normalized.length === 0 || normalized.length > 10) return null;
   const { data } = await supabase
     .from('battles')
     .select('*')
-    .eq('code', code.toUpperCase().trim())
+    .eq('code', normalized)
     .single();
   return data ? normalizeBattle(data) : null;
 }

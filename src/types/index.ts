@@ -127,5 +127,4 @@ export type RootStackParamList = {
     categoryId: CategoryId | 'all';
   };
   Friends: undefined;
-  Admin: undefined;
 };

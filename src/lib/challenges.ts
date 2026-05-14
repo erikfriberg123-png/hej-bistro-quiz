@@ -67,10 +67,12 @@ export async function getChallengesForMe(): Promise<Challenge[]> {
 }
 
 export async function getChallengeByCode(code: string): Promise<Challenge | null> {
+  const normalized = code.toUpperCase().trim();
+  if (normalized.length === 0 || normalized.length > 10) return null;
   const { data } = await supabase
     .from('challenges')
     .select('*')
-    .eq('code', code.toUpperCase().trim())
+    .eq('code', normalized)
     .single();
   return (data as Challenge) ?? null;
 }

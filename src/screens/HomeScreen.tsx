@@ -12,6 +12,7 @@ import {
   Alert,
   Image,
   Platform,
+  Linking,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,7 +21,6 @@ import { useGameStore } from '../store/gameStore';
 import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { getUsername, setUsername, checkUsernameAvailable } from '../lib/scores';
-import { checkIsAdmin } from '../lib/remoteQuestions';
 import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
@@ -38,7 +38,6 @@ export default function HomeScreen({ navigation }: Props) {
   const [inputName, setInputName] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [challengeAfterSave, setChallengeAfterSave] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
@@ -74,7 +73,6 @@ export default function HomeScreen({ navigation }: Props) {
         setProfileVisible(true);
       }
     });
-    checkIsAdmin().then(setIsAdmin);
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) { userIdRef.current = user.id; setUserId(user.id); }
     });
@@ -187,6 +185,22 @@ export default function HomeScreen({ navigation }: Props) {
     } else {
       navigation.navigate('ChallengeLobby', {});
     }
+  };
+
+  const handleDailyQuiz = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    let url = 'https://daily.quizine.se';
+    if (session?.access_token && session?.refresh_token) {
+      const params = new URLSearchParams({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        token_type: 'bearer',
+        expires_in: String(session.expires_in ?? 3600),
+        type: 'magiclink',
+      });
+      url = `https://daily.quizine.se#${params.toString()}`;
+    }
+    Linking.openURL(url);
   };
 
   const openChangePw = () => {
@@ -311,6 +325,19 @@ export default function HomeScreen({ navigation }: Props) {
         {mode === null ? (
           <>
             <Text style={styles.sectionTitle}>Välj spelläge</Text>
+
+            <TouchableOpacity
+              style={[styles.modeCard, styles.modeCardDaily]}
+              onPress={handleDailyQuiz}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modeCardIcon}>📅</Text>
+              <View style={styles.modeCardBody}>
+                <Text style={styles.modeCardTitle}>Daily Quiz</Text>
+                <Text style={styles.modeCardSub}>Dagens quiz — ett nytt utmaningsset varje dag</Text>
+              </View>
+              <Text style={styles.modeCardArrowDaily}>↗</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.modeCard}
@@ -449,14 +476,6 @@ export default function HomeScreen({ navigation }: Props) {
           <Text style={styles.helpText}>Hur funkar det?</Text>
         </TouchableOpacity>
 
-        {isAdmin && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Admin')}
-            style={styles.adminBtn}
-          >
-            <Text style={styles.adminBtnText}>⚙️  Admin</Text>
-          </TouchableOpacity>
-        )}
       </ScrollView>
 
       {/* Help modal */}
@@ -848,6 +867,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3D2870',
   },
+  modeCardDaily: {
+    backgroundColor: '#1A1000',
+    borderColor: '#F4A742',
+  },
+  modeCardArrowDaily: {
+    color: '#F4A742',
+    fontSize: 20,
+    fontFamily: 'DMSans_700Bold',
+  },
   modeCardSurvival: {
     backgroundColor: '#2A0A1A',
     borderColor: '#E84393',
@@ -936,8 +964,6 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_600SemiBold',
   },
   helpLink: { alignItems: 'center', marginTop: 12, paddingVertical: 12 },
-  adminBtn: { alignItems: 'center', paddingVertical: 8, marginBottom: 8 },
-  adminBtnText: { color: '#3D2870', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   helpText: {
     color: '#B0A8C8',
     fontSize: 14,

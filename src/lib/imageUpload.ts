@@ -35,6 +35,10 @@ export async function pickAndUploadQuestionImage(): Promise<{ url: string } | { 
   const response = await fetch(manipulated.uri);
   const blob = await response.blob();
 
+  if (blob.size > 500 * 1024) {
+    return { error: 'Bilden är för stor efter komprimering. Välj en mindre bild.' };
+  }
+
   const filename = `q_${Date.now()}.jpg`;
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)

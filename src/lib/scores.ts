@@ -87,12 +87,18 @@ export async function checkUsernameAvailable(username: string): Promise<boolean>
   return !data;
 }
 
+const USERNAME_RE = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 _-]+$/;
+
 export async function setUsername(username: string): Promise<void> {
+  const trimmed = username.trim();
+  if (trimmed.length < 2 || trimmed.length > 30) throw new Error('Användarnamnet måste vara 2–30 tecken.');
+  if (!USERNAME_RE.test(trimmed)) throw new Error('Användarnamnet innehåller otillåtna tecken.');
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Inte inloggad');
   const { error } = await supabase
     .from('profiles')
-    .update({ username: username.trim() })
+    .update({ username: trimmed })
     .eq('id', user.id);
   if (error) throw error;
 }
