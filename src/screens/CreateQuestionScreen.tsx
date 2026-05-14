@@ -131,30 +131,24 @@ export default function CreateQuestionScreen({ navigation }: Props) {
         >
           {/* Category picker */}
           <Text style={styles.label}>Kategori</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryRow}
-          >
-            {CATEGORIES.map(cat => (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => setSelectedCategory(cat.id)}
-                style={[
-                  styles.categoryPill,
-                  selectedCategory === cat.id && { backgroundColor: cat.color },
-                ]}
-              >
-                <Text style={styles.categoryPillIcon}>{cat.icon}</Text>
-                <Text style={[
-                  styles.categoryPillText,
-                  selectedCategory === cat.id && styles.categoryPillTextActive,
-                ]}>
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={styles.categoryGrid}>
+            {CATEGORIES.map(cat => {
+              const selected = selectedCategory === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() => setSelectedCategory(cat.id)}
+                  style={[styles.categoryItem, selected && { borderColor: cat.color, backgroundColor: cat.color + '22' }]}
+                >
+                  <Text style={styles.categoryItemIcon}>{cat.icon}</Text>
+                  <Text style={[styles.categoryItemText, selected && { color: cat.color, fontFamily: 'DMSans_700Bold' }]}>
+                    {cat.name}
+                  </Text>
+                  {selected && <Text style={[styles.categoryTick, { color: cat.color }]}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           {/* Question input */}
           <Text style={styles.label}>Fråga</Text>
@@ -313,27 +307,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: -6,
   },
-  categoryRow: {
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
-    paddingBottom: 4,
   },
-  categoryPill: {
+  categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '48%',
     backgroundColor: '#1E1040',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 6,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#3D2870',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
   },
-  categoryPillIcon: { fontSize: 14 },
-  categoryPillText: {
+  categoryItemIcon: { fontSize: 16 },
+  categoryItemText: {
+    flex: 1,
     color: '#B0A8C8',
     fontSize: 13,
     fontFamily: 'DMSans_500Medium',
   },
-  categoryPillTextActive: {
-    color: '#FFFFFF',
+  categoryTick: {
+    fontSize: 13,
     fontFamily: 'DMSans_700Bold',
   },
   input: {
