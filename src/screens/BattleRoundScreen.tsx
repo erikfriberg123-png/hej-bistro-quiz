@@ -3,6 +3,7 @@ import {
   Alert,
   AppState,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -321,7 +322,12 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentInner}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <QuestionCard
             question={currentQuestion.question}
             questionNumber={currentQuestionIndex + 1}
@@ -363,7 +369,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
               </Text>
             </TouchableOpacity>
           </Animated.View>
-        </View>
+        </ScrollView>
       </View>
 
       <CelebrationOverlay effects={celebrationEffects} showWow={showWow} />
@@ -440,6 +446,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentInner: {
+    flexGrow: 1,
     paddingHorizontal: 16,
     paddingBottom: 16,
   },

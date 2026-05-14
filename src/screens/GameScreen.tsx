@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
+  ScrollView,
   StyleSheet,
   SafeAreaView,
   StatusBar,
@@ -273,7 +274,12 @@ export default function GameScreen({ route, navigation }: Props) {
           />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentInner}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <QuestionCard
             question={currentQuestion.question}
             questionNumber={currentQuestionIndex + 1}
@@ -307,7 +313,7 @@ export default function GameScreen({ route, navigation }: Props) {
               </Text>
             </TouchableOpacity>
           </Animated.View>
-        </View>
+        </ScrollView>
       </View>
 
       <CelebrationOverlay effects={celebrationEffects} showWow={showWow} />
@@ -358,8 +364,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentInner: {
+    flexGrow: 1,
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 16,
   },
   answersGrid: {
     marginTop: 0,
