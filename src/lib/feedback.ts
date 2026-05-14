@@ -9,6 +9,7 @@ export async function submitFeedback(
     user_id: userId ?? null,
     username: username ?? null,
     message: message.trim(),
+    source: 'quiz',
   });
   return error ? { error: error.message } : {};
 }
