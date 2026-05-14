@@ -125,6 +125,8 @@ export type RootStackParamList = {
     correctAnswers: number;
     maxStreak: number;
     categoryId: CategoryId | 'all';
+    isNewHighscore: boolean;
+    previousHighscore: number;
   };
   Friends: undefined;
 };

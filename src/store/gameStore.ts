@@ -14,6 +14,7 @@ interface GameState {
   answers: (boolean | null)[];
 
   highscores: Record<CategoryId, number>;
+  survivalHighscores: Record<string, number>;
   streak: number;
   lastPlayedDate: string;
   customQuestions: Question[];
@@ -25,6 +26,7 @@ interface GameState {
   submitAnswer: (answerIndex: number, timeRemaining: number) => number;
   nextQuestion: () => void;
   endGame: () => { result: GameResult; isNewHighscore: boolean; previousHighscore: number };
+  checkSurvivalHighscore: (categoryId: string, score: number) => { isNewHighscore: boolean; previousHighscore: number };
   resetGame: () => void;
   checkStreak: () => void;
   addCustomQuestion: (q: Question) => void;
@@ -54,6 +56,7 @@ export const useGameStore = create<GameState>()(
         guest_psychology: 0,
         service_pressure: 0,
       },
+      survivalHighscores: {},
       streak: 0,
       lastPlayedDate: '',
       customQuestions: [],
@@ -146,6 +149,16 @@ export const useGameStore = create<GameState>()(
         return { result, isNewHighscore, previousHighscore };
       },
 
+      checkSurvivalHighscore: (categoryId, score) => {
+        const { survivalHighscores } = get();
+        const previousHighscore = survivalHighscores[categoryId] ?? 0;
+        const isNewHighscore = score > previousHighscore;
+        if (isNewHighscore) {
+          set({ survivalHighscores: { ...survivalHighscores, [categoryId]: score } });
+        }
+        return { isNewHighscore, previousHighscore };
+      },
+
       resetGame: () => {
         set({
           selectedCategory: null,
@@ -179,6 +192,7 @@ export const useGameStore = create<GameState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         highscores: state.highscores,
+        survivalHighscores: state.survivalHighscores,
         streak: state.streak,
         lastPlayedDate: state.lastPlayedDate,
         customQuestions: state.customQuestions,

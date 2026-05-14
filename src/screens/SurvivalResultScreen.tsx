@@ -15,7 +15,7 @@ function streakTitle(maxStreak: number): string {
 }
 
 export default function SurvivalResultScreen({ route, navigation }: Props) {
-  const { score, correctAnswers, maxStreak, categoryId } = route.params;
+  const { score, correctAnswers, maxStreak, categoryId, isNewHighscore, previousHighscore } = route.params;
   const category = categoryId !== 'all' ? getCategoryById(categoryId as CategoryId) : null;
   const accentColor = category?.color ?? '#E84393';
 
@@ -26,6 +26,19 @@ export default function SurvivalResultScreen({ route, navigation }: Props) {
       <View style={styles.container}>
         <Text style={styles.title}>Överlevnadsläge</Text>
         <Text style={styles.subtitle}>Game over!</Text>
+
+        {isNewHighscore && (
+          <View style={[styles.newHighscoreBanner, { borderColor: accentColor }]}>
+            <Text style={[styles.newHighscoreText, { color: accentColor }]}>
+              🏆 Nytt rekord!
+            </Text>
+            {previousHighscore > 0 && (
+              <Text style={styles.previousHighscoreText}>
+                Tidigare: {previousHighscore.toLocaleString('sv-SE')} XP
+              </Text>
+            )}
+          </View>
+        )}
 
         <View style={styles.scoreCard}>
           <Text style={styles.streakTitle}>{streakTitle(maxStreak)}</Text>
@@ -85,6 +98,26 @@ const styles = StyleSheet.create({
   },
   title: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_600SemiBold', letterSpacing: 1.5, textTransform: 'uppercase' },
   subtitle: { color: '#FFFFFF', fontSize: 28, fontFamily: 'DMSans_800ExtraBold', marginTop: -8 },
+  newHighscoreBanner: {
+    width: '100%',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    gap: 4,
+  },
+  newHighscoreText: {
+    fontSize: 18,
+    fontFamily: 'DMSans_800ExtraBold',
+    letterSpacing: 0.5,
+  },
+  previousHighscoreText: {
+    color: '#6050A0',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+  },
   scoreCard: {
     width: '100%',
     backgroundColor: '#1E1040',

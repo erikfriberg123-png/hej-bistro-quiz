@@ -30,7 +30,7 @@ import { StoryModal } from '../components/StoryModal';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { highscores, streak, checkStreak } = useGameStore();
+  const { highscores, survivalHighscores, streak, checkStreak } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [usernameRequired, setUsernameRequired] = useState(false);
@@ -418,7 +418,14 @@ export default function HomeScreen({ navigation }: Props) {
                 activeOpacity={0.85}
               >
                 <Text style={styles.allCategoriesIcon}>🎲</Text>
-                <Text style={styles.allCategoriesText}>Alla kategorier (mix)</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.allCategoriesText}>Alla kategorier (mix)</Text>
+                  {(survivalHighscores['all'] ?? 0) > 0 && (
+                    <Text style={styles.allCategoriesHighscore}>
+                      🏅 {survivalHighscores['all'].toLocaleString('sv-SE')} XP
+                    </Text>
+                  )}
+                </View>
               </TouchableOpacity>
             )}
 
@@ -427,7 +434,10 @@ export default function HomeScreen({ navigation }: Props) {
                 <View key={cat.id} style={styles.gridItem}>
                   <CategoryCard
                     category={cat}
-                    highscore={highscores[cat.id] ?? 0}
+                    highscore={mode === 'survival'
+                      ? (survivalHighscores[cat.id] ?? 0)
+                      : (highscores[cat.id] ?? 0)
+                    }
                     onPress={() => mode === 'survival'
                       ? navigation.navigate('Survival', { categoryId: cat.id })
                       : navigation.navigate('Game', { categoryId: cat.id })
@@ -901,6 +911,12 @@ const styles = StyleSheet.create({
     color: '#E84393',
     fontSize: 15,
     fontFamily: 'DMSans_700Bold',
+  },
+  allCategoriesHighscore: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    marginTop: 2,
   },
   modeCardIcon: { fontSize: 32 },
   modeCardBody: { flex: 1, gap: 3 },

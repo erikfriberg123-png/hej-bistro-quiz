@@ -13,6 +13,7 @@ import { fetchRemoteQuestions } from '../lib/remoteQuestions';
 import { Question } from '../types';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
+import { useGameStore } from '../store/gameStore';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
@@ -36,6 +37,7 @@ function timeBonus(timeRemaining: number): number {
 
 export default function SurvivalScreen({ route, navigation }: Props) {
   const { categoryId } = route.params;
+  const checkSurvivalHighscore = useGameStore(s => s.checkSurvivalHighscore);
 
   const [pool, setPool] = useState<Question[]>([]);
   const [poolIndex, setPoolIndex] = useState(0);
@@ -103,11 +105,14 @@ export default function SurvivalScreen({ route, navigation }: Props) {
       setScore(s => {
         setCorrectAnswers(c => {
           setMaxStreak(ms => {
+            const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
             navigation.replace('SurvivalResult', {
               score: s,
               correctAnswers: c,
               maxStreak: ms,
               categoryId,
+              isNewHighscore,
+              previousHighscore,
             });
             return ms;
           });
