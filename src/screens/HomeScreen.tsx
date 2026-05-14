@@ -188,6 +188,29 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const handleDailyQuiz = async () => {
+    if (Platform.OS === 'web') {
+      // Open a blank tab synchronously to preserve Safari's user-gesture requirement,
+      // then redirect it once we have the session token.
+      const win = window.open('', '_blank');
+      const { data: { session } } = await supabase.auth.getSession();
+      let url = 'https://daily.quizine.se';
+      if (session?.access_token && session?.refresh_token) {
+        const params = new URLSearchParams({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          token_type: 'bearer',
+          expires_in: String(session.expires_in ?? 3600),
+          type: 'magiclink',
+        });
+        url = `https://daily.quizine.se#${params.toString()}`;
+      }
+      if (win) {
+        win.location.href = url;
+      } else {
+        Linking.openURL(url);
+      }
+      return;
+    }
     const { data: { session } } = await supabase.auth.getSession();
     let url = 'https://daily.quizine.se';
     if (session?.access_token && session?.refresh_token) {
