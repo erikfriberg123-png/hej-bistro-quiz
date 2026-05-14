@@ -36,6 +36,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   const [hasImage, setHasImage] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const category = CATEGORIES.find(c => c.id === selectedCategory) ?? CATEGORIES[0]
 
@@ -54,6 +55,15 @@ export default function CreateQuestionScreen({ navigation }: Props) {
     const next = [...answers] as [string, string, string, string];
     next[index] = value;
     setAnswers(next);
+  };
+
+  const resetForm = () => {
+    setSelectedCategory(null);
+    setQuestionText('');
+    setAnswers([...EMPTY_ANSWERS]);
+    setCorrectIndex(null);
+    setHasImage(false);
+    setImageUrl(null);
   };
 
   const handleSave = async () => {
@@ -88,13 +98,8 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       return;
     }
 
-    setSelectedCategory(null);
-    setQuestionText('');
-    setAnswers([...EMPTY_ANSWERS]);
-    setCorrectIndex(null);
-    setHasImage(false);
-    setImageUrl(null);
-    Alert.alert('Skickad! ✓', 'Din fråga har skickats för granskning. Tack!');
+    resetForm();
+    setSubmitted(true);
   };
 
   const handleDelete = (id: string, questionText: string) => {
@@ -124,32 +129,32 @@ export default function CreateQuestionScreen({ navigation }: Props) {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        {submitted ? (
+          <View style={styles.thankYouContainer}>
+            <Text style={styles.thankYouEmoji}>🎉</Text>
+            <Text style={styles.thankYouTitle}>Tack för din fråga!</Text>
+            <Text style={styles.thankYouSub}>
+              Din fråga har skickats in och väntar på granskning. Vi uppskattar ditt bidrag!
+            </Text>
+            <TouchableOpacity
+              onPress={() => setSubmitted(false)}
+              style={styles.thankYouBtnPrimary}
+            >
+              <Text style={styles.thankYouBtnPrimaryText}>Lägg till en fråga till</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.thankYouBtnSecondary}
+            >
+              <Text style={styles.thankYouBtnSecondaryText}>Återgå till menyn</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Category picker */}
-          <Text style={styles.label}>Kategori</Text>
-          <View style={styles.categoryGrid}>
-            {CATEGORIES.map(cat => {
-              const selected = selectedCategory === cat.id;
-              return (
-                <TouchableOpacity
-                  key={cat.id}
-                  onPress={() => setSelectedCategory(cat.id)}
-                  style={[styles.categoryItem, selected && { borderColor: cat.color, backgroundColor: cat.color + '22' }]}
-                >
-                  <Text style={styles.categoryItemIcon}>{cat.icon}</Text>
-                  <Text style={[styles.categoryItemText, selected && { color: cat.color, fontFamily: 'DMSans_700Bold' }]}>
-                    {cat.name}
-                  </Text>
-                  {selected && <Text style={[styles.categoryTick, { color: cat.color }]}>✓</Text>}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
           {/* Question input */}
           <Text style={styles.label}>Fråga</Text>
           <TextInput
@@ -219,6 +224,27 @@ export default function CreateQuestionScreen({ navigation }: Props) {
             </View>
           ))}
 
+          {/* Category picker */}
+          <Text style={styles.label}>Kategori</Text>
+          <View style={styles.categoryGrid}>
+            {CATEGORIES.map(cat => {
+              const selected = selectedCategory === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() => setSelectedCategory(cat.id)}
+                  style={[styles.categoryItem, selected && { borderColor: cat.color, backgroundColor: cat.color + '22' }]}
+                >
+                  <Text style={styles.categoryItemIcon}>{cat.icon}</Text>
+                  <Text style={[styles.categoryItemText, selected && { color: cat.color, fontFamily: 'DMSans_700Bold' }]}>
+                    {cat.name}
+                  </Text>
+                  {selected && <Text style={[styles.categoryTick, { color: cat.color }]}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <TouchableOpacity onPress={handleSave} style={[styles.saveBtn, { backgroundColor: category.color }]}>
             <Text style={styles.saveBtnText}>Lägg till fråga</Text>
           </TouchableOpacity>
@@ -264,6 +290,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
             </>
           )}
         </ScrollView>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -452,4 +479,53 @@ const styles = StyleSheet.create({
   imagePickBtnText: { fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
   imagePreview: { width: '100%', height: 150, borderRadius: 12, marginTop: 10 },
   disabled: { opacity: 0.5 },
+  thankYouContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  thankYouEmoji: {
+    fontSize: 56,
+    marginBottom: 8,
+  },
+  thankYouTitle: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontFamily: 'DMSans_700Bold',
+    textAlign: 'center',
+  },
+  thankYouSub: {
+    color: '#B0A8C8',
+    fontSize: 15,
+    fontFamily: 'DMSans_400Regular',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  thankYouBtnPrimary: {
+    width: '100%',
+    backgroundColor: '#9B5DE5',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  thankYouBtnPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'DMSans_700Bold',
+  },
+  thankYouBtnSecondary: {
+    width: '100%',
+    backgroundColor: '#1E1040',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  thankYouBtnSecondaryText: {
+    color: '#B0A8C8',
+    fontSize: 16,
+    fontFamily: 'DMSans_600SemiBold',
+  },
 });
