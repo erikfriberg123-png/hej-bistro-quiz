@@ -170,7 +170,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
             disabled={rematchLoading}
           >
             {rematchLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.bg0} />
             ) : (
               <Text style={styles.primaryBtnText}>Revanche  ⚔️</Text>
             )}
@@ -340,6 +340,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 8,
   },
-  friendSentText: { color: '#00C896', fontSize: 14, fontFamily: fonts.display600 },
+  friendSentText: { color: colors.correct, fontSize: 14, fontFamily: fonts.display600 },
   btnDisabled: { opacity: 0.5 },
 });

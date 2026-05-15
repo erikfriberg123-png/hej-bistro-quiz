@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { colors, fonts, radius, spacing } from '../theme/tokens';
 
 interface Props {
   onDone: () => void;
@@ -39,7 +40,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
       <View style={styles.container}>
         {done ? (
           <>
@@ -55,11 +56,11 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
             <Text style={styles.title}>Nytt lösenord</Text>
             <Text style={styles.sub}>Ange ditt nya lösenord nedan.</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, error ? styles.inputError : null]}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={v => { setPassword(v); setError(null); }}
               placeholder="Nytt lösenord"
-              placeholderTextColor="#6050A0"
+              placeholderTextColor={colors.text3}
               secureTextEntry
               autoFocus
               returnKeyType="done"
@@ -72,7 +73,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
               disabled={!password || loading}
             >
               {loading
-                ? <ActivityIndicator color="#FFFFFF" />
+                ? <ActivityIndicator color="#1a0010" />
                 : <Text style={styles.btnText}>Spara nytt lösenord</Text>
               }
             </TouchableOpacity>
@@ -84,53 +85,60 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 28,
-    gap: 16,
+    paddingHorizontal: spacing.s7,
+    gap: spacing.s4,
   },
   emoji: { fontSize: 52, textAlign: 'center', marginBottom: 8 },
   title: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 26,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
+    letterSpacing: -0.4,
   },
   sub: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 22,
   },
   input: {
-    backgroundColor: '#1E1040',
-    borderRadius: 14,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     paddingHorizontal: 16,
     paddingVertical: 15,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
-    borderWidth: 1,
-    borderColor: '#3D2870',
+    fontFamily: fonts.display400,
+    borderWidth: 1.5,
+    borderColor: colors.lineStrong,
   },
+  inputError: { borderColor: colors.wrong },
   error: {
-    color: '#FF6B6B',
+    color: colors.wrong,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
   },
   btn: {
-    backgroundColor: '#9B5DE5',
-    borderRadius: 14,
+    backgroundColor: colors.pink,
+    borderRadius: radius.md,
     paddingVertical: 16,
     alignItems: 'center',
     minHeight: 52,
     justifyContent: 'center',
+    shadowColor: colors.pink,
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 14,
+    elevation: 6,
   },
   btnDisabled: { opacity: 0.45 },
   btnText: {
-    color: '#FFFFFF',
+    color: '#1a0010',
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
 });

@@ -163,7 +163,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
             value={questionText}
             onChangeText={setQuestionText}
             placeholder="Skriv din fråga här..."
-            placeholderTextColor="#6050A0"
+            placeholderTextColor={colors.text3}
             multiline
             maxLength={200}
           />
@@ -219,7 +219,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                 value={answer}
                 onChangeText={v => updateAnswer(i, v)}
                 placeholder={`Alternativ ${i + 1}`}
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 maxLength={100}
               />
             </View>

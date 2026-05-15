@@ -262,7 +262,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -276,7 +276,7 @@ export default function AuthScreen() {
                 disabled={!email.trim() || loading}
               >
                 {loading
-                  ? <ActivityIndicator color="#FFFFFF" />
+                  ? <ActivityIndicator color="#1a0010" />
                   : <Text style={styles.submitText}>Skicka återställningslänk</Text>
                 }
               </TouchableOpacity>
@@ -307,7 +307,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -318,7 +318,7 @@ export default function AuthScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Lösenord"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={canSubmit ? handleSubmit : undefined}
@@ -345,7 +345,7 @@ export default function AuthScreen() {
                 disabled={!canSubmit}
               >
                 {loading
-                  ? <ActivityIndicator color="#FFFFFF" />
+                  ? <ActivityIndicator color="#1a0010" />
                   : <Text style={styles.submitText}>
                       {mode === 'signin' ? 'Logga in' : 'Skapa konto'}
                     </Text>
@@ -370,7 +370,7 @@ export default function AuthScreen() {
               {appleLoading
                 ? (
                   <View style={styles.appleBtnPlaceholder}>
-                    <ActivityIndicator color="#FFFFFF" />
+                    <ActivityIndicator color="#1a0010" />
                   </View>
                 )
                 : (
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     borderColor: colors.lineStrong,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: colors.wrong,
     fontSize: 13,
     fontFamily: fonts.display400,
     textAlign: 'center',
