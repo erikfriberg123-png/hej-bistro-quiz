@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
+import { APP_ID, TABLES } from './appConfig';
 import { Question, CategoryId, Difficulty } from '../types';
 
-const CACHE_KEY = 'remote-questions-v1';
+const CACHE_KEY = `remote-questions-v1-${APP_ID}`;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface Cache {
@@ -36,7 +37,7 @@ export async function fetchRemoteQuestions(): Promise<Question[]> {
 
   try {
     const { data, error } = await supabase
-      .from('remote_questions')
+      .from(TABLES.questions)
       .select('*')
       .eq('active', true)
       .order('created_at', { ascending: true });
@@ -47,7 +48,6 @@ export async function fetchRemoteQuestions(): Promise<Question[]> {
     await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ questions, fetchedAt: Date.now() }));
     return questions;
   } catch {
-    // Stale cache is better than nothing
     try {
       const raw = await AsyncStorage.getItem(CACHE_KEY);
       if (raw) return (JSON.parse(raw) as Cache).questions;
@@ -59,4 +59,3 @@ export async function fetchRemoteQuestions(): Promise<Question[]> {
 export async function invalidateQuestionCache(): Promise<void> {
   await AsyncStorage.removeItem(CACHE_KEY);
 }
-

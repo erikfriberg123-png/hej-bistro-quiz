@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TABLES } from './appConfig';
 
 export interface Challenge {
   id: string;
@@ -31,7 +32,7 @@ export async function createChallenge(
 
   const code = generateCode();
   const { data, error } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .insert({
       code,
       category_id: categoryId,
@@ -55,7 +56,7 @@ export async function getChallengesForMe(): Promise<Challenge[]> {
   const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .select('*')
     .eq('target_user_id', user.id)
     .is('opponent_id', null)
@@ -70,7 +71,7 @@ export async function getChallengeByCode(code: string): Promise<Challenge | null
   const normalized = code.toUpperCase().trim();
   if (normalized.length === 0 || normalized.length > 10) return null;
   const { data } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .select('*')
     .eq('code', normalized)
     .single();
@@ -79,7 +80,7 @@ export async function getChallengeByCode(code: string): Promise<Challenge | null
 
 export async function getChallengeById(id: string): Promise<Challenge | null> {
   const { data } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .select('*')
     .eq('id', id)
     .single();
@@ -93,7 +94,7 @@ export async function findRandomChallenge(): Promise<Challenge | null> {
   const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .select('*')
     .is('opponent_id', null)
     .neq('creator_id', user.id)
@@ -114,7 +115,7 @@ export async function joinChallenge(
   if (!user) throw new Error('Not authenticated');
 
   const { error } = await supabase
-    .from('challenges')
+    .from(TABLES.challenges)
     .update({
       opponent_id: user.id,
       opponent_name: opponentName,

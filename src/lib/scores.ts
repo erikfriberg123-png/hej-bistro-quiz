@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TABLES } from './appConfig';
 
 export interface LeaderboardEntry {
   user_id: string;
@@ -17,7 +18,7 @@ export interface BattleLeaderboardEntry {
 
 export async function fetchBattleLeaderboard(): Promise<BattleLeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('creator_id, creator_name, opponent_id, opponent_name, creator_turns, opponent_turns, winner')
     .eq('status', 'finished')
     .not('opponent_id', 'is', null);
@@ -52,7 +53,7 @@ export async function submitScore(categoryId: string, score: number): Promise<vo
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from('scores').insert({ user_id: user.id, category_id: categoryId, score });
+    await supabase.from(TABLES.scores).insert({ user_id: user.id, category_id: categoryId, score });
   } catch {
     // silent fail — local gameplay is unaffected
   }
@@ -60,7 +61,7 @@ export async function submitScore(categoryId: string, score: number): Promise<vo
 
 export async function fetchLeaderboard(categoryId: string): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from('leaderboard')
+    .from(TABLES.leaderboard)
     .select('*')
     .eq('category_id', categoryId)
     .order('best_score', { ascending: false })
