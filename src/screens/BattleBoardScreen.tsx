@@ -368,8 +368,8 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
           if ((phase === 'creator_challenge' && role === 'creator') ||
               (phase === 'opponent_challenge' && role === 'opponent')) {
             return (
-              <View style={styles.ctaBox}>
-                <Text style={styles.ctaEmoji}>⚔️</Text>
+              <View style={[styles.ctaBox, styles.ctaBoxCompact]}>
+                <Text style={styles.ctaEmojiSmall}>⚔️</Text>
                 <Text style={styles.ctaTitle}>Din tur att utmana!</Text>
                 <Text style={styles.ctaSub}>Välj en kategori och ge din motståndare en utmaning – omgång {nextRound} av 4.</Text>
                 <TouchableOpacity onPress={handleChallenge} style={styles.primaryBtn}>
@@ -637,7 +637,12 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
     textDecorationLine: 'underline',
   },
+  ctaBoxCompact: {
+    padding: 16,
+    gap: 8,
+  },
   ctaEmoji: { fontSize: 40 },
+  ctaEmojiSmall: { fontSize: 24 },
   ctaTitle: {
     color: '#FFFFFF',
     fontSize: 20,
