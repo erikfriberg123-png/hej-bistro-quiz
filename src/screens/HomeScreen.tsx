@@ -32,7 +32,7 @@ import { colors, fonts, radius, spacing } from '../theme/tokens';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { highscores, survivalHighscores, streak, checkStreak } = useGameStore();
+  const { survivalHighscores, streak, checkStreak } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [usernameRequired, setUsernameRequired] = useState(false);
@@ -44,7 +44,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
   const [myTurnBattles, setMyTurnBattles] = useState<Battle[]>([]);
-  const [mode, setMode] = useState<'training' | 'survival' | null>(null);
+  const [mode, setMode] = useState<'survival' | null>(null);
   const [changePwVisible, setChangePwVisible] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -306,9 +306,7 @@ export default function HomeScreen({ navigation }: Props) {
         {/* Brand block */}
         <View style={styles.brandBlock}>
           <Text style={styles.brandNeon}>~ open all night ~</Text>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setMode('training')}>
-            <Image source={require('../../assets/logo.png')} style={styles.logo} />
-          </TouchableOpacity>
+          <Image source={require('../../assets/logo.png')} style={styles.logo} />
           <Text style={styles.brandTagline}>QUIZ FÖR KROGANSTÄLLDA</Text>
         </View>
 
@@ -376,18 +374,6 @@ export default function HomeScreen({ navigation }: Props) {
               )}
             </TouchableOpacity>
 
-            {/* Training */}
-            <TouchableOpacity style={[styles.modeCard, styles.modeCardTraining]} onPress={() => setMode('training')} activeOpacity={0.85}>
-              <View style={[styles.modeIcon, styles.modeIconTraining]}>
-                <Text style={styles.modeEmoji}>🎯</Text>
-              </View>
-              <View style={styles.modeInfo}>
-                <Text style={styles.modeTitle}>Quiz</Text>
-                <Text style={styles.modeDesc}>Välj kategori och träna på dina kunskaper</Text>
-              </View>
-              <Text style={[styles.modeArrow, { color: colors.text3 }]}>→</Text>
-            </TouchableOpacity>
-
             {/* Pending challenge banner */}
             {pendingBattleCount > 0 && (
               <TouchableOpacity style={styles.challengeCard} onPress={handlePendingBattlePress} activeOpacity={0.8}>
@@ -435,14 +421,8 @@ export default function HomeScreen({ navigation }: Props) {
                 <View key={cat.id} style={styles.gridItem}>
                   <CategoryCard
                     category={cat}
-                    highscore={mode === 'survival'
-                      ? (survivalHighscores[cat.id] ?? 0)
-                      : (highscores[cat.id] ?? 0)
-                    }
-                    onPress={() => mode === 'survival'
-                      ? navigation.navigate('Survival', { categoryId: cat.id })
-                      : navigation.navigate('Game', { categoryId: cat.id })
-                    }
+                    highscore={survivalHighscores[cat.id] ?? 0}
+                    onPress={() => navigation.navigate('Survival', { categoryId: cat.id })}
                   />
                 </View>
               ))}
@@ -488,8 +468,6 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Hur funkar det?</Text>
             <ScrollView showsVerticalScrollIndicator={false} style={styles.helpScroll}>
-              <Text style={styles.helpSection}>🎯 Quiz-läget</Text>
-              <Text style={styles.modalBody}>{'Välj en kategori och svara på 10 frågor. Du har 15 sekunder per fråga — ju snabbare du svarar rätt, desto mer XP får du. Max 150 XP per fråga (100 bas + 50 tidsbonus). Spela varje dag för att hålla igång din streak och klättra på topplistan! 🏆'}</Text>
               <Text style={styles.helpSection}>⚔️ Battle-läget</Text>
               <Text style={styles.modalBody}>{'Utmana en vän på ett ämne du väljer. Tryck på "Battle" på startsidan och välj en vän och kategori.\n\nNi spelar var för sig i er egen takt. När ni båda är klara räknas poängen ihop — den med flest poäng vinner.'}</Text>
               <Text style={styles.helpSection}>👥 Lägga till vänner</Text>
@@ -832,7 +810,6 @@ const styles = StyleSheet.create({
   modeCardDaily: { borderColor: 'rgba(255, 213, 79, 0.5)' },
   modeCardSurvival: { borderColor: 'rgba(255, 56, 165, 0.55)' },
   modeCardBattle: { borderColor: 'rgba(54, 224, 224, 0.5)' },
-  modeCardTraining: { borderColor: colors.lineStrong },
   modeIcon: {
     width: 48,
     height: 48,
@@ -844,7 +821,6 @@ const styles = StyleSheet.create({
   modeIconDaily: { backgroundColor: 'rgba(255, 213, 79, 0.14)' },
   modeIconSurvival: { backgroundColor: 'rgba(255, 56, 165, 0.14)' },
   modeIconBattle: { backgroundColor: 'rgba(54, 224, 224, 0.14)' },
-  modeIconTraining: { backgroundColor: colors.bg3 },
   modeEmoji: { fontSize: 22 },
   modeInfo: { flex: 1 },
   modeTitle: { color: colors.text1, fontSize: 16, fontFamily: fonts.display700, marginBottom: 2, letterSpacing: -0.4 },
