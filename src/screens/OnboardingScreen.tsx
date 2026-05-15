@@ -10,6 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
@@ -24,13 +25,13 @@ const PAGES = [
     emoji: '🏆',
     title: 'Tävla med\ndina kollegor',
     body: 'Samla XP, bygg din streak och klättra på topplistan. Spela varje dag för att hålla igång!',
-    accent: '#F7C948',
+    accent: colors.yellow,
   },
   {
     emoji: '👥',
     title: 'Lägg till\nvänner',
     body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar syns ni på varandras listor och kan utmana varandra.',
-    accent: '#9B5DE5',
+    accent: colors.pink,
   },
   {
     emoji: '⚔️',
@@ -60,7 +61,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <TouchableOpacity onPress={finish} style={styles.skipBtn}>
         <Text style={styles.skipText}>Hoppa över</Text>
@@ -97,7 +98,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   skipBtn: {
     alignSelf: 'flex-end',
     paddingHorizontal: 20,
@@ -105,9 +106,9 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   skipText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
   },
   content: {
     flex: 1,
@@ -120,17 +121,17 @@ const styles = StyleSheet.create({
     marginBottom: 36,
   },
   title: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 32,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
     lineHeight: 42,
     marginBottom: 20,
   },
   body: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 16,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.lineStrong,
   },
   footer: {
     paddingHorizontal: 24,
@@ -156,8 +157,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
 });

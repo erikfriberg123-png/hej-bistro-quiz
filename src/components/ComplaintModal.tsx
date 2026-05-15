@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { colors, fonts, radius } from '../theme/tokens';
 
 interface Props {
   visible: boolean;
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sheet: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -102,35 +103,35 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   title: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   questionBox: {
-    backgroundColor: '#12082A',
+    backgroundColor: colors.bg1,
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#2A1A50',
+    borderColor: colors.bg3,
   },
   questionText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 20,
   },
   label: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
   input: {
-    backgroundColor: '#12082A',
+    backgroundColor: colors.bg1,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3D2870',
-    color: '#FFFFFF',
-    fontFamily: 'DMSans_400Regular',
+    borderColor: colors.lineStrong,
+    color: colors.text1,
+    fontFamily: fonts.display400,
     fontSize: 14,
     padding: 14,
     minHeight: 90,
@@ -144,27 +145,27 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#2A1A50',
+    backgroundColor: colors.bg3,
     alignItems: 'center',
   },
   cancelText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
   submitBtn: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#9B5DE5',
+    backgroundColor: colors.pink,
     alignItems: 'center',
   },
   submitDisabled: {
     opacity: 0.45,
   },
   submitText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
 });

@@ -20,6 +20,7 @@ import { CATEGORIES } from '../data/categories';
 import { useGameStore } from '../store/gameStore';
 import { submitQuestion } from '../lib/submissions';
 import { pickAndUploadQuestionImage } from '../lib/imageUpload';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateQuestion'>;
 
@@ -115,7 +116,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -236,7 +237,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                   style={[styles.categoryItem, selected && { borderColor: cat.color, backgroundColor: cat.color + '22' }]}
                 >
                   <Text style={styles.categoryItemIcon}>{cat.icon}</Text>
-                  <Text style={[styles.categoryItemText, selected && { color: cat.color, fontFamily: 'DMSans_700Bold' }]}>
+                  <Text style={[styles.categoryItemText, selected && { color: cat.color, fontFamily: fonts.display700 }]}>
                     {cat.name}
                   </Text>
                   {selected && <Text style={[styles.categoryTick, { color: cat.color }]}>✓</Text>}
@@ -278,7 +279,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                         key={i}
                         style={[
                           styles.savedAnswer,
-                          i === q.correctIndex && { color: cat?.color, fontFamily: 'DMSans_600SemiBold' },
+                          i === q.correctIndex && { color: cat?.color, fontFamily: fonts.display600 },
                         ]}
                       >
                         {i === q.correctIndex ? '✓ ' : '   '}{a}
@@ -297,7 +298,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -307,11 +308,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#B0A8C8', fontSize: 22 },
+  backText: { color: colors.text2, fontSize: 22 },
   title: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   scroll: {
     paddingHorizontal: 16,
@@ -319,18 +320,18 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   label: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
     marginTop: 20,
   },
   sublabel: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 10,
     marginTop: -6,
   },
@@ -343,10 +344,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '48%',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
@@ -354,24 +355,24 @@ const styles = StyleSheet.create({
   categoryItemIcon: { fontSize: 16 },
   categoryItemText: {
     flex: 1,
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
   },
   categoryTick: {
     fontSize: 13,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   input: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
   },
   questionInput: {
     minHeight: 90,
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.text1,
   },
   answerInput: {
     flex: 1,
@@ -409,17 +410,17 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   saveBtnText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   savedCard: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#2A1A50',
+    borderColor: colors.bg3,
   },
   savedCardHeader: {
     flexDirection: 'row',
@@ -434,37 +435,37 @@ const styles = StyleSheet.create({
   },
   savedCatText: {
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
   deleteBtn: {
     padding: 4,
   },
   deleteBtnText: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 16,
   },
   savedQuestion: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
     marginBottom: 8,
     lineHeight: 20,
   },
   savedAnswer: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 3,
   },
   checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, marginBottom: 4 },
   checkbox: {
     width: 22, height: 22, borderRadius: 6,
-    borderWidth: 2, borderColor: '#3D2870',
+    borderWidth: 2, borderColor: colors.lineStrong,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
   },
-  checkboxTick: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_700Bold' },
-  checkboxLabel: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  checkboxTick: { color: colors.text1, fontSize: 13, fontFamily: fonts.display700 },
+  checkboxLabel: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500 },
   imagePickBtn: {
     borderRadius: 14,
     paddingVertical: 14,
@@ -472,11 +473,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     minHeight: 52,
     justifyContent: 'center',
   },
-  imagePickBtnText: { fontSize: 14, fontFamily: 'DMSans_600SemiBold' },
+  imagePickBtnText: { fontSize: 14, fontFamily: fonts.display600 },
   imagePreview: { width: '100%', height: 150, borderRadius: 12, marginTop: 10 },
   disabled: { opacity: 0.5 },
   thankYouContainer: {
@@ -491,41 +492,41 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   thankYouTitle: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 24,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
   },
   thankYouSub: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 16,
   },
   thankYouBtnPrimary: {
     width: '100%',
-    backgroundColor: '#9B5DE5',
+    backgroundColor: colors.pink,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
   thankYouBtnPrimaryText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   thankYouBtnSecondary: {
     width: '100%',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
   thankYouBtnSecondaryText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
 });

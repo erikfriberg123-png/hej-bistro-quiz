@@ -10,10 +10,14 @@
     "build:web": "expo export --platform web && node -e \"require('fs').writeFileSync('dist/_redirects', '/* /index.html 200\\n')\""
   },
   "dependencies": {
+    "@expo-google-fonts/caveat": "^0.4.2",
     "@expo-google-fonts/dm-sans": "^0.4.2",
+    "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/poppins": "^0.4.1",
+    "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/metro-runtime": "~55.0.11",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/native": "^7.2.2",
     "@react-navigation/native-stack": "^7.14.12",
     "@supabase/supabase-js": "^2.105.1",

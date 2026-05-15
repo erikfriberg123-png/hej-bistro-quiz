@@ -25,6 +25,8 @@ import {
   getPendingRequests,
   getFriendStatusBatch,
 } from '../lib/friends';
+import { NeonTabBar } from '../components/NeonTabBar';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 
@@ -127,7 +129,7 @@ export default function FriendsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -236,9 +238,14 @@ export default function FriendsScreen({ navigation }: Props) {
           </View>
         )}
 
-        {loading && <ActivityIndicator color="#9B5DE5" style={{ marginTop: 32 }} />}
+        {loading && <ActivityIndicator color={colors.cyan} style={{ marginTop: 32 }} />}
 
       </ScrollView>
+
+      <NeonTabBar
+        activeRoute="Friends"
+        onPress={(route) => navigation.navigate(route as any)}
+      />
 
       <Modal
         visible={!!confirmRemove}
@@ -294,178 +301,84 @@ function UserRow({ username, right, isNew }: { username: string; right: React.Re
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8,
   },
   backBtn: { padding: 8, width: 40 },
-  backText: { color: '#B0A8C8', fontSize: 22 },
-  title: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 48, paddingTop: 8 },
+  backText: { color: colors.text2, fontSize: 22 },
+  title: { color: colors.text1, fontSize: 20, fontFamily: fonts.display700, letterSpacing: -0.4 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 32, paddingTop: 8 },
   searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2A1A50',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#3D2870',
-    marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.bg2, borderRadius: radius.md,
+    borderWidth: 1.5, borderColor: colors.lineStrong, marginBottom: 20,
   },
   searchInput: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
+    flex: 1, paddingHorizontal: 14, paddingVertical: 12,
+    color: colors.text1, fontSize: 15, fontFamily: fonts.display500,
   },
   searchSpinner: { marginRight: 12 },
   section: { marginBottom: 24 },
   sectionLabel: {
-    color: '#B0A8C8',
-    fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 10,
+    color: colors.text3, fontSize: 10.5, fontFamily: fonts.mono700,
+    letterSpacing: 0.2 * 10.5, textTransform: 'uppercase', marginBottom: 10,
   },
   emptyHint: {
-    color: '#6050A0',
-    fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+    color: colors.text3, fontSize: 14, fontFamily: fonts.display400,
+    textAlign: 'center', marginTop: 8, marginBottom: 16,
   },
   userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 8,
-    gap: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.bg2, borderWidth: 1, borderColor: colors.line,
+    borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 6, gap: 12,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#3D2870',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: colors.lineStrong, alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
-  usernameBlock: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  username: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
-  },
-  newTag: {
-    color: '#9B5DE5',
-    fontSize: 10,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 0.3,
-    marginTop: 1,
-  },
+  avatarText: { color: colors.text1, fontSize: 15, fontFamily: fonts.display700 },
+  usernameBlock: { flex: 1, justifyContent: 'center' },
+  username: { color: colors.text1, fontSize: 15, fontFamily: fonts.display500 },
+  newTag: { color: colors.pink, fontSize: 10, fontFamily: fonts.display600, letterSpacing: 0.3, marginTop: 1 },
   userRowRight: { flexShrink: 0 },
   friendActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  btnAdd: {
-    backgroundColor: '#9B5DE5',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  btnAddText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
-  btnAccept: {
-    backgroundColor: '#2EC4B6',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  btnAcceptText: { color: '#FFFFFF', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  btnAdd: { backgroundColor: colors.pink, borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 7 },
+  btnAddText: { color: '#1a0010', fontSize: 13, fontFamily: fonts.display700 },
+  btnAccept: { backgroundColor: colors.cyan, borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 7 },
+  btnAcceptText: { color: '#001a1a', fontSize: 13, fontFamily: fonts.display700 },
   btnChallenge: {
-    backgroundColor: '#0D2A2A',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: '#2EC4B6',
+    borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 7,
+    borderWidth: 1, borderColor: colors.cyan, backgroundColor: 'rgba(54, 224, 224, 0.08)',
   },
-  btnChallengeText: { color: '#2EC4B6', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
+  btnChallengeText: { color: colors.cyan, fontSize: 13, fontFamily: fonts.display600 },
   btnRemove: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#2A1A50',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 32, height: 32, borderRadius: radius.sm,
+    backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center',
   },
-  btnRemoveText: { color: '#B0A8C8', fontSize: 14 },
-  tagAccepted: { color: '#2EC4B6', fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  tagPending: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_400Regular' },
+  btnRemoveText: { color: colors.text2, fontSize: 14 },
+  tagAccepted: { color: colors.correct, fontSize: 13, fontFamily: fonts.display500 },
+  tagPending: { color: colors.text2, fontSize: 13, fontFamily: fonts.display400 },
   confirmOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32,
   },
   confirmCard: {
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
-    padding: 24,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#1E1040',
+    backgroundColor: colors.bg1, borderRadius: radius.xl, padding: 24,
+    width: '100%', borderWidth: 1, borderColor: colors.lineStrong,
   },
   confirmText: {
-    color: '#B0A8C8',
-    fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
-    lineHeight: 24,
-    textAlign: 'center',
-    marginBottom: 24,
+    color: colors.text2, fontSize: 15, fontFamily: fonts.display400,
+    lineHeight: 24, textAlign: 'center', marginBottom: 24,
   },
-  confirmName: {
-    color: '#FFFFFF',
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  confirmBtns: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  confirmName: { color: colors.text1, fontFamily: fonts.display600 },
+  confirmBtns: { flexDirection: 'row', gap: 12 },
   confirmBtnNej: {
-    flex: 1,
-    backgroundColor: '#2A1A50',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
+    flex: 1, backgroundColor: colors.bg2, borderRadius: radius.md,
+    paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.lineStrong,
   },
-  confirmBtnNejText: {
-    color: '#B0A8C8',
-    fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  confirmBtnJa: {
-    flex: 1,
-    backgroundColor: '#C0392B',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  confirmBtnJaText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
-  },
+  confirmBtnNejText: { color: colors.text2, fontSize: 16, fontFamily: fonts.display600 },
+  confirmBtnJa: { flex: 1, backgroundColor: colors.wrong, borderRadius: radius.md, paddingVertical: 14, alignItems: 'center' },
+  confirmBtnJaText: { color: '#fff', fontSize: 16, fontFamily: fonts.display700 },
 });

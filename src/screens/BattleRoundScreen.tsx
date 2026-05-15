@@ -34,6 +34,7 @@ import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
@@ -295,7 +296,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.topBar}>
         <View style={styles.battleInfo}>
@@ -354,7 +355,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
               onPress={advance}
               style={[
                 styles.nextBtn,
-                { backgroundColor: category?.color ?? '#9B5DE5' },
+                { backgroundColor: category?.color ?? colors.pink },
                 submitting && styles.nextBtnDisabled,
               ]}
               activeOpacity={0.85}
@@ -378,16 +379,16 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   loading: {
     flex: 1,
-    backgroundColor: '#12082A',
+    backgroundColor: colors.bg1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
-    fontFamily: 'DMSans_400Regular',
+    color: colors.text1,
+    fontFamily: fonts.display400,
     fontSize: 16,
   },
   topBar: {
@@ -404,15 +405,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   roundPill: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   roundPillText: {
-    color: '#9B5DE5',
+    color: colors.pink,
     fontSize: 10,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     letterSpacing: 1,
   },
   miniScoreRow: {
@@ -421,19 +422,19 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   miniScoreMe: {
-    color: '#9B5DE5',
+    color: colors.pink,
     fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   miniScoreSep: {
-    color: '#3D2870',
+    color: colors.lineStrong,
     fontSize: 14,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   miniScoreThem: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   gameArea: {
     flex: 1,
@@ -462,9 +463,9 @@ const styles = StyleSheet.create({
   },
   nextBtnDisabled: { opacity: 0.6 },
   nextBtnText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     letterSpacing: 0.3,
   },
 });

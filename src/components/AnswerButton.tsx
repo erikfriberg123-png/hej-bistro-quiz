@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { colors, fonts, radius } from '../theme/tokens';
 
 export type AnswerState = 'default' | 'correct' | 'wrong' | 'show-correct' | 'disabled';
 
@@ -16,26 +17,17 @@ const LABELS = ['A', 'B', 'C', 'D'];
 export function AnswerButton({ text, state, onPress, index, compact }: Props) {
   const isDisabled = state === 'disabled' || state === 'correct' || state === 'wrong' || state === 'show-correct';
 
-  const borderColor =
-    state === 'correct' || state === 'show-correct'
-      ? '#4CAF50'
-      : state === 'wrong'
-      ? '#F44336'
-      : '#3D2870';
+  const isCorrect = state === 'correct' || state === 'show-correct';
+  const isWrong = state === 'wrong';
 
-  const bgColor =
-    state === 'correct' || state === 'show-correct'
-      ? 'rgba(76,175,80,0.18)'
-      : state === 'wrong'
-      ? 'rgba(244,67,54,0.18)'
-      : '#1E1040';
-
-  const labelBg =
-    state === 'correct' || state === 'show-correct'
-      ? '#4CAF50'
-      : state === 'wrong'
-      ? '#F44336'
-      : '#3D2870';
+  const borderColor = isCorrect ? colors.correct : isWrong ? colors.wrong : colors.lineStrong;
+  const bgColor = isCorrect
+    ? 'rgba(54, 224, 168, 0.12)'
+    : isWrong
+    ? 'rgba(255, 90, 90, 0.12)'
+    : colors.bg2;
+  const labelBg = isCorrect ? colors.correct : isWrong ? colors.wrong : colors.lineStrong;
+  const labelColor = isCorrect ? '#022' : isWrong ? '#200' : colors.text1;
 
   return (
     <TouchableOpacity
@@ -45,9 +37,17 @@ export function AnswerButton({ text, state, onPress, index, compact }: Props) {
       style={[styles.button, compact && styles.buttonCompact, { backgroundColor: bgColor, borderColor }]}
     >
       <View style={[styles.label, { backgroundColor: labelBg }]}>
-        <Text style={styles.labelText}>{LABELS[index]}</Text>
+        <Text style={[styles.labelText, { color: labelColor }]}>{LABELS[index]}</Text>
       </View>
-      <Text style={[styles.text, compact && styles.textCompact, state === 'disabled' && styles.dimmed]}>{text}</Text>
+      <Text style={[
+        styles.text,
+        compact && styles.textCompact,
+        state === 'disabled' && styles.dimmed,
+      ]}>
+        {text}
+      </Text>
+      {isCorrect && <Text style={styles.checkmark}>✓</Text>}
+      {isWrong && <Text style={styles.crossmark}>✕</Text>}
     </TouchableOpacity>
   );
 }
@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: radius.md,
     borderWidth: 1.5,
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 14,
-    marginBottom: 9,
+    marginBottom: 8,
     minHeight: 48,
   },
   buttonCompact: {
@@ -72,30 +72,44 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   label: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 26,
+    height: 26,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    flexShrink: 0,
   },
   labelText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontFamily: 'DMSans_700Bold',
+    fontSize: 11,
+    fontFamily: fonts.mono700,
+    lineHeight: 14,
   },
   text: {
     flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_500Medium',
+    color: colors.text1,
+    fontSize: 14,
+    fontFamily: fonts.display600,
     lineHeight: 20,
+    letterSpacing: -0.2,
   },
   textCompact: {
     fontSize: 13,
     lineHeight: 18,
   },
   dimmed: {
-    color: '#3D2870',
+    color: colors.text4,
+  },
+  checkmark: {
+    color: colors.correct,
+    fontSize: 18,
+    fontFamily: fonts.display700,
+    marginLeft: 8,
+  },
+  crossmark: {
+    color: colors.wrong,
+    fontSize: 16,
+    fontFamily: fonts.display700,
+    marginLeft: 8,
   },
 });
