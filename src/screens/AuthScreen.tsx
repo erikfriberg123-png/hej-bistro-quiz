@@ -244,7 +244,7 @@ export default function AuthScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoBlock}>
-            <Image source={require('../../assets/appicon.png')} style={styles.logo} />
+            <Image source={require('../../assets/logo.png')} style={styles.logo} />
             <Text style={styles.tagline}>Quiz för restaurangfolk</Text>
           </View>
 
@@ -407,8 +407,8 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    borderRadius: 20,
     marginBottom: 8,
+    opacity: 0.85,
   },
   tagline: {
     color: colors.text2,
