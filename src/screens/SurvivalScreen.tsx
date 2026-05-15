@@ -14,6 +14,7 @@ import { Question } from '../types';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
 import { useGameStore } from '../store/gameStore';
+import { submitSurvivalScore } from '../lib/scores';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
@@ -107,6 +108,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
         setCorrectAnswers(c => {
           setMaxStreak(ms => {
             const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
+            submitSurvivalScore(s);
             navigation.replace('SurvivalResult', {
               score: s,
               correctAnswers: c,
