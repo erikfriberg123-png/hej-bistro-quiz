@@ -7,7 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:web": "expo export --platform web && node -e \"require('fs').writeFileSync('dist/_redirects', '/* /index.html 200\\n')\""
+    "build:web": "expo export --platform web && cp public/privacy.html dist/privacy.html && cp public/support.html dist/support.html && node -e \"require('fs').writeFileSync('dist/_redirects', '/privacy /privacy.html 200\\n/support /support.html 200\\n/* /index.html 200\\n')\""
   },
   "dependencies": {
     "@expo-google-fonts/caveat": "^0.4.2",
