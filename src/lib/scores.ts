@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { type Area, DEFAULT_AREA } from './branding';
 
 export interface LeaderboardEntry {
   user_id: string;
@@ -89,7 +90,7 @@ export async function checkUsernameAvailable(username: string): Promise<boolean>
 
 const USERNAME_RE = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 _-]+$/;
 
-export async function setUsername(username: string): Promise<void> {
+export async function setUsername(username: string, area?: Area): Promise<void> {
   const trimmed = username.trim();
   if (trimmed.length < 2 || trimmed.length > 30) throw new Error('Användarnamnet måste vara 2–30 tecken.');
   if (!USERNAME_RE.test(trimmed)) throw new Error('Användarnamnet innehåller otillåtna tecken.');
@@ -98,7 +99,7 @@ export async function setUsername(username: string): Promise<void> {
   if (!user) throw new Error('Inte inloggad');
   const { error } = await supabase
     .from('profiles')
-    .update({ username: trimmed })
+    .update({ username: trimmed, ...(area ? { area } : {}) })
     .eq('id', user.id);
   if (error) throw error;
 }
@@ -112,4 +113,28 @@ export async function getUsername(): Promise<string | null> {
     .eq('id', user.id)
     .single();
   return data?.username ?? null;
+}
+
+export async function getUserProfile(): Promise<{ username: string | null; area: Area }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { username: null, area: DEFAULT_AREA };
+  const { data } = await supabase
+    .from('profiles')
+    .select('username, area')
+    .eq('id', user.id)
+    .single();
+  return {
+    username: data?.username ?? null,
+    area: (data?.area as Area) ?? DEFAULT_AREA,
+  };
+}
+
+export async function setArea(area: Area): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Inte inloggad');
+  const { error } = await supabase
+    .from('profiles')
+    .update({ area })
+    .eq('id', user.id);
+  if (error) throw error;
 }

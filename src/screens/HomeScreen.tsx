@@ -20,7 +20,8 @@ import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
-import { getUsername, setUsername, checkUsernameAvailable } from '../lib/scores';
+import { getUserProfile, setUsername, setArea as saveArea, checkUsernameAvailable } from '../lib/scores';
+import { type Area, AREA_BRANDING, AREAS, DEFAULT_AREA } from '../lib/branding';
 import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
@@ -30,11 +31,14 @@ import { StoryModal } from '../components/StoryModal';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { highscores, survivalHighscores, streak, checkStreak } = useGameStore();
+  const { highscores, survivalHighscores, streak, checkStreak, loadRemoteQuestions } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [usernameRequired, setUsernameRequired] = useState(false);
   const [username, setUsernameState] = useState<string | null>(null);
+  const [area, setAreaState] = useState<Area>(DEFAULT_AREA);
+  const [profileStep, setProfileStep] = useState<'name' | 'area'>('name');
+  const [selectedArea, setSelectedArea] = useState<Area>(DEFAULT_AREA);
   const [inputName, setInputName] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -65,9 +69,11 @@ export default function HomeScreen({ navigation }: Props) {
 
   useEffect(() => {
     checkStreak();
-    getUsername().then(name => {
+    getUserProfile().then(({ username: name, area: userArea }) => {
       setUsernameState(name);
       setInputName(name ?? '');
+      setAreaState(userArea);
+      setSelectedArea(userArea);
       if (!name) {
         setUsernameRequired(true);
         setProfileVisible(true);
@@ -133,6 +139,49 @@ export default function HomeScreen({ navigation }: Props) {
     return () => clearTimeout(t);
   }, [turnNotification]);
 
+  // Step 1 for new users: validate name and advance to area selection
+  const handleNextToArea = async () => {
+    if (!inputName.trim()) return;
+    setUsernameError('');
+    setSaving(true);
+    try {
+      const available = await checkUsernameAvailable(inputName.trim());
+      if (!available) {
+        setUsernameError('Det namnet är redan taget. Välj ett annat.');
+        return;
+      }
+      setProfileStep('area');
+    } catch {
+      setUsernameError('Kunde inte kontrollera namn. Försök igen.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Step 2 for new users: save username + chosen area
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      await setUsername(inputName.trim(), selectedArea);
+      setUsernameState(inputName.trim());
+      setAreaState(selectedArea);
+      loadRemoteQuestions(selectedArea);
+      setUsernameRequired(false);
+      setProfileVisible(false);
+      setProfileStep('name');
+      if (challengeAfterSave) {
+        setChallengeAfterSave(false);
+        navigation.navigate('ChallengeLobby', {});
+      }
+    } catch {
+      setUsernameError('Kunde inte spara. Försök igen.');
+      setProfileStep('name');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // For existing users changing only their username
   const handleSaveUsername = async () => {
     if (!inputName.trim()) return;
     setUsernameError('');
@@ -145,16 +194,23 @@ export default function HomeScreen({ navigation }: Props) {
       }
       await setUsername(inputName.trim());
       setUsernameState(inputName.trim());
-      setUsernameRequired(false);
       setProfileVisible(false);
-      if (challengeAfterSave) {
-        setChallengeAfterSave(false);
-        navigation.navigate('ChallengeLobby', {});
-      }
     } catch {
       setUsernameError('Kunde inte spara namn. Försök igen.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // For existing users changing their area from the profile modal
+  const handleChangeArea = async (newArea: Area) => {
+    if (newArea === area) return;
+    try {
+      await saveArea(newArea);
+      setAreaState(newArea);
+      loadRemoteQuestions(newArea);
+    } catch {
+      // silent — area stays the same
     }
   };
 
@@ -318,7 +374,7 @@ export default function HomeScreen({ navigation }: Props) {
             <TouchableOpacity activeOpacity={0.7} onPress={() => setMode('training')}>
               <Image source={require('../../assets/logo.png')} style={styles.logo} />
             </TouchableOpacity>
-            <Text style={styles.subtitle}>Quiz för kroganställda</Text>
+            <Text style={styles.subtitle}>{AREA_BRANDING[area].tagline}</Text>
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Leaderboard', {})}
@@ -486,8 +542,8 @@ export default function HomeScreen({ navigation }: Props) {
           onPress={() => setStoryVisible(true)}
           style={styles.createBtn}
         >
-          <Text style={styles.createBtnIcon}>🍽️</Text>
-          <Text style={styles.createBtnText}>Berätta en kroghistoria</Text>
+          <Text style={styles.createBtnIcon}>{AREA_BRANDING[area].storyButtonIcon}</Text>
+          <Text style={styles.createBtnText}>{AREA_BRANDING[area].storyButtonText}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { setFeedbackText(''); setFeedbackSent(false); setFeedbackError(''); setFeedbackVisible(true); }} style={styles.helpLink}>
@@ -595,56 +651,130 @@ export default function HomeScreen({ navigation }: Props) {
         >
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>
-                {usernameRequired ? 'Välj ett smeknamn' : 'Ditt namn'}
-              </Text>
-              {usernameRequired ? (
-                <Text style={styles.modalBody}>
-                  {'Välj ett unikt smeknamn innan du börjar spela. Det visas på topplistan och när du utmanar vänner.'}
-                </Text>
-              ) : challengeAfterSave ? (
-                <Text style={styles.modalHint}>
-                  Du behöver ett smeknamn för att utmana andra.
-                </Text>
-              ) : (
-                <Text style={styles.modalBody}>
-                  {'Ändra ditt smeknamn. Namnet måste vara unikt.'}
-                </Text>
+
+              {/* ── New user: step 1 — choose username ── */}
+              {usernameRequired && profileStep === 'name' && (
+                <>
+                  <Text style={styles.modalTitle}>Välj ett smeknamn</Text>
+                  <Text style={styles.modalBody}>
+                    {'Välj ett unikt smeknamn innan du börjar spela. Det visas på topplistan och när du utmanar vänner.'}
+                  </Text>
+                  <TextInput
+                    style={[styles.input, usernameError ? styles.inputError : null]}
+                    value={inputName}
+                    onChangeText={v => { setInputName(v); setUsernameError(''); }}
+                    placeholder="Ditt smeknamn..."
+                    placeholderTextColor="#6050A0"
+                    maxLength={20}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {usernameError ? <Text style={styles.usernameError}>{usernameError}</Text> : null}
+                  <TouchableOpacity
+                    onPress={handleNextToArea}
+                    style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
+                    disabled={!inputName.trim() || saving}
+                  >
+                    <Text style={styles.modalBtnText}>{saving ? 'Kontrollerar...' : 'Nästa →'}</Text>
+                  </TouchableOpacity>
+                </>
               )}
 
-              <TextInput
-                style={[styles.input, usernameError ? styles.inputError : null]}
-                value={inputName}
-                onChangeText={v => { setInputName(v); setUsernameError(''); }}
-                placeholder="Ditt smeknamn..."
-                placeholderTextColor="#6050A0"
-                maxLength={20}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              {/* ── New user: step 2 — choose area ── */}
+              {usernameRequired && profileStep === 'area' && (
+                <>
+                  <Text style={styles.modalTitle}>Välj ditt område</Text>
+                  <Text style={styles.modalBody}>
+                    {'Välj vilket område du tillhör. Det avgör vilka frågor du får och hur appen presenteras.'}
+                  </Text>
+                  <View style={styles.areaGrid}>
+                    {AREAS.map(a => {
+                      const b = AREA_BRANDING[a];
+                      const selected = selectedArea === a;
+                      return (
+                        <TouchableOpacity
+                          key={a}
+                          onPress={() => setSelectedArea(a)}
+                          style={[styles.areaCard, selected && styles.areaCardSelected]}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.areaCardIcon}>{b.icon}</Text>
+                          <Text style={[styles.areaCardLabel, selected && styles.areaCardLabelSelected]}>
+                            {b.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleSaveProfile}
+                    style={[styles.modalBtn, saving && styles.modalBtnDisabled]}
+                    disabled={saving}
+                  >
+                    <Text style={styles.modalBtnText}>{saving ? 'Sparar...' : 'Kom igång!'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setProfileStep('name')} style={styles.cancelBtn}>
+                    <Text style={styles.cancelText}>← Tillbaka</Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
-              {usernameError ? (
-                <Text style={styles.usernameError}>{usernameError}</Text>
-              ) : null}
-
-              <TouchableOpacity
-                onPress={handleSaveUsername}
-                style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
-                disabled={!inputName.trim() || saving}
-              >
-                <Text style={styles.modalBtnText}>{saving ? 'Kontrollerar...' : 'Spara'}</Text>
-              </TouchableOpacity>
-
+              {/* ── Existing user: edit profile ── */}
               {!usernameRequired && !changePwVisible && (
                 <>
+                  <Text style={styles.modalTitle}>Ditt namn</Text>
+                  {challengeAfterSave ? (
+                    <Text style={styles.modalHint}>Du behöver ett smeknamn för att utmana andra.</Text>
+                  ) : (
+                    <Text style={styles.modalBody}>{'Ändra ditt smeknamn. Namnet måste vara unikt.'}</Text>
+                  )}
+                  <TextInput
+                    style={[styles.input, usernameError ? styles.inputError : null]}
+                    value={inputName}
+                    onChangeText={v => { setInputName(v); setUsernameError(''); }}
+                    placeholder="Ditt smeknamn..."
+                    placeholderTextColor="#6050A0"
+                    maxLength={20}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {usernameError ? <Text style={styles.usernameError}>{usernameError}</Text> : null}
+                  <TouchableOpacity
+                    onPress={handleSaveUsername}
+                    style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
+                    disabled={!inputName.trim() || saving}
+                  >
+                    <Text style={styles.modalBtnText}>{saving ? 'Sparar...' : 'Spara'}</Text>
+                  </TouchableOpacity>
+
+                  {/* Area selector */}
+                  <Text style={styles.areaSectionLabel}>Ditt område</Text>
+                  <View style={styles.areaGrid}>
+                    {AREAS.map(a => {
+                      const b = AREA_BRANDING[a];
+                      const selected = area === a;
+                      return (
+                        <TouchableOpacity
+                          key={a}
+                          onPress={() => handleChangeArea(a)}
+                          style={[styles.areaCard, selected && styles.areaCardSelected]}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.areaCardIcon}>{b.icon}</Text>
+                          <Text style={[styles.areaCardLabel, selected && styles.areaCardLabelSelected]}>
+                            {b.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
                   <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
                     <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
-
                   <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
                     <Text style={styles.logoutText}>🚪  Logga ut</Text>
                   </TouchableOpacity>
-
                   <TouchableOpacity
                     onPress={() => { setProfileVisible(false); setChallengeAfterSave(false); }}
                     style={styles.cancelBtn}
@@ -725,6 +855,7 @@ export default function HomeScreen({ navigation }: Props) {
         <StoryModal
           userId={userId}
           username={username}
+          area={area}
           onClose={() => setStoryVisible(false)}
         />
       )}
@@ -1149,6 +1280,43 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
     paddingTop: 12,
+  },
+  areaSectionLabel: {
+    color: '#B0A8C8',
+    fontSize: 12,
+    fontFamily: 'DMSans_600SemiBold',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  areaGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  areaCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#3D2870',
+    backgroundColor: '#2A1A50',
+    gap: 6,
+  },
+  areaCardSelected: {
+    borderColor: '#9B5DE5',
+    backgroundColor: '#3D2070',
+  },
+  areaCardIcon: { fontSize: 28 },
+  areaCardLabel: {
+    color: '#B0A8C8',
+    fontSize: 14,
+    fontFamily: 'DMSans_600SemiBold',
+  },
+  areaCardLabelSelected: {
+    color: '#FFFFFF',
   },
   feedbackSuccess: {
     color: '#A0F0B0',

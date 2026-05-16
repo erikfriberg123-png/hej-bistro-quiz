@@ -1,9 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { Question, CategoryId, Difficulty } from '../types';
+import { type Area, DEFAULT_AREA } from './branding';
 
-const CACHE_KEY = 'remote-questions-v1';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function cacheKey(area: Area) {
+  return `remote-questions-v2-${area}`;
+}
 
 interface Cache {
   questions: Question[];
@@ -23,9 +27,10 @@ function rowToQuestion(row: any): Question {
   };
 }
 
-export async function fetchRemoteQuestions(): Promise<Question[]> {
+export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Question[]> {
+  const key = cacheKey(area);
   try {
-    const raw = await AsyncStorage.getItem(CACHE_KEY);
+    const raw = await AsyncStorage.getItem(key);
     if (raw) {
       const cache: Cache = JSON.parse(raw);
       if (Date.now() - cache.fetchedAt < CACHE_TTL) {
@@ -39,24 +44,30 @@ export async function fetchRemoteQuestions(): Promise<Question[]> {
       .from('remote_questions')
       .select('*')
       .eq('active', true)
+      .eq('area', area)
       .order('created_at', { ascending: true });
 
     if (error) throw error;
 
     const questions = (data ?? []).map(rowToQuestion);
-    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ questions, fetchedAt: Date.now() }));
+    await AsyncStorage.setItem(key, JSON.stringify({ questions, fetchedAt: Date.now() }));
     return questions;
   } catch {
-    // Stale cache is better than nothing
     try {
-      const raw = await AsyncStorage.getItem(CACHE_KEY);
+      const raw = await AsyncStorage.getItem(key);
       if (raw) return (JSON.parse(raw) as Cache).questions;
     } catch {}
     return [];
   }
 }
 
-export async function invalidateQuestionCache(): Promise<void> {
-  await AsyncStorage.removeItem(CACHE_KEY);
+export async function invalidateQuestionCache(area?: Area): Promise<void> {
+  if (area) {
+    await AsyncStorage.removeItem(cacheKey(area));
+  } else {
+    // Invalidate all area caches
+    await AsyncStorage.removeItem(cacheKey('krogen'));
+    await AsyncStorage.removeItem(cacheKey('sjukvard'));
+  }
 }
 

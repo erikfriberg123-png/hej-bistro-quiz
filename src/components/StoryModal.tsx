@@ -20,14 +20,17 @@ import {
   submitStory,
 } from '../lib/stories'
 import type { ImagePickerAsset } from 'expo-image-picker'
+import { type Area, AREA_BRANDING, DEFAULT_AREA } from '../lib/branding'
 
 interface Props {
   userId: string | null
   username: string | null
+  area?: Area
   onClose: () => void
 }
 
-export function StoryModal({ userId, username, onClose }: Props) {
+export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: Props) {
+  const branding = AREA_BRANDING[area]
   const [text, setText] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [displayName, setDisplayName] = useState(username ?? '')
@@ -90,8 +93,8 @@ export function StoryModal({ userId, username, onClose }: Props) {
 
             <View style={styles.titleRow}>
               <View>
-                <Text style={styles.title}>🍽️ Berätta en kroghistoria</Text>
-                <Text style={styles.subtitle}>Intressanta historier kan publiceras på sajten.</Text>
+                <Text style={styles.title}>{branding.storyTitle}</Text>
+                <Text style={styles.subtitle}>{branding.storySubtitle}</Text>
               </View>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
                 <Text style={styles.closeBtnText}>✕</Text>
@@ -116,7 +119,7 @@ export function StoryModal({ userId, username, onClose }: Props) {
                   style={[styles.textarea, textError ? styles.inputError : null]}
                   value={text}
                   onChangeText={v => { setText(sanitizeStoryText(v)); setTextError('') }}
-                  placeholder="Berätta en intressant händelse som du varit med om på restaurang."
+                  placeholder={branding.storyPlaceholder}
                   placeholderTextColor="#6050A0"
                   multiline
                   maxLength={2000}
