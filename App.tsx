@@ -47,6 +47,7 @@ import BattleResultScreen from './src/screens/BattleResultScreen';
 import SurvivalScreen from './src/screens/SurvivalScreen';
 import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
 import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
+import AppStoreBanner from './src/components/AppStoreBanner';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -171,6 +172,7 @@ export default function App() {
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webOuter}>
+        <AppStoreBanner />
         <View style={styles.webInner}>
           {navContent}
         </View>
