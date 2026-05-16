@@ -434,6 +434,19 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
 
             <TouchableOpacity
+              style={[styles.modeCard, styles.modeCardTof]}
+              onPress={() => navigation.navigate('SantEllerFalskt', { round: 1 })}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modeCardIcon}>🔀</Text>
+              <View style={styles.modeCardBody}>
+                <Text style={styles.modeCardTitle}>Sant eller Falskt</Text>
+                <Text style={styles.modeCardSub}>Svep rätt eller vänster — 5 rundor, 7 sekunder per fråga</Text>
+              </View>
+              <Text style={[styles.modeCardArrow, { color: '#22D3EE' }]}>→</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.modeCard, styles.modeCardBattle]}
               onPress={handleChallengePress}
               activeOpacity={0.85}
@@ -1032,6 +1045,10 @@ const styles = StyleSheet.create({
   modeCardSurvival: {
     backgroundColor: '#2A0A1A',
     borderColor: '#E84393',
+  },
+  modeCardTof: {
+    backgroundColor: '#071A2A',
+    borderColor: '#22D3EE',
   },
   modeCardBattle: {
     backgroundColor: '#0D2A2A',
