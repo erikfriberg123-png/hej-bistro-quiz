@@ -30,6 +30,7 @@ import BattlePickCategoryScreen from './src/screens/BattlePickCategoryScreen';
 import BattleRoundScreen from './src/screens/BattleRoundScreen';
 import BattleBoardScreen from './src/screens/BattleBoardScreen';
 import BattleResultScreen from './src/screens/BattleResultScreen';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 import SurvivalScreen from './src/screens/SurvivalScreen';
 import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
 import SantEllerFalsktScreen from './src/screens/SantEllerFalsktScreen';
@@ -133,6 +134,7 @@ export default function App() {
     <NavigationContainer linking={linking}>
       <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
         <AppStack.Screen name="Home" component={HomeScreen} />
+        <AppStack.Screen name="Welcome" component={WelcomeScreen} />
         <AppStack.Screen name="Game" component={GameScreen} />
         <AppStack.Screen name="Result" component={ResultScreen} />
         <AppStack.Screen name="Leaderboard" component={LeaderboardScreen} />

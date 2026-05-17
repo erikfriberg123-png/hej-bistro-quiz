@@ -58,6 +58,7 @@ export type AuthStackParamList = {
 
 export type RootStackParamList = {
   Home: undefined;
+  Welcome: undefined;
   Game: {
     categoryId: CategoryId;
     challengeMode?: 'create' | 'join';

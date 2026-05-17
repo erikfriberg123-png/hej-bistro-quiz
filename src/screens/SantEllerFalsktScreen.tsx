@@ -45,34 +45,33 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
 
-  // Drag animation
   const pan = useRef(new Animated.ValueXY()).current;
   const cardScale = useRef(new Animated.Value(1)).current;
   const feedbackOpacity = useRef(new Animated.Value(0)).current;
-
-  // Timer animation (1→0 over TIMER_SECONDS)
   const timerAnim = useRef(new Animated.Value(1)).current;
   const timerAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const answeredRef = useRef(false);
   const scoreRef = useRef(0);
   const correctRef = useRef(0);
+  const questionsRef = useRef<TofQuestion[]>([]);
 
-  // Load questions
   useEffect(() => {
     fetchTofQuestions(currentArea, difficulty)
       .then(all => {
         if (all.length === 0) { setNoQuestions(true); setLoading(false); return; }
-        setQuestions(shuffleArray(all).slice(0, TOF_QUESTIONS_PER_ROUND));
+        const q = shuffleArray(all).slice(0, TOF_QUESTIONS_PER_ROUND);
+        questionsRef.current = q;
+        setQuestions(q);
         setLoading(false);
       })
       .catch(() => { setNoQuestions(true); setLoading(false); });
   }, []);
 
   const advanceQuestion = useCallback((nextIndex: number, finalScore: number, finalCorrect: number) => {
-    if (nextIndex >= Math.min(questions.length, TOF_QUESTIONS_PER_ROUND)) {
-      // Round complete — navigate to result
+    if (nextIndex >= Math.min(questionsRef.current.length, TOF_QUESTIONS_PER_ROUND)) {
       updateTofHighscore(round, finalScore).then(({ isNewBest, previousBest }) => {
         navigation.replace('SantEllerFalsktResult', {
           round,
@@ -84,13 +83,14 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       });
       return;
     }
-    // Reset for next card
     answeredRef.current = false;
+    setIsAnswered(false);
     pan.setValue({ x: 0, y: 0 });
+    cardScale.setValue(1);
     feedbackOpacity.setValue(0);
     setFeedback(null);
     setCurrentIndex(nextIndex);
-  }, [questions, round, navigation, pan]);
+  }, [round, navigation, pan, cardScale, feedbackOpacity]);
 
   const showFeedbackThen = useCallback((type: FeedbackState, nextIndex: number, finalScore: number, finalCorrect: number) => {
     setFeedback(type);
@@ -99,16 +99,17 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       duration: 150,
       useNativeDriver: true,
     }).start();
-    setTimeout(() => advanceQuestion(nextIndex, finalScore, finalCorrect), 800);
+    setTimeout(() => advanceQuestion(nextIndex, finalScore, finalCorrect), 900);
   }, [advanceQuestion, feedbackOpacity]);
 
-  const handleSwipe = useCallback((goesRight: boolean) => {
-    if (answeredRef.current || questions.length === 0) return;
+  const handleAnswer = useCallback((goesRight: boolean) => {
+    if (answeredRef.current || questionsRef.current.length === 0) return;
     answeredRef.current = true;
+    setIsAnswered(true);
 
     timerAnimRef.current?.stop();
 
-    const currentQ = questions[currentIndex];
+    const currentQ = questionsRef.current[currentIndex];
     const isCorrect = goesRight === currentQ.answer;
 
     const newScore = scoreRef.current + (isCorrect ? TOF_POINTS_PER_CORRECT : 0);
@@ -123,7 +124,6 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
 
-    // Fly card off screen
     Animated.timing(pan, {
       toValue: { x: goesRight ? CARD_FLY_DISTANCE : -CARD_FLY_DISTANCE, y: 0 },
       duration: 260,
@@ -131,28 +131,24 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
     }).start(() => {
       showFeedbackThen(isCorrect ? 'correct' : 'wrong', currentIndex + 1, newScore, newCorrect);
     });
-  }, [questions, currentIndex, pan, showFeedbackThen]);
+  }, [currentIndex, pan, showFeedbackThen]);
 
   const handleTimerExpire = useCallback(() => {
     if (answeredRef.current) return;
     answeredRef.current = true;
-
-    const newScore = scoreRef.current;
-    const newCorrect = correctRef.current;
+    setIsAnswered(true);
 
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
-    // Shrink card then show timeout feedback
     Animated.timing(cardScale, {
       toValue: 0.85,
       duration: 200,
       useNativeDriver: false,
     }).start(() => {
-      showFeedbackThen('timeout', currentIndex + 1, newScore, newCorrect);
+      showFeedbackThen('timeout', currentIndex + 1, scoreRef.current, correctRef.current);
     });
   }, [currentIndex, cardScale, showFeedbackThen]);
 
-  // Start timer when question changes
   useEffect(() => {
     if (loading || noQuestions || questions.length === 0) return;
 
@@ -166,14 +162,11 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       useNativeDriver: false,
     });
     timerAnimRef.current = anim;
-    anim.start(({ finished }) => {
-      if (finished) handleTimerExpire();
-    });
+    anim.start(({ finished }) => { if (finished) handleTimerExpire(); });
 
     return () => anim.stop();
   }, [currentIndex, loading, noQuestions, questions.length]);
 
-  // PanResponder
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => !answeredRef.current,
@@ -181,14 +174,13 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       onPanResponderMove: Animated.event([null, { dx: pan.x }], { useNativeDriver: false }),
       onPanResponderRelease: (_, g) => {
         if (answeredRef.current) return;
-        if (g.dx > SWIPE_THRESHOLD) handleSwipe(true);
-        else if (g.dx < -SWIPE_THRESHOLD) handleSwipe(false);
+        if (g.dx > SWIPE_THRESHOLD) handleAnswer(true);
+        else if (g.dx < -SWIPE_THRESHOLD) handleAnswer(false);
         else Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       },
     })
   ).current;
 
-  // Derived animated values
   const cardRotation = pan.x.interpolate({
     inputRange: [-200, 0, 200],
     outputRange: ['-10deg', '0deg', '10deg'],
@@ -214,7 +206,6 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
     outputRange: [0.18, 0],
     extrapolate: 'clamp',
   });
-
   const timerBarWidth = timerAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
@@ -225,7 +216,6 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   });
 
   const currentQuestion = questions[currentIndex] ?? null;
-  const questionNumber = currentIndex + 1;
 
   if (loading) {
     return (
@@ -241,7 +231,9 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>🔍</Text>
           <Text style={styles.emptyTitle}>Inga frågor ännu</Text>
-          <Text style={styles.emptyBody}>Det finns inga {TOF_DIFFICULTY_LABEL[difficulty].toLowerCase()}-frågor för den här rundan.</Text>
+          <Text style={styles.emptyBody}>
+            Det finns inga {TOF_DIFFICULTY_LABEL[difficulty].toLowerCase()}-frågor för den här rundan.
+          </Text>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Tillbaka</Text>
           </TouchableOpacity>
@@ -251,7 +243,10 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   }
 
   const feedbackEmoji = feedback === 'correct' ? '✅' : feedback === 'timeout' ? '⏱' : '❌';
-  const feedbackText = feedback === 'correct' ? 'Rätt!' : feedback === 'timeout' ? 'Tid ute!' : `Fel! Svaret var ${currentQuestion.answer ? 'Sant' : 'Falskt'}`;
+  const feedbackLabel =
+    feedback === 'correct' ? 'Rätt!' :
+    feedback === 'timeout' ? 'Tid ute!' :
+    `Fel! Svaret var ${currentQuestion.answer ? 'Sant' : 'Falskt'}`;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -291,19 +286,15 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
         <Animated.View style={[styles.timerBar, { width: timerBarWidth, backgroundColor: timerBarColor }]} />
       </View>
 
-      {/* Game area */}
+      {/* Card area */}
       <View style={styles.gameArea}>
-        {/* FALSKT label (left) */}
         <Animated.View style={[styles.sideLabel, styles.sideLabelLeft, { opacity: falsktOpacity }]}>
           <Text style={styles.sideLabelTextFalskt}>FALSKT</Text>
         </Animated.View>
-
-        {/* SANT label (right) */}
         <Animated.View style={[styles.sideLabel, styles.sideLabelRight, { opacity: santOpacity }]}>
           <Text style={styles.sideLabelTextSant}>SANT</Text>
         </Animated.View>
 
-        {/* Card */}
         <View style={styles.cardContainer}>
           <Animated.View
             style={[
@@ -318,29 +309,41 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
             ]}
             {...panResponder.panHandlers}
           >
-            {/* Green overlay */}
             <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: '#4CAF50', opacity: cardGreenTint }]} />
-            {/* Red overlay */}
             <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: '#FF3B30', opacity: cardRedTint }]} />
-
-            <Text style={styles.questionNumber}>{questionNumber} / {TOF_QUESTIONS_PER_ROUND}</Text>
+            <Text style={styles.questionNumber}>{currentIndex + 1} / {TOF_QUESTIONS_PER_ROUND}</Text>
             <Text style={styles.statement}>{currentQuestion.statement}</Text>
-            <Text style={styles.swipeHint}>← Falskt  ·  Sant →</Text>
           </Animated.View>
         </View>
 
-        {/* Feedback overlay */}
         {feedback !== null && (
           <Animated.View style={[styles.feedbackOverlay, { opacity: feedbackOpacity }]}>
             <Text style={styles.feedbackEmoji}>{feedbackEmoji}</Text>
-            <Text style={[
-              styles.feedbackText,
-              feedback === 'correct' ? styles.feedbackCorrect : styles.feedbackWrong,
-            ]}>
-              {feedbackText}
+            <Text style={[styles.feedbackText, feedback === 'correct' ? styles.feedbackCorrect : styles.feedbackWrong]}>
+              {feedbackLabel}
             </Text>
           </Animated.View>
         )}
+      </View>
+
+      {/* Bottom answer buttons */}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={[styles.answerBtn, styles.falsktBtn, isAnswered && styles.btnDisabled]}
+          onPress={() => handleAnswer(false)}
+          disabled={isAnswered}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.falsktBtnText}>Falskt</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.answerBtn, styles.santBtn, isAnswered && styles.btnDisabled]}
+          onPress={() => handleAnswer(true)}
+          disabled={isAnswered}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.santBtnText}>Sant</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -382,12 +385,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     justifyContent: 'center',
   },
-  progressDot: {
-    width: 20,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#2A1A50',
-  },
+  progressDot: { width: 20, height: 6, borderRadius: 3, backgroundColor: '#2A1A50' },
   progressDotCorrect: { backgroundColor: '#4CAF50' },
   progressDotActive: { backgroundColor: '#9B5DE5' },
 
@@ -437,7 +435,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 30,
   },
-  swipeHint: { color: '#3D2870', fontSize: 12, fontFamily: 'DMSans_400Regular', marginTop: 4 },
 
   feedbackOverlay: {
     position: 'absolute',
@@ -455,4 +452,41 @@ const styles = StyleSheet.create({
   feedbackText: { fontSize: 17, fontFamily: 'DMSans_700Bold', textAlign: 'center' },
   feedbackCorrect: { color: '#4CAF50' },
   feedbackWrong: { color: '#FF5555' },
+
+  buttonRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingBottom: 28,
+    paddingTop: 12,
+    gap: 12,
+  },
+  answerBtn: {
+    flex: 1,
+    paddingVertical: 20,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+  },
+  falsktBtn: {
+    backgroundColor: 'rgba(255,59,48,0.1)',
+    borderColor: '#FF3B30',
+  },
+  santBtn: {
+    backgroundColor: 'rgba(76,175,80,0.1)',
+    borderColor: '#4CAF50',
+  },
+  falsktBtnText: {
+    color: '#FF3B30',
+    fontSize: 18,
+    fontFamily: 'DMSans_800ExtraBold',
+    letterSpacing: 0.5,
+  },
+  santBtnText: {
+    color: '#4CAF50',
+    fontSize: 18,
+    fontFamily: 'DMSans_800ExtraBold',
+    letterSpacing: 0.5,
+  },
+  btnDisabled: { opacity: 0.35 },
 });

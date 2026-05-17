@@ -2,6 +2,8 @@ export type Area = 'krogen' | 'sjukvard';
 
 export interface AreaBranding {
   label: string;
+  brandName: string;
+  brandColor: string;
   icon: string;
   tagline: string;
   authTagline: string;
@@ -14,7 +16,9 @@ export interface AreaBranding {
 
 export const AREA_BRANDING: Record<Area, AreaBranding> = {
   krogen: {
-    label: 'Krogen',
+    label: 'Hotel & Restaurang',
+    brandName: 'Hej Bistro',
+    brandColor: '#9B5DE5',
     icon: '🍺',
     tagline: 'Quiz för kroganställda',
     authTagline: 'Quiz för restaurangfolk',
@@ -25,10 +29,12 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
     storyPlaceholder: 'Berätta en intressant händelse som du varit med om på restaurang.',
   },
   sjukvard: {
-    label: 'Sjukvård',
-    icon: '🏥',
-    tagline: 'Quiz om sjukvård',
-    authTagline: 'Quiz om sjukvård',
+    label: 'Vård & Omsorg',
+    brandName: 'Den vakna',
+    brandColor: '#FF38A5',
+    icon: '💗',
+    tagline: 'Quiz för vårdpersonal',
+    authTagline: 'Quiz för vårdpersonal',
     storyButtonText: 'Berätta en arbetshistoria',
     storyButtonIcon: '🏥',
     storyTitle: '🏥 Berätta en arbetshistoria',

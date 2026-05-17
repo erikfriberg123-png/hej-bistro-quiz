@@ -4,13 +4,11 @@ import { type Area } from './branding';
 
 export const TOF_ROUND_DIFFICULTIES: TofDifficulty[] = [
   'easy',
-  'easy_medium',
   'medium',
-  'medium_hard',
   'hard',
 ];
 
-export const TOF_TOTAL_ROUNDS = 5;
+export const TOF_TOTAL_ROUNDS = 3;
 export const TOF_QUESTIONS_PER_ROUND = 10;
 export const TOF_POINTS_PER_CORRECT = 50;
 export const TOF_TIMER_SECONDS = 7;
