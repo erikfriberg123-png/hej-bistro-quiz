@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
+import { APP_ID, TABLES } from './appConfig';
 import { Question, CategoryId, Difficulty } from '../types';
 import { type Area, DEFAULT_AREA } from './branding';
 
@@ -41,7 +42,7 @@ export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Q
 
   try {
     const { data, error } = await supabase
-      .from('remote_questions')
+      .from(TABLES.questions)
       .select('*')
       .eq('active', true)
       .eq('area', area)
@@ -70,4 +71,3 @@ export async function invalidateQuestionCache(area?: Area): Promise<void> {
     await AsyncStorage.removeItem(cacheKey('sjukvard'));
   }
 }
-

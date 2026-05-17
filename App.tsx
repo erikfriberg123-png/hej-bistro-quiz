@@ -12,10 +12,24 @@ import {
   DMSans_700Bold,
   DMSans_800ExtraBold,
 } from '@expo-google-fonts/dm-sans';
+import {
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from '@expo-google-fonts/space-grotesk';
+import {
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from '@expo-google-fonts/jetbrains-mono';
+import {
+  Caveat_700Bold,
+} from '@expo-google-fonts/caveat';
 import { AuthStackParamList, RootStackParamList } from './src/types';
 import { supabase } from './src/lib/supabase';
 import { useGameStore } from './src/store/gameStore';
 import { registerPushToken } from './src/lib/pushNotifications';
+import { colors } from './src/theme/tokens';
 import HomeScreen from './src/screens/HomeScreen';
 import GameScreen from './src/screens/GameScreen';
 import ResultScreen from './src/screens/ResultScreen';
@@ -36,6 +50,7 @@ import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
 import SantEllerFalsktScreen from './src/screens/SantEllerFalsktScreen';
 import SantEllerFalsktResultScreen from './src/screens/SantEllerFalsktResultScreen';
 import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
+import AppStoreBanner from './src/components/AppStoreBanner';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -56,6 +71,13 @@ export default function App() {
     DMSans_600SemiBold,
     DMSans_700Bold,
     DMSans_800ExtraBold,
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
+    Caveat_700Bold,
   });
 
   const [isReady, setIsReady] = useState(false);
@@ -95,7 +117,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load remote questions whenever we have a session
   useEffect(() => {
     if (session) loadRemoteQuestions();
   }, [!!session]);
@@ -115,7 +136,7 @@ export default function App() {
   if (!fontsLoaded || !isReady) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color="#9B5DE5" />
+        <ActivityIndicator color={colors.pink} />
       </View>
     );
   }
@@ -157,6 +178,7 @@ export default function App() {
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webOuter}>
+        <AppStoreBanner />
         <View style={styles.webInner}>
           {navContent}
         </View>
@@ -170,13 +192,13 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#12082A',
+    backgroundColor: colors.bg1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   webOuter: {
     flex: 1,
-    backgroundColor: '#0A0520',
+    backgroundColor: colors.bg0,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },

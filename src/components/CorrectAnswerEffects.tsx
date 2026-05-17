@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   },
   wowText: {
     fontSize: 82,
-    fontFamily: 'DMSans_700Bold',
-    color: '#FFE66D',
+    fontFamily: 'JetBrainsMono_700Bold',
+    color: '#ffd54f',
     textShadowColor: 'rgba(0,0,0,0.65)',
     textShadowOffset: { width: 3, height: 3 },
     textShadowRadius: 12,

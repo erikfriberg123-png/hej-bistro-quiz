@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } fro
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId } from '../types';
 import { getCategoryById } from '../data/categories';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SurvivalResult'>;
 
@@ -17,11 +18,11 @@ function streakTitle(maxStreak: number): string {
 export default function SurvivalResultScreen({ route, navigation }: Props) {
   const { score, correctAnswers, maxStreak, categoryId, isNewHighscore, previousHighscore } = route.params;
   const category = categoryId !== 'all' ? getCategoryById(categoryId as CategoryId) : null;
-  const accentColor = category?.color ?? '#E84393';
+  const accentColor = category?.color ?? colors.pink;
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.container}>
         <Text style={styles.title}>Överlevnadsläge</Text>
@@ -88,7 +89,7 @@ export default function SurvivalResultScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -96,8 +97,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 16,
   },
-  title: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_600SemiBold', letterSpacing: 1.5, textTransform: 'uppercase' },
-  subtitle: { color: '#FFFFFF', fontSize: 28, fontFamily: 'DMSans_800ExtraBold', marginTop: -8 },
+  title: { color: colors.text2, fontSize: 13, fontFamily: fonts.display600, letterSpacing: 1.5, textTransform: 'uppercase' },
+  subtitle: { color: colors.text1, fontSize: 28, fontFamily: fonts.display700, marginTop: -8 },
   newHighscoreBanner: {
     width: '100%',
     borderRadius: 14,
@@ -110,34 +111,34 @@ const styles = StyleSheet.create({
   },
   newHighscoreText: {
     fontSize: 18,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     letterSpacing: 0.5,
   },
   previousHighscoreText: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
   },
   scoreCard: {
     width: '100%',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 20,
     padding: 28,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     gap: 4,
   },
-  streakTitle: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_600SemiBold', marginBottom: 8 },
-  scoreValue: { fontSize: 64, fontFamily: 'DMSans_800ExtraBold', lineHeight: 72 },
-  scoreLabel: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_600SemiBold', marginBottom: 20 },
+  streakTitle: { color: colors.text2, fontSize: 15, fontFamily: fonts.display600, marginBottom: 8 },
+  scoreValue: { fontSize: 64, fontFamily: fonts.display700, lineHeight: 72 },
+  scoreLabel: { color: colors.text2, fontSize: 14, fontFamily: fonts.display600, marginBottom: 20 },
   statRow: { flexDirection: 'row', width: '100%', marginTop: 8 },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statValue: { color: '#FFFFFF', fontSize: 22, fontFamily: 'DMSans_700Bold' },
-  statLabel: { color: '#6050A0', fontSize: 11, fontFamily: 'DMSans_400Regular', textAlign: 'center' },
-  statDivider: { width: 1, backgroundColor: '#3D2870', marginVertical: 4 },
+  statValue: { color: colors.text1, fontSize: 22, fontFamily: fonts.display700 },
+  statLabel: { color: colors.text3, fontSize: 11, fontFamily: fonts.display400, textAlign: 'center' },
+  statDivider: { width: 1, backgroundColor: colors.lineStrong, marginVertical: 4 },
   btn: { width: '100%', borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  btnText: { color: '#FFFFFF', fontSize: 17, fontFamily: 'DMSans_700Bold' },
-  btnSecondary: { width: '100%', borderRadius: 16, paddingVertical: 16, alignItems: 'center', backgroundColor: '#1E1040', borderWidth: 1, borderColor: '#3D2870' },
-  btnSecondaryText: { color: '#B0A8C8', fontSize: 16, fontFamily: 'DMSans_600SemiBold' },
+  btnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700 },
+  btnSecondary: { width: '100%', borderRadius: 16, paddingVertical: 16, alignItems: 'center', backgroundColor: colors.bg2, borderWidth: 1, borderColor: colors.lineStrong },
+  btnSecondaryText: { color: colors.text2, fontSize: 16, fontFamily: fonts.display600 },
 });

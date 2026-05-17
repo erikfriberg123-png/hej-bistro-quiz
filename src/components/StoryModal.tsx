@@ -20,17 +20,15 @@ import {
   submitStory,
 } from '../lib/stories'
 import type { ImagePickerAsset } from 'expo-image-picker'
-import { type Area, AREA_BRANDING, DEFAULT_AREA } from '../lib/branding'
+import { colors, fonts, radius, spacing } from '../theme/tokens'
 
 interface Props {
   userId: string | null
   username: string | null
-  area?: Area
   onClose: () => void
 }
 
-export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: Props) {
-  const branding = AREA_BRANDING[area]
+export function StoryModal({ userId, username, onClose }: Props) {
   const [text, setText] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [displayName, setDisplayName] = useState(username ?? '')
@@ -88,13 +86,12 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <View style={styles.sheet}>
-            {/* Handle */}
             <View style={styles.handle} />
 
             <View style={styles.titleRow}>
-              <View>
-                <Text style={styles.title}>{branding.storyTitle}</Text>
-                <Text style={styles.subtitle}>{branding.storySubtitle}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>🍽️  Berätta en kroghistoria</Text>
+                <Text style={styles.subtitle}>Intressanta historier kan publiceras på sajten.</Text>
               </View>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
                 <Text style={styles.closeBtnText}>✕</Text>
@@ -114,13 +111,12 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
               </View>
             ) : (
               <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                {/* Textarea */}
                 <TextInput
                   style={[styles.textarea, textError ? styles.inputError : null]}
                   value={text}
                   onChangeText={v => { setText(sanitizeStoryText(v)); setTextError('') }}
-                  placeholder={branding.storyPlaceholder}
-                  placeholderTextColor="#6050A0"
+                  placeholder="Berätta en intressant händelse som du varit med om på restaurang."
+                  placeholderTextColor={colors.text3}
                   multiline
                   maxLength={2000}
                   numberOfLines={7}
@@ -135,15 +131,11 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
                   </Text>
                 </View>
 
-                {/* Image */}
                 <Text style={styles.label}>Bild (valfritt)</Text>
                 {imageAsset ? (
                   <View style={styles.imageWrapper}>
                     <Image source={{ uri: imageAsset.uri }} style={styles.imagePreview} resizeMode="cover" />
-                    <TouchableOpacity
-                      style={styles.imageRemoveBtn}
-                      onPress={() => setImageAsset(null)}
-                    >
+                    <TouchableOpacity style={styles.imageRemoveBtn} onPress={() => setImageAsset(null)}>
                       <Text style={styles.imageRemoveText}>✕</Text>
                     </TouchableOpacity>
                   </View>
@@ -154,7 +146,6 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
                 )}
                 {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
 
-                {/* Anonymous toggle */}
                 <TouchableOpacity
                   style={styles.toggleRow}
                   onPress={() => setIsAnonymous(v => !v)}
@@ -166,7 +157,6 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
                   <Text style={styles.toggleLabel}>Skicka anonymt</Text>
                 </TouchableOpacity>
 
-                {/* Name input */}
                 {!isAnonymous && (
                   <View style={styles.nameContainer}>
                     <Text style={styles.label}>Ditt namn (valfritt)</Text>
@@ -175,21 +165,20 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
                       value={displayName}
                       onChangeText={v => { setDisplayName(sanitizeDisplayName(v)); setNameError('') }}
                       placeholder="Skriv ditt namn eller alias..."
-                      placeholderTextColor="#6050A0"
+                      placeholderTextColor={colors.text3}
                       maxLength={50}
                     />
                     {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
                   </View>
                 )}
 
-                {/* Submit */}
                 <TouchableOpacity
                   onPress={handleSubmit}
                   disabled={sending || uploading}
                   style={[styles.submitBtn, (sending || uploading) && styles.submitBtnDisabled]}
                 >
                   {sending || uploading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.bg0} />
                   ) : (
                     <Text style={styles.submitBtnText}>Skicka in min historia  →</Text>
                   )}
@@ -210,101 +199,110 @@ export function StoryModal({ userId, username, area = DEFAULT_AREA, onClose }: P
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#1E1040',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
+    backgroundColor: colors.bg1,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(54, 224, 224, 0.35)',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderLeftColor: colors.lineStrong,
+    borderRightColor: colors.lineStrong,
+    padding: spacing.s5,
     paddingBottom: 40,
     maxHeight: '92%',
   },
   handle: {
-    width: 40,
+    width: 48,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.lineStrong,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.s5,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.s4,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: 'DMSans_800ExtraBold',
+    color: colors.text1,
+    fontSize: 17,
+    fontFamily: fonts.display700,
   },
   subtitle: {
-    color: '#B0A8C8',
+    color: colors.text3,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginTop: 4,
-    lineHeight: 20,
+    lineHeight: 19,
   },
-  closeBtn: { padding: 4 },
-  closeBtnText: { color: '#B0A8C8', fontSize: 20, lineHeight: 24 },
+  closeBtn: { padding: 4, marginLeft: 12 },
+  closeBtnText: { color: colors.text3, fontSize: 18, lineHeight: 22 },
+
   textarea: {
-    backgroundColor: '#12082A',
-    borderRadius: 14,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     padding: 14,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 24,
     minHeight: 140,
     marginBottom: 4,
   },
-  inputError: { borderColor: '#FF5555' },
+  inputError: { borderColor: colors.wrong },
   textareaFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.s4,
   },
   charCount: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.mono500,
   },
-  charCountWarn: { color: '#FF8C42' },
+  charCountWarn: { color: colors.yellow },
   errorText: {
-    color: '#FF5555',
+    color: colors.wrong,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 8,
   },
   label: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    color: colors.text2,
+    fontSize: 12,
+    fontFamily: fonts.display600,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
     marginBottom: 8,
   },
   imagePicker: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#3D2870',
-    borderRadius: 14,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.md,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 8,
   },
   imagePickerText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
   imageWrapper: { position: 'relative', marginBottom: 8 },
   imagePreview: {
     width: '100%',
     height: 180,
-    borderRadius: 12,
+    borderRadius: radius.md,
   },
   imageRemoveBtn: {
     position: 'absolute',
@@ -317,7 +315,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  imageRemoveText: { color: '#fff', fontSize: 13, lineHeight: 16 },
+  imageRemoveText: { color: colors.text1, fontSize: 13, lineHeight: 16 },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -326,51 +324,57 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.bg2,
   },
   checkboxChecked: {
-    backgroundColor: '#FF8C42',
-    borderColor: '#FF8C42',
+    backgroundColor: colors.pink,
+    borderColor: colors.pink,
   },
-  checkmark: { color: '#fff', fontSize: 12, fontFamily: 'DMSans_700Bold', lineHeight: 15 },
-  toggleLabel: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_400Regular' },
+  checkmark: { color: '#1a0010', fontSize: 13, fontFamily: fonts.display700, lineHeight: 16 },
+  toggleLabel: { color: colors.text2, fontSize: 14, fontFamily: fonts.display400 },
   nameContainer: { marginBottom: 4 },
   nameInput: {
-    backgroundColor: '#12082A',
-    borderRadius: 12,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 4,
   },
   submitBtn: {
-    backgroundColor: '#FF8C42',
-    borderRadius: 14,
+    backgroundColor: colors.pink,
+    borderRadius: radius.md,
     paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.s4,
     marginBottom: 12,
+    shadowColor: colors.pink,
+    shadowOpacity: 0.45,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 14,
+    elevation: 6,
   },
-  submitBtnDisabled: { backgroundColor: '#2A1A50' },
+  submitBtnDisabled: { opacity: 0.45 },
   submitBtnText: {
-    color: '#fff',
+    color: '#1a0010',
     fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   disclaimer: {
-    color: '#4A4A6A',
+    color: colors.text4,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 8,
@@ -381,15 +385,15 @@ const styles = StyleSheet.create({
   },
   successEmoji: { fontSize: 48, marginBottom: 14 },
   successTitle: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 18,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     marginBottom: 8,
   },
   successBody: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 28,

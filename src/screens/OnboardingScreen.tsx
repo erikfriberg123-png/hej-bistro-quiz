@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,33 +10,42 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
+import { colors, fonts, radius, spacing } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
 const PAGES = [
   {
     emoji: '🍽️',
+    neon: '~ välkommen ~',
     title: 'Välkommen till\nQuizine!',
     body: 'Det roligaste sättet att lära sig mer om mat, dryck och restaurangbranschen.',
-    accent: '#FF6B35',
+    accent: colors.pink,
+    glow: colors.pinkGlow,
   },
   {
     emoji: '🏆',
+    neon: '~ samla XP ~',
     title: 'Tävla med\ndina kollegor',
     body: 'Samla XP, bygg din streak och klättra på topplistan. Spela varje dag för att hålla igång!',
-    accent: '#F7C948',
+    accent: colors.yellow,
+    glow: colors.yellowGlow,
   },
   {
     emoji: '👥',
+    neon: '~ hitta varandra ~',
     title: 'Lägg till\nvänner',
-    body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar syns ni på varandras listor och kan utmana varandra.',
-    accent: '#9B5DE5',
+    body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar kan ni se varandras resultat och utmana varandra.',
+    accent: colors.cyan,
+    glow: colors.cyanGlow,
   },
   {
     emoji: '⚔️',
+    neon: '~ vem är bäst? ~',
     title: 'Battle-läget',
-    body: 'Utmana en vän på ett ämne du väljer. Ni spelar var för sig och svarar på samma frågor — vinnaren är den med flest poäng när båda är klara. Du ser resultatet direkt på din Battle Board.',
-    accent: '#00C896',
+    body: 'Utmana en vän på ett ämne du väljer. Ni spelar var för sig och svarar på samma frågor — vinnaren är den med flest poäng när båda är klara.',
+    accent: colors.cyan,
+    glow: colors.cyanGlow,
   },
 ];
 
@@ -60,36 +69,63 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg0} />
 
-      <TouchableOpacity onPress={finish} style={styles.skipBtn}>
-        <Text style={styles.skipText}>Hoppa över</Text>
-      </TouchableOpacity>
+      {/* Ambient glow blob — changes with accent */}
+      <View
+        pointerEvents="none"
+        style={[styles.glowBlob, { backgroundColor: current.glow }]}
+      />
 
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.pageCounter}>
+          {String(page + 1).padStart(2, '0')} / {String(PAGES.length).padStart(2, '0')}
+        </Text>
+        <TouchableOpacity onPress={finish} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={styles.skipText}>Hoppa över</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.emoji}>{current.emoji}</Text>
+        <Text style={[styles.neonLabel, { color: current.accent }]}>{current.neon}</Text>
+
+        <View style={[
+          styles.emojiRing,
+          { borderColor: current.accent, shadowColor: current.accent },
+        ]}>
+          <Text style={styles.emoji}>{current.emoji}</Text>
+        </View>
+
         <Text style={styles.title}>{current.title}</Text>
         <Text style={styles.body}>{current.body}</Text>
       </View>
 
+      {/* Progress dots */}
       <View style={styles.dots}>
         {PAGES.map((_, i) => (
           <View
             key={i}
             style={[
               styles.dot,
-              i === page && { backgroundColor: current.accent, width: 24 },
+              i === page && {
+                backgroundColor: current.accent,
+                width: 24,
+                shadowColor: current.accent,
+                shadowOpacity: 0.7,
+                shadowRadius: 6,
+                elevation: 4,
+              },
             ]}
           />
         ))}
       </View>
 
+      {/* Footer CTA */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={next}
-          style={[styles.nextBtn, { backgroundColor: current.accent }]}
-        >
-          <Text style={styles.nextText}>{isLast ? 'Kom igång!' : 'Nästa'}</Text>
+        <TouchableOpacity onPress={next} style={styles.nextBtn} activeOpacity={0.85}>
+          <Text style={styles.nextText}>{isLast ? 'Kom igång!' : 'Nästa  →'}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -97,67 +133,116 @@ export default function OnboardingScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
-  skipBtn: {
-    alignSelf: 'flex-end',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
+  safe: { flex: 1, backgroundColor: colors.bg0 },
+
+  glowBlob: {
+    position: 'absolute',
+    top: -100,
+    right: -100,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    opacity: 0.2,
+  },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.s5,
+    paddingTop: spacing.s4,
+    paddingBottom: spacing.s2,
+  },
+  pageCounter: {
+    fontFamily: fonts.mono700,
+    fontSize: 11,
+    color: colors.text4,
+    letterSpacing: 0.22 * 11,
   },
   skipText: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    color: colors.text3,
+    fontSize: 13,
+    fontFamily: fonts.display500,
   },
+
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.s7,
+  },
+  neonLabel: {
+    fontFamily: fonts.neon700,
+    fontSize: 20,
+    marginBottom: 28,
+    letterSpacing: 0.02 * 20,
+  },
+  emojiRing: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    borderWidth: 1.5,
+    backgroundColor: colors.bg2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 36,
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 18,
+    elevation: 8,
   },
   emoji: {
-    fontSize: 88,
-    marginBottom: 36,
+    fontSize: 46,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontFamily: 'DMSans_800ExtraBold',
+    color: colors.text1,
+    fontSize: 30,
+    fontFamily: fonts.display700,
     textAlign: 'center',
-    lineHeight: 42,
-    marginBottom: 20,
+    lineHeight: 38,
+    letterSpacing: -0.5,
+    marginBottom: 16,
   },
   body: {
-    color: '#B0A8C8',
-    fontSize: 16,
-    fontFamily: 'DMSans_400Regular',
+    color: colors.text2,
+    fontSize: 15,
+    fontFamily: fonts.display400,
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 25,
   },
+
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 32,
+    marginBottom: 28,
   },
   dot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: '#3D2870',
+    borderRadius: radius.pill,
+    backgroundColor: colors.bg3,
   },
+
   footer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.s5,
     paddingBottom: 36,
   },
   nextBtn: {
-    borderRadius: 16,
+    backgroundColor: colors.pink,
+    borderRadius: radius.lg,
     paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: colors.pink,
+    shadowOpacity: 0.55,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 20,
+    elevation: 8,
   },
   nextText: {
-    color: '#FFFFFF',
+    color: '#1a0010',
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
+    letterSpacing: -0.2,
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, fonts } from '../theme/tokens';
 
 interface Props {
   score: number;
@@ -22,13 +23,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   score: {
-    color: '#FFFFFF',
+    color: colors.yellow,
     fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.mono700,
   },
   awarded: {
-    color: '#4CAF50',
+    color: colors.correct,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.mono500,
   },
 });

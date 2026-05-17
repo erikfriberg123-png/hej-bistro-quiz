@@ -1,5 +1,6 @@
 ﻿import React, { useCallback, useEffect, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { colors, fonts } from '../theme/tokens';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -77,9 +78,9 @@ interface Props {
 }
 
 function colorForSeconds(s: number): string {
-  if (s <= 3) return '#F44336';
+  if (s <= 3) return colors.wrong;
   if (s <= 7) return '#FF9F43';
-  return '#F7C948';
+  return colors.yellow;
 }
 
 export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
@@ -143,7 +144,7 @@ export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
     const bg = interpolateColor(
       progress.value,
       [0, 0.2, 0.467, 1],
-      ['#F44336', '#FF9F43', '#F7C948', '#FFE66D'],
+      [colors.wrong, '#FF9F43', colors.yellow, '#FFE878'],
     );
     return {
       height: Math.max(0, progress.value) * trackHeightSV.value,
@@ -161,12 +162,7 @@ export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
     const bg = interpolateColor(
       progress.value,
       [0, 0.2, 0.467, 1],
-      [
-        'rgba(244,67,54,0.45)',
-        'rgba(255,159,67,0.45)',
-        'rgba(247,201,72,0.45)',
-        'rgba(255,230,109,0.45)',
-      ],
+      [colors.wrongGlow, 'rgba(255,159,67,0.45)', colors.yellowGlow, 'rgba(255,232,120,0.45)'],
     );
     return { backgroundColor: bg };
   });
@@ -175,7 +171,7 @@ export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
     const bg = interpolateColor(
       progress.value,
       [0, 0.2, 0.467, 1],
-      ['#F44336', '#FF9F43', '#F7C948', '#FFFFFF'],
+      [colors.wrong, '#FF9F43', colors.yellow, '#FFFFFF'],
     );
     return { backgroundColor: bg };
   });
@@ -216,8 +212,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   seconds: {
-    fontSize: 16,
-    fontFamily: 'DMSans_700Bold',
+    fontSize: 18,
+    fontFamily: fonts.mono700,
     marginBottom: 10,
   },
   trackArea: {
@@ -229,7 +225,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: TRACK_W,
-    backgroundColor: '#2A1A50',
+    backgroundColor: colors.bg3,
     borderRadius: TRACK_W / 2,
   },
   fill: {

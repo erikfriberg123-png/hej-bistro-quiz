@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CATEGORIES } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
+import { NeonTabBar } from '../components/NeonTabBar';
 import { getUserProfile, setUsername, setArea as saveArea, checkUsernameAvailable } from '../lib/scores';
 import { type Area, AREA_BRANDING, AREAS, DEFAULT_AREA } from '../lib/branding';
 import { getPendingRequests } from '../lib/friends';
@@ -27,11 +28,12 @@ import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles
 import { supabase } from '../lib/supabase';
 import { submitFeedback } from '../lib/feedback';
 import { StoryModal } from '../components/StoryModal';
+import { colors, fonts, radius, spacing } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { highscores, survivalHighscores, streak, checkStreak, loadRemoteQuestions } = useGameStore();
+  const { survivalHighscores, streak, checkStreak, loadRemoteQuestions } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [username, setUsernameState] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingBattles, setPendingBattles] = useState<Battle[]>([]);
   const [myTurnBattles, setMyTurnBattles] = useState<Battle[]>([]);
-  const [mode, setMode] = useState<'training' | 'survival' | null>(null);
+  const [mode, setMode] = useState<'survival' | null>(null);
   const [changePwVisible, setChangePwVisible] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -67,10 +69,7 @@ export default function HomeScreen({ navigation }: Props) {
   useEffect(() => {
     checkStreak();
     getUserProfile().then(({ username: name, area: userArea }) => {
-      if (!name) {
-        navigation.replace('Welcome');
-        return;
-      }
+      if (!name) { navigation.replace('Welcome'); return; }
       setUsernameState(name);
       setInputName(name);
       setAreaState(userArea);
@@ -81,7 +80,6 @@ export default function HomeScreen({ navigation }: Props) {
     });
   }, []);
 
-  // Unified battle refresh — notifyOnNew triggers the toast when a new "your turn" appears
   const refreshBattleState = useCallback(async (notifyOnNew: boolean) => {
     const [newMyTurns, newPending] = await Promise.all([
       getMyActiveTurns().catch((): Battle[] => []),
@@ -112,8 +110,6 @@ export default function HomeScreen({ navigation }: Props) {
     }, [refreshBattleState])
   );
 
-  // Realtime subscriptions — unique name per effect invocation prevents the
-  // "cannot add callbacks after subscribe()" error if the effect ever re-runs.
   useEffect(() => {
     if (!userId) return;
     const suffix = Date.now();
@@ -129,14 +125,12 @@ export default function HomeScreen({ navigation }: Props) {
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [userId, refreshBattleState]);
 
-  // Auto-dismiss the turn toast after 5 s
   useEffect(() => {
     if (!turnNotification) return;
     const t = setTimeout(() => setTurnNotification(null), 5000);
     return () => clearTimeout(t);
   }, [turnNotification]);
 
-  // For existing users changing only their username
   const handleSaveUsername = async () => {
     if (!inputName.trim()) return;
     setUsernameError('');
@@ -157,16 +151,13 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  // For existing users changing their area from the profile modal
   const handleChangeArea = async (newArea: Area) => {
     if (newArea === area) return;
     try {
       await saveArea(newArea);
       setAreaState(newArea);
       loadRemoteQuestions(newArea);
-    } catch {
-      // silent — area stays the same
-    }
+    } catch {}
   };
 
   const handlePendingBattlePress = async () => {
@@ -190,8 +181,6 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleDailyQuiz = async () => {
     if (Platform.OS === 'web') {
-      // Open a blank tab synchronously to preserve Safari's user-gesture requirement,
-      // then redirect it once we have the session token.
       const win = window.open('', '_blank');
       const { data: { session } } = await supabase.auth.getSession();
       let url = 'https://daily.quizine.se';
@@ -205,11 +194,7 @@ export default function HomeScreen({ navigation }: Props) {
         });
         url = `https://daily.quizine.se#${params.toString()}`;
       }
-      if (win) {
-        win.location.href = url;
-      } else {
-        Linking.openURL(url);
-      }
+      if (win) { win.location.href = url; } else { Linking.openURL(url); }
       return;
     }
     const { data: { session } } = await supabase.auth.getSession();
@@ -228,10 +213,7 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const openChangePw = () => {
-    setCurrentPw('');
-    setNewPw('');
-    setPwError('');
-    setPwSuccess(false);
+    setCurrentPw(''); setNewPw(''); setPwError(''); setPwSuccess(false);
     setChangePwVisible(true);
   };
 
@@ -239,19 +221,12 @@ export default function HomeScreen({ navigation }: Props) {
     if (!currentPw) { setPwError('Ange ditt nuvarande lösenord.'); return; }
     if (newPw.length < 6) { setPwError('Nytt lösenord måste vara minst 6 tecken.'); return; }
     if (currentPw === newPw) { setPwError('Det nya lösenordet måste skilja sig från det gamla.'); return; }
-    setPwError('');
-    setPwSaving(true);
+    setPwError(''); setPwSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) throw new Error('no email');
-      const { error: verifyError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: currentPw,
-      });
-      if (verifyError) {
-        setPwError('Nuvarande lösenord är fel.');
-        return;
-      }
+      const { error: verifyError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPw });
+      if (verifyError) { setPwError('Nuvarande lösenord är fel.'); return; }
       const { error: updateError } = await supabase.auth.updateUser({ password: newPw });
       if (updateError) throw updateError;
       setPwSuccess(true);
@@ -270,43 +245,41 @@ export default function HomeScreen({ navigation }: Props) {
       }
       return;
     }
-    Alert.alert(
-      'Logga ut',
-      'Är du säker på att du vill logga ut?',
-      [
-        { text: 'Avbryt', style: 'cancel' },
-        {
-          text: 'Logga ut',
-          style: 'destructive',
-          onPress: async () => {
-            setProfileVisible(false);
-            await supabase.auth.signOut();
-          },
-        },
-      ],
-    );
+    Alert.alert('Logga ut', 'Är du säker på att du vill logga ut?', [
+      { text: 'Avbryt', style: 'cancel' },
+      { text: 'Logga ut', style: 'destructive', onPress: async () => { setProfileVisible(false); await supabase.auth.signOut(); } },
+    ]);
   };
-
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackText.trim()) return;
-    setFeedbackSending(true);
-    setFeedbackError('');
+    setFeedbackSending(true); setFeedbackError('');
     const { error } = await submitFeedback(feedbackText, userId, username);
     setFeedbackSending(false);
     if (error) { setFeedbackError('Något gick fel. Försök igen.'); return; }
     setFeedbackSent(true);
   };
 
+  const handleTabPress = (route: string) => {
+    if (route === 'Home') return;
+    navigation.navigate(route as any);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
+
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => setProfileVisible(true)} style={styles.profileBtn}>
-            <Text style={styles.profileIcon}>👤</Text>
-            <Text style={styles.profileName} numberOfLines={1}>
+        {/* Top bar */}
+        <View style={styles.topbar}>
+          <TouchableOpacity onPress={() => setProfileVisible(true)} style={styles.userpill}>
+            <View style={styles.userdot}>
+              <Text style={styles.userdotText}>
+                {(username ?? '?').charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text style={styles.userpillName} numberOfLines={1}>
               {username ?? 'Sätt namn'}
             </Text>
             {pendingCount > 0 && (
@@ -315,140 +288,134 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
             )}
           </TouchableOpacity>
-          <View style={styles.titleBlock}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => setMode('training')}>
-              <Image source={require('../../assets/logo.png')} style={styles.logo} />
-            </TouchableOpacity>
-            <Text style={styles.subtitle}>{AREA_BRANDING[area].tagline}</Text>
-          </View>
+
           <TouchableOpacity
             onPress={() => navigation.navigate('Leaderboard', {})}
-            style={styles.leaderboardBtn}
+            style={styles.iconBtn}
           >
-            <Text style={styles.leaderboardIcon}>🏆</Text>
+            <Text style={styles.iconBtnText}>🏆</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Brand block */}
+        <View style={styles.brandBlock}>
+          <Text style={styles.brandNeon}>~ open all night ~</Text>
+          <Image source={require('../../assets/logo.png')} style={styles.logo} />
+          <Text style={styles.brandTagline}>QUIZ FÖR KROGANSTÄLLDA</Text>
+        </View>
+
+        {/* My turn banner */}
         {myTurnCount > 0 && (
-          <TouchableOpacity
-            style={styles.myTurnBanner}
-            onPress={handleMyTurnPress}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.myTurnText}>
-              ⚡  Din tur i {myTurnCount} battle{myTurnCount > 1 ? 's' : ''}!
+          <TouchableOpacity style={styles.bannerYourTurn} onPress={handleMyTurnPress} activeOpacity={0.8}>
+            <View style={styles.pulseDot} />
+            <Text style={styles.bannerText}>
+              ⚡ Din tur i {myTurnCount} battle{myTurnCount > 1 ? 's' : ''}!
             </Text>
-            <Text style={styles.myTurnArrow}>→</Text>
+            <Text style={styles.bannerArrow}>→</Text>
           </TouchableOpacity>
         )}
 
+        {/* Streak */}
         {streak > 0 && (
-          <View style={styles.streakBanner}>
+          <View style={styles.streakPill}>
             <Text style={styles.streakText}>🔥 {streak} dag{streak !== 1 ? 'ar' : ''} i rad!</Text>
           </View>
         )}
 
         {mode === null ? (
           <>
-            <Text style={styles.sectionTitle}>Välj spelläge</Text>
+            <Text style={styles.sectionLabel}>Välj spelläge</Text>
 
-            <TouchableOpacity
-              style={[styles.modeCard, styles.modeCardDaily]}
-              onPress={handleDailyQuiz}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.modeCardIcon}>📅</Text>
-              <View style={styles.modeCardBody}>
-                <Text style={styles.modeCardTitle}>Daily Quiz</Text>
-                <Text style={styles.modeCardSub}>Dagens quiz — ett nytt utmaningsset varje dag</Text>
+            {/* Daily */}
+            <TouchableOpacity style={[styles.modeCard, styles.modeCardDaily]} onPress={handleDailyQuiz} activeOpacity={0.85}>
+              <View style={[styles.modeIcon, styles.modeIconDaily]}>
+                <Text style={styles.modeEmoji}>📅</Text>
               </View>
-              <Text style={styles.modeCardArrowDaily}>↗</Text>
+              <View style={styles.modeInfo}>
+                <Text style={styles.modeTitle}>Daily Quiz</Text>
+                <Text style={styles.modeDesc}>Dagens quiz — ett nytt utmaningsset varje dag</Text>
+              </View>
+              <Text style={[styles.modeArrow, { color: colors.yellow }]}>↗</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.modeCard, styles.modeCardSurvival]}
-              onPress={() => setMode('survival')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.modeCardIcon}>❤️</Text>
-              <View style={styles.modeCardBody}>
-                <Text style={styles.modeCardTitle}>Överlevnadsläge</Text>
-                <Text style={styles.modeCardSub}>3 liv — svara rätt och håll sviten vid liv</Text>
+            {/* Survival */}
+            <TouchableOpacity style={[styles.modeCard, styles.modeCardSurvival]} onPress={() => setMode('survival')} activeOpacity={0.85}>
+              <View style={[styles.modeIcon, styles.modeIconSurvival]}>
+                <Text style={styles.modeEmoji}>❤️</Text>
               </View>
-              <Text style={styles.modeCardArrow}>→</Text>
+              <View style={styles.modeInfo}>
+                <Text style={styles.modeTitle}>Överlevnadsläge</Text>
+                <Text style={styles.modeDesc}>3 liv — svara rätt och håll sviten vid liv</Text>
+              </View>
+              <Text style={[styles.modeArrow, { color: colors.pink }]}>→</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.modeCard, styles.modeCardTof]}
-              onPress={() => navigation.navigate('SantEllerFalskt', { round: 1 })}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.modeCardIcon}>🔀</Text>
-              <View style={styles.modeCardBody}>
-                <Text style={styles.modeCardTitle}>Sant eller Falskt</Text>
-                <Text style={styles.modeCardSub}>Svep rätt eller vänster — 3 rundor, 7 sekunder per fråga</Text>
+            {/* Sant eller Falskt */}
+            <TouchableOpacity style={[styles.modeCard, styles.modeCardTof]} onPress={() => navigation.navigate('SantEllerFalskt', { round: 1 })} activeOpacity={0.85}>
+              <View style={[styles.modeIcon, styles.modeIconTof]}>
+                <Text style={styles.modeEmoji}>🔀</Text>
               </View>
-              <Text style={[styles.modeCardArrow, { color: '#22D3EE' }]}>→</Text>
+              <View style={styles.modeInfo}>
+                <Text style={styles.modeTitle}>Sant eller Falskt</Text>
+                <Text style={styles.modeDesc}>Svep rätt eller vänster — 3 rundor, 7 sekunder per fråga</Text>
+              </View>
+              <Text style={[styles.modeArrow, { color: colors.cyan }]}>→</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.modeCard, styles.modeCardBattle]}
-              onPress={handleChallengePress}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.modeCardIcon}>⚔️</Text>
-              <View style={styles.modeCardBody}>
-                <Text style={styles.modeCardTitle}>Battle</Text>
-                <Text style={styles.modeCardSub}>Utmana en kompis i ett riktigt quiz-duell</Text>
+            {/* Battle */}
+            <TouchableOpacity style={[styles.modeCard, styles.modeCardBattle]} onPress={handleChallengePress} activeOpacity={0.85}>
+              <View style={[styles.modeIcon, styles.modeIconBattle]}>
+                <Text style={styles.modeEmoji}>⚔️</Text>
+              </View>
+              <View style={styles.modeInfo}>
+                <Text style={styles.modeTitle}>Battle</Text>
+                <Text style={styles.modeDesc}>Utmana en kompis i ett riktigt quiz-duell</Text>
               </View>
               {pendingBattleCount > 0 ? (
                 <View style={styles.modeBadge}>
                   <Text style={styles.modeBadgeText}>{pendingBattleCount}</Text>
                 </View>
               ) : (
-                <Text style={styles.modeCardArrow}>→</Text>
+                <Text style={[styles.modeArrow, { color: colors.cyan }]}>→</Text>
               )}
             </TouchableOpacity>
 
+            {/* Pending challenge banner */}
             {pendingBattleCount > 0 && (
-              <TouchableOpacity
-                style={styles.challengeCard}
-                onPress={handlePendingBattlePress}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.challengeCardEmoji}>⚔️</Text>
-                <View style={styles.challengeCardBody}>
-                  <Text style={styles.challengeCardTitle}>
+              <TouchableOpacity style={styles.challengeCard} onPress={handlePendingBattlePress} activeOpacity={0.8}>
+                <Text style={styles.challengeEmoji}>⚔️</Text>
+                <View style={styles.challengeBody}>
+                  <Text style={styles.challengeTitle}>
                     {pendingBattles[0]?.creator_name ?? 'Någon'} utmanar dig!
                   </Text>
                   {pendingBattleCount > 1 && (
-                    <Text style={styles.challengeCardSub}>+{pendingBattleCount - 1} utmaning{pendingBattleCount - 1 > 1 ? 'ar' : ''} till</Text>
+                    <Text style={styles.challengeSub}>+{pendingBattleCount - 1} utmaning{pendingBattleCount - 1 > 1 ? 'ar' : ''} till</Text>
                   )}
                 </View>
-                <Text style={styles.challengeCardAction}>Svara →</Text>
+                <Text style={styles.challengeAction}>Svara →</Text>
               </TouchableOpacity>
             )}
           </>
         ) : (
           <>
-            <TouchableOpacity onPress={() => setMode(null)} style={styles.backModeBtn}>
-              <Text style={styles.backModeBtnText}>← Tillbaka</Text>
+            <TouchableOpacity onPress={() => setMode(null)} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>← Tillbaka</Text>
             </TouchableOpacity>
 
-            <Text style={styles.sectionTitle}>Välj kategori</Text>
+            <Text style={styles.sectionLabel}>Välj kategori</Text>
 
             {mode === 'survival' && (
               <TouchableOpacity
-                style={styles.allCategoriesCard}
+                style={styles.allCatsCard}
                 onPress={() => navigation.navigate('Survival', { categoryId: 'all' })}
                 activeOpacity={0.85}
               >
-                <Text style={styles.allCategoriesIcon}>🎲</Text>
+                <Text style={styles.allCatsIcon}>🎲</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.allCategoriesText}>Alla kategorier (mix)</Text>
+                  <Text style={styles.allCatsText}>Alla kategorier (mix)</Text>
                   {(survivalHighscores['all'] ?? 0) > 0 && (
-                    <Text style={styles.allCategoriesHighscore}>
-                      🏅 {survivalHighscores['all'].toLocaleString('sv-SE')} XP
+                    <Text style={styles.allCatsScore}>
+                      <Text style={styles.allCatsScoreMono}>{survivalHighscores['all'].toLocaleString('sv-SE')}</Text> XP
                     </Text>
                   )}
                 </View>
@@ -460,14 +427,8 @@ export default function HomeScreen({ navigation }: Props) {
                 <View key={cat.id} style={styles.gridItem}>
                   <CategoryCard
                     category={cat}
-                    highscore={mode === 'survival'
-                      ? (survivalHighscores[cat.id] ?? 0)
-                      : (highscores[cat.id] ?? 0)
-                    }
-                    onPress={() => mode === 'survival'
-                      ? navigation.navigate('Survival', { categoryId: cat.id })
-                      : navigation.navigate('Game', { categoryId: cat.id })
-                    }
+                    highscore={survivalHighscores[cat.id] ?? 0}
+                    onPress={() => navigation.navigate('Survival', { categoryId: cat.id })}
                   />
                 </View>
               ))}
@@ -475,70 +436,51 @@ export default function HomeScreen({ navigation }: Props) {
           </>
         )}
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Friends')}
-          style={styles.createBtn}
-        >
-          <Text style={styles.createBtnIcon}>👥</Text>
-          <Text style={styles.createBtnText}>Mina vänner</Text>
-          {pendingCount > 0 && (
-            <View style={styles.friendsBadge}>
-              <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
-            </View>
-          )}
+        {/* Bottom actions */}
+        <TouchableOpacity onPress={() => navigation.navigate('CreateQuestion')} style={styles.ghostBtn}>
+          <Text style={styles.ghostBtnIcon}>✏️</Text>
+          <Text style={styles.ghostBtnText}>Skapa egna frågor</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setStoryVisible(true)} style={styles.ghostBtn}>
+          <Text style={styles.ghostBtnIcon}>🍽️</Text>
+          <Text style={styles.ghostBtnText}>Berätta en kroghistoria</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate('CreateQuestion')}
-          style={styles.createBtn}
+          onPress={() => { setFeedbackText(''); setFeedbackSent(false); setFeedbackError(''); setFeedbackVisible(true); }}
+          style={styles.textLink}
         >
-          <Text style={styles.createBtnIcon}>✏️</Text>
-          <Text style={styles.createBtnText}>Skapa egna frågor</Text>
+          <Text style={styles.textLinkText}>Feedback</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setStoryVisible(true)}
-          style={styles.createBtn}
-        >
-          <Text style={styles.createBtnIcon}>{AREA_BRANDING[area].storyButtonIcon}</Text>
-          <Text style={styles.createBtnText}>{AREA_BRANDING[area].storyButtonText}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => { setFeedbackText(''); setFeedbackSent(false); setFeedbackError(''); setFeedbackVisible(true); }} style={styles.helpLink}>
-          <Text style={styles.helpText}>Feedback</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.helpLink}>
-          <Text style={styles.helpText}>Hur funkar det?</Text>
+        <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.textLink}>
+          <Text style={styles.textLinkText}>Hur funkar det?</Text>
         </TouchableOpacity>
 
       </ScrollView>
+
+      {/* Neon tab bar */}
+      <NeonTabBar
+        activeRoute="Home"
+        onPress={handleTabPress}
+        pendingCount={pendingCount}
+      />
 
       {/* Help modal */}
       <Modal visible={helpVisible} transparent animationType="slide" onRequestClose={() => setHelpVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
+            <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Hur funkar det?</Text>
             <ScrollView showsVerticalScrollIndicator={false} style={styles.helpScroll}>
-
-              <Text style={styles.helpSection}>🎯 Quiz-läget</Text>
-              <Text style={styles.modalBody}>
-                {'Välj en kategori och svara på 10 frågor. Du har 15 sekunder per fråga — ju snabbare du svarar rätt, desto mer XP får du. Max 150 XP per fråga (100 bas + 50 tidsbonus). Spela varje dag för att hålla igång din streak och klättra på topplistan! 🏆'}
-              </Text>
-
               <Text style={styles.helpSection}>⚔️ Battle-läget</Text>
-              <Text style={styles.modalBody}>
-                {'Utmana en vän på ett ämne du väljer. Tryck på "Battle" på startsidan och välj en vän och kategori.\n\nNi spelar var för sig i er egen takt. När ni båda är klara räknas poängen ihop — den med flest poäng vinner.\n\nHar du fått en utmaning? En banner visas på startsidan — tryck på den för att hoppa direkt in i din match.'}
-              </Text>
-
+              <Text style={styles.modalBody}>{'Utmana en vän på ett ämne du väljer. Tryck på "Battle" på startsidan och välj en vän och kategori.\n\nNi spelar var för sig i er egen takt. När ni båda är klara räknas poängen ihop — den med flest poäng vinner.'}</Text>
               <Text style={styles.helpSection}>👥 Lägga till vänner</Text>
-              <Text style={styles.modalBody}>
-                {'Tryck på vänner-ikonen 👥 uppe till höger på startsidan.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni se varandras resultat och utmana varandra i Battle-läget.\n\nGlöm inte att sätta ett smeknamn på din profil — annars kan ingen hitta dig!'}
-              </Text>
-
+              <Text style={styles.modalBody}>{'Tryck på vänner-ikonen 👥 i nedre menyn.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni se varandras resultat och utmana varandra i Battle-läget.'}</Text>
             </ScrollView>
-            <TouchableOpacity onPress={() => setHelpVisible(false)} style={styles.modalBtn}>
-              <Text style={styles.modalBtnText}>Förstått!</Text>
+            <TouchableOpacity onPress={() => setHelpVisible(false)} style={styles.primaryBtn}>
+              <Text style={styles.primaryBtnText}>Förstått!</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -548,36 +490,37 @@ export default function HomeScreen({ navigation }: Props) {
       <Modal visible={feedbackVisible} transparent animationType="slide" onRequestClose={() => setFeedbackVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
+            <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Feedback</Text>
             {feedbackSent ? (
               <>
-                <Text style={styles.feedbackSuccess}>Tack för din feedback! 🙏</Text>
-                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.modalBtn}>
-                  <Text style={styles.modalBtnText}>Stäng</Text>
+                <Text style={styles.successText}>Tack för din feedback! 🙏</Text>
+                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.primaryBtn}>
+                  <Text style={styles.primaryBtnText}>Stäng</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 <Text style={styles.modalBody}>Har du förslag, hittat en bugg eller vill säga något? Vi läser allt!</Text>
                 <TextInput
-                  style={[styles.input, styles.feedbackInput]}
+                  style={[styles.input, styles.inputMultiline]}
                   value={feedbackText}
                   onChangeText={v => { setFeedbackText(v); setFeedbackError(''); }}
                   placeholder="Skriv ditt meddelande..."
-                  placeholderTextColor="#6050A0"
+                  placeholderTextColor={colors.text3}
                   multiline
                   maxLength={1000}
                 />
-                {feedbackError ? <Text style={styles.usernameError}>{feedbackError}</Text> : null}
+                {feedbackError ? <Text style={styles.errorText}>{feedbackError}</Text> : null}
                 <TouchableOpacity
                   onPress={handleFeedbackSubmit}
-                  style={[styles.modalBtn, (!feedbackText.trim() || feedbackSending) && styles.modalBtnDisabled]}
+                  style={[styles.primaryBtn, (!feedbackText.trim() || feedbackSending) && styles.primaryBtnDisabled]}
                   disabled={!feedbackText.trim() || feedbackSending}
                 >
-                  <Text style={styles.modalBtnText}>{feedbackSending ? 'Skickar...' : 'Skicka'}</Text>
+                  <Text style={styles.primaryBtnText}>{feedbackSending ? 'Skickar...' : 'Skicka'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.cancelBtn}>
-                  <Text style={styles.cancelText}>Avbryt</Text>
+                <TouchableOpacity onPress={() => setFeedbackVisible(false)} style={styles.ghostModalBtn}>
+                  <Text style={styles.ghostModalBtnText}>Avbryt</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -585,84 +528,54 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
       </Modal>
 
-      {/* Profile / username modal */}
+      {/* Profile modal */}
       <Modal
         visible={profileVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => {
-          setProfileVisible(false);
-          setChangePwVisible(false);
-        }}
+        onRequestClose={() => { setProfileVisible(false); setChangePwVisible(false); }}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => {
-            setProfileVisible(false);
-            setChangePwVisible(false);
-          }}
+          onPress={() => { setProfileVisible(false); setChangePwVisible(false); }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <View style={styles.modalCard}>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Din profil</Text>
+              <Text style={styles.modalBody}>Ändra ditt smeknamn. Namnet måste vara unikt.</Text>
 
-              {/* ── Existing user: edit profile ── */}
+              <TextInput
+                style={[styles.input, usernameError ? styles.inputError : null]}
+                value={inputName}
+                onChangeText={v => { setInputName(v); setUsernameError(''); }}
+                placeholder="Ditt smeknamn..."
+                placeholderTextColor={colors.text3}
+                maxLength={20}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
+
+              <TouchableOpacity
+                onPress={handleSaveUsername}
+                style={[styles.primaryBtn, (!inputName.trim() || saving) && styles.primaryBtnDisabled]}
+                disabled={!inputName.trim() || saving}
+              >
+                <Text style={styles.primaryBtnText}>{saving ? 'Kontrollerar...' : 'Spara'}</Text>
+              </TouchableOpacity>
+
               {!changePwVisible && (
                 <>
-                  <Text style={styles.modalTitle}>Ditt namn</Text>
-                  <Text style={styles.modalBody}>{'Ändra ditt smeknamn. Namnet måste vara unikt.'}</Text>
-                  <TextInput
-                    style={[styles.input, usernameError ? styles.inputError : null]}
-                    value={inputName}
-                    onChangeText={v => { setInputName(v); setUsernameError(''); }}
-                    placeholder="Ditt smeknamn..."
-                    placeholderTextColor="#6050A0"
-                    maxLength={20}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  {usernameError ? <Text style={styles.usernameError}>{usernameError}</Text> : null}
-                  <TouchableOpacity
-                    onPress={handleSaveUsername}
-                    style={[styles.modalBtn, (!inputName.trim() || saving) && styles.modalBtnDisabled]}
-                    disabled={!inputName.trim() || saving}
-                  >
-                    <Text style={styles.modalBtnText}>{saving ? 'Sparar...' : 'Spara'}</Text>
+                  <TouchableOpacity onPress={openChangePw} style={styles.ghostModalBtn}>
+                    <Text style={styles.ghostModalBtnText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
-
-                  {/* Area selector */}
-                  <Text style={styles.areaSectionLabel}>Ditt område</Text>
-                  <View style={styles.areaGrid}>
-                    {AREAS.map(a => {
-                      const b = AREA_BRANDING[a];
-                      const selected = area === a;
-                      return (
-                        <TouchableOpacity
-                          key={a}
-                          onPress={() => handleChangeArea(a)}
-                          style={[styles.areaCard, selected && styles.areaCardSelected]}
-                          activeOpacity={0.8}
-                        >
-                          <Text style={styles.areaCardIcon}>{b.icon}</Text>
-                          <Text style={[styles.areaCardLabel, selected && styles.areaCardLabelSelected]}>
-                            {b.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
-                    <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
+                  <TouchableOpacity onPress={handleLogout} style={styles.dangerBtn}>
+                    <Text style={styles.dangerBtnText}>🚪  Logga ut</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-                    <Text style={styles.logoutText}>🚪  Logga ut</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setProfileVisible(false)}
-                    style={styles.cancelBtn}
-                  >
-                    <Text style={styles.cancelText}>✕  Avbryt</Text>
+                  <TouchableOpacity onPress={() => setProfileVisible(false)} style={styles.ghostModalBtn}>
+                    <Text style={styles.ghostModalBtnText}>✕  Avbryt</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -671,12 +584,9 @@ export default function HomeScreen({ navigation }: Props) {
                 <>
                   {pwSuccess ? (
                     <>
-                      <Text style={styles.pwSuccessText}>✓ Lösenordet är uppdaterat!</Text>
-                      <TouchableOpacity
-                        onPress={() => setChangePwVisible(false)}
-                        style={styles.modalBtn}
-                      >
-                        <Text style={styles.modalBtnText}>Tillbaka</Text>
+                      <Text style={styles.successText}>✓ Lösenordet är uppdaterat!</Text>
+                      <TouchableOpacity onPress={() => setChangePwVisible(false)} style={styles.primaryBtn}>
+                        <Text style={styles.primaryBtnText}>Tillbaka</Text>
                       </TouchableOpacity>
                     </>
                   ) : (
@@ -686,7 +596,7 @@ export default function HomeScreen({ navigation }: Props) {
                         value={currentPw}
                         onChangeText={v => { setCurrentPw(v); setPwError(''); }}
                         placeholder="Nuvarande lösenord"
-                        placeholderTextColor="#6050A0"
+                        placeholderTextColor={colors.text3}
                         secureTextEntry
                         autoCapitalize="none"
                       />
@@ -695,20 +605,20 @@ export default function HomeScreen({ navigation }: Props) {
                         value={newPw}
                         onChangeText={v => { setNewPw(v); setPwError(''); }}
                         placeholder="Nytt lösenord (minst 6 tecken)"
-                        placeholderTextColor="#6050A0"
+                        placeholderTextColor={colors.text3}
                         secureTextEntry
                         autoCapitalize="none"
                       />
-                      {pwError ? <Text style={styles.usernameError}>{pwError}</Text> : null}
+                      {pwError ? <Text style={styles.errorText}>{pwError}</Text> : null}
                       <TouchableOpacity
                         onPress={handleChangePassword}
-                        style={[styles.modalBtn, (!currentPw || !newPw || pwSaving) && styles.modalBtnDisabled]}
+                        style={[styles.primaryBtn, (!currentPw || !newPw || pwSaving) && styles.primaryBtnDisabled]}
                         disabled={!currentPw || !newPw || pwSaving}
                       >
-                        <Text style={styles.modalBtnText}>{pwSaving ? 'Sparar...' : 'Byt lösenord'}</Text>
+                        <Text style={styles.primaryBtnText}>{pwSaving ? 'Sparar...' : 'Byt lösenord'}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => setChangePwVisible(false)} style={styles.cancelBtn}>
-                        <Text style={styles.cancelText}>Avbryt</Text>
+                      <TouchableOpacity onPress={() => setChangePwVisible(false)} style={styles.ghostModalBtn}>
+                        <Text style={styles.ghostModalBtnText}>Avbryt</Text>
                       </TouchableOpacity>
                     </>
                   )}
@@ -719,64 +629,80 @@ export default function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
       </Modal>
 
+      {/* Turn notification toast */}
       {turnNotification && (
         <TouchableOpacity
-          style={styles.turnToast}
+          style={styles.toast}
           onPress={() => { setTurnNotification(null); handleMyTurnPress(); }}
           activeOpacity={0.9}
         >
-          <Text style={styles.turnToastEmoji}>⚡</Text>
-          <View style={styles.turnToastBody}>
-            <Text style={styles.turnToastTitle}>Din tur!</Text>
-            <Text style={styles.turnToastSub}>{turnNotification.opponentName} har spelat klart.</Text>
+          <Text style={styles.toastEmoji}>⚡</Text>
+          <View style={styles.toastBody}>
+            <Text style={styles.toastTitle}>Din tur!</Text>
+            <Text style={styles.toastSub}>{turnNotification.opponentName} har spelat klart.</Text>
           </View>
-          <Text style={styles.turnToastArrow}>→</Text>
+          <Text style={styles.toastArrow}>→</Text>
         </TouchableOpacity>
       )}
 
       {storyVisible && (
-        <StoryModal
-          userId={userId}
-          username={username}
-          area={area}
-          onClose={() => setStoryVisible(false)}
-        />
+        <StoryModal userId={userId} username={username} onClose={() => setStoryVisible(false)} />
       )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 32 },
-  header: {
+  safe: { flex: 1, backgroundColor: colors.bg1 },
+  scroll: { paddingHorizontal: spacing.s4, paddingBottom: spacing.s7 },
+
+  // Top bar
+  topbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 16,
+    justifyContent: 'space-between',
+    paddingTop: spacing.s5,
+    paddingBottom: spacing.s3,
   },
-  profileBtn: {
+  userpill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    maxWidth: 120,
-    gap: 6,
+    backgroundColor: colors.bg2,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.pill,
+    paddingVertical: 5,
+    paddingLeft: 5,
+    paddingRight: 11,
+    maxWidth: 140,
+    gap: 8,
+    position: 'relative',
   },
-  profileIcon: { fontSize: 14 },
-  profileName: {
-    color: '#B0A8C8',
+  userdot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.pink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userdotText: {
+    color: '#1a0010',
+    fontSize: 10,
+    fontFamily: fonts.display700,
+    lineHeight: 14,
+  },
+  userpillName: {
+    color: colors.text2,
     fontSize: 12,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display600,
     flexShrink: 1,
   },
   profileBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: '#FF3B30',
+    top: -4,
+    right: -4,
+    backgroundColor: colors.wrong,
     borderRadius: 8,
     minWidth: 16,
     height: 16,
@@ -784,432 +710,271 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  profileBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontFamily: 'DMSans_700Bold',
-    lineHeight: 13,
-  },
-  titleBlock: { flex: 1, alignItems: 'center' },
-  logo: {
-    width: 48,
-    height: 48,
-  },
-  subtitle: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-  },
-  leaderboardBtn: {
-    width: 40,
-    height: 40,
+  profileBadgeText: { color: '#fff', fontSize: 9, fontFamily: fonts.display700, lineHeight: 12 },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    backgroundColor: colors.bg2,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
   },
-  leaderboardIcon: { fontSize: 18 },
-  challengeCard: {
+  iconBtnText: { fontSize: 15 },
+
+  // Brand block
+  brandBlock: { alignItems: 'center', marginBottom: spacing.s5, marginTop: spacing.s2 },
+  brandNeon: {
+    fontFamily: fonts.neon700,
+    fontSize: 16,
+    color: colors.pink,
+    marginBottom: 6,
+  },
+  logo: { width: 56, height: 56, marginBottom: 6 },
+  brandTagline: {
+    fontFamily: fonts.mono700,
+    fontSize: 10,
+    color: colors.cyan,
+    letterSpacing: 0.28 * 10,
+    textTransform: 'uppercase',
+  },
+
+  // Banners
+  bannerYourTurn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#061818',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    backgroundColor: 'rgba(54, 224, 224, 0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(54, 224, 224, 0.5)',
+    borderRadius: radius.md,
+    paddingVertical: 11,
     paddingHorizontal: 14,
-    paddingTop: 18,
-    paddingBottom: 12,
-    marginTop: -10,
-    marginBottom: 14,
-    borderTopWidth: 0,
-    borderLeftWidth: 1.5,
-    borderRightWidth: 1.5,
-    borderBottomWidth: 1.5,
-    borderLeftColor: '#2EC4B6',
-    borderRightColor: '#2EC4B6',
-    borderBottomColor: '#2EC4B6',
+    marginBottom: 10,
     gap: 10,
   },
-  challengeCardEmoji: { fontSize: 20 },
-  challengeCardBody: { flex: 1 },
-  challengeCardTitle: {
-    color: '#2EC4B6',
-    fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.cyan,
   },
-  challengeCardSub: {
-    color: '#7EEAE4',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    marginTop: 2,
-  },
-  challengeCardAction: {
-    color: '#2EC4B6',
-    fontSize: 14,
-    fontFamily: 'DMSans_700Bold',
-  },
-  myTurnBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1A1A10',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+  bannerText: { flex: 1, color: colors.cyan, fontSize: 13.5, fontFamily: fonts.display600 },
+  bannerArrow: { color: colors.cyan, fontFamily: fonts.display700, fontSize: 16 },
+  streakPill: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255, 56, 165, 0.1)',
     borderWidth: 1.5,
-    borderColor: '#F4C842',
-  },
-  myTurnText: {
-    color: '#F4C842',
-    fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
-    flex: 1,
-  },
-  myTurnArrow: {
-    color: '#F4C842',
-    fontSize: 18,
-    fontFamily: 'DMSans_700Bold',
-    marginLeft: 8,
-  },
-  streakBanner: {
-    backgroundColor: '#1E1040',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    borderColor: 'rgba(255, 56, 165, 0.4)',
+    borderRadius: radius.pill,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
     marginBottom: 16,
-    alignItems: 'center',
   },
-  streakText: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
-  sectionTitle: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 1.5,
+  streakText: { color: colors.pink, fontSize: 13, fontFamily: fonts.display700 },
+
+  // Section label
+  sectionLabel: {
+    color: colors.text3,
+    fontSize: 11,
+    fontFamily: fonts.mono700,
+    letterSpacing: 0.22 * 11,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
-  gridItem: { width: '50%' },
+
+  // Mode cards
   modeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 14,
     gap: 14,
+    padding: 14,
+    paddingHorizontal: 16,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    marginBottom: 10,
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
-  modeCardDaily: {
-    backgroundColor: '#1A1000',
-    borderColor: '#F4A742',
+  modeCardDaily: { borderColor: 'rgba(255, 213, 79, 0.5)' },
+  modeCardSurvival: { borderColor: 'rgba(255, 56, 165, 0.55)' },
+  modeCardTof: { borderColor: 'rgba(54, 224, 224, 0.5)' },
+  modeCardBattle: { borderColor: 'rgba(54, 224, 224, 0.5)' },
+  modeIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
-  modeCardArrowDaily: {
-    color: '#F4A742',
-    fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
+  modeIconDaily: { backgroundColor: 'rgba(255, 213, 79, 0.14)' },
+  modeIconSurvival: { backgroundColor: 'rgba(255, 56, 165, 0.14)' },
+  modeIconTof: { backgroundColor: 'rgba(54, 224, 224, 0.14)' },
+  modeIconBattle: { backgroundColor: 'rgba(54, 224, 224, 0.14)' },
+  modeEmoji: { fontSize: 22 },
+  modeInfo: { flex: 1 },
+  modeTitle: { color: colors.text1, fontSize: 16, fontFamily: fonts.display700, marginBottom: 2, letterSpacing: -0.4 },
+  modeDesc: { color: colors.text3, fontSize: 11.5, fontFamily: fonts.display400, lineHeight: 16 },
+  modeArrow: { fontFamily: fonts.display700, fontSize: 18 },
+  modeBadge: {
+    backgroundColor: colors.pink,
+    borderRadius: radius.pill,
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  modeCardSurvival: {
-    backgroundColor: '#2A0A1A',
-    borderColor: '#E84393',
+  modeBadgeText: { color: '#1a0010', fontSize: 11, fontFamily: fonts.display700 },
+
+  // Challenge card
+  challengeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 56, 165, 0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 56, 165, 0.5)',
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+    gap: 10,
   },
-  modeCardTof: {
-    backgroundColor: '#071A2A',
-    borderColor: '#22D3EE',
-  },
-  modeCardBattle: {
-    backgroundColor: '#0D2A2A',
-    borderColor: '#2EC4B6',
-  },
-  allCategoriesCard: {
+  challengeEmoji: { fontSize: 18 },
+  challengeBody: { flex: 1 },
+  challengeTitle: { color: colors.pink, fontSize: 14, fontFamily: fonts.display600 },
+  challengeSub: { color: colors.text2, fontSize: 12, fontFamily: fonts.display400, marginTop: 2 },
+  challengeAction: { color: colors.pink, fontSize: 13, fontFamily: fonts.display700 },
+
+  // Category grid
+  grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },
+  gridItem: { width: '50%' },
+  backBtn: { alignSelf: 'flex-start', paddingVertical: 4, marginBottom: 10 },
+  backBtnText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500 },
+
+  allCatsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#1E1040',
-    borderRadius: 14,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: '#E84393',
+    borderColor: 'rgba(255, 56, 165, 0.45)',
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 10,
   },
-  allCategoriesIcon: { fontSize: 24 },
-  allCategoriesText: {
-    color: '#E84393',
-    fontSize: 15,
-    fontFamily: 'DMSans_700Bold',
-  },
-  allCategoriesHighscore: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    marginTop: 2,
-  },
-  modeCardIcon: { fontSize: 32 },
-  modeCardBody: { flex: 1, gap: 3 },
-  modeCardTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: 'DMSans_700Bold',
-  },
-  modeCardSub: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    lineHeight: 18,
-  },
-  modeCardArrow: {
-    color: '#6050A0',
-    fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
-  },
-  modeBadge: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  modeBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontFamily: 'DMSans_700Bold',
-    lineHeight: 16,
-  },
-  backModeBtn: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    marginBottom: 8,
-  },
-  backModeBtnText: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
-  },
-  createBtn: {
+  allCatsIcon: { fontSize: 22 },
+  allCatsText: { color: colors.pink, fontSize: 15, fontFamily: fonts.display700 },
+  allCatsScore: { color: colors.text3, fontSize: 11, fontFamily: fonts.display400, marginTop: 2 },
+  allCatsScoreMono: { fontFamily: fonts.mono700, color: colors.yellow },
+
+  // Ghost buttons
+  ghostBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 14,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     paddingVertical: 14,
-    marginTop: 16,
+    marginTop: 14,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
   },
-  createBtnIcon: { fontSize: 16 },
-  createBtnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  helpLink: { alignItems: 'center', marginTop: 12, paddingVertical: 12 },
-  helpText: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
-    textDecorationLine: 'underline',
-  },
-  turnToast: {
+  ghostBtnIcon: { fontSize: 15 },
+  ghostBtnText: { color: colors.text1, fontSize: 15, fontFamily: fonts.display600 },
+  textLink: { alignItems: 'center', marginTop: 10, paddingVertical: 10 },
+  textLinkText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500, textDecorationLine: 'underline' },
+
+  // Toast
+  toast: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 80,
     left: 12,
     right: 12,
-    backgroundColor: '#1E1040',
-    borderRadius: 16,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderWidth: 1.5,
-    borderColor: '#F4C842',
+    borderColor: 'rgba(255, 213, 79, 0.55)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowRadius: 20,
+    elevation: 12,
   },
-  turnToastEmoji: { fontSize: 24 },
-  turnToastBody: { flex: 1 },
-  turnToastTitle: {
-    color: '#F4C842',
-    fontSize: 14,
-    fontFamily: 'DMSans_700Bold',
-  },
-  turnToastSub: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    marginTop: 2,
-  },
-  turnToastArrow: {
-    color: '#F4C842',
-    fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
-  },
+  toastEmoji: { fontSize: 22 },
+  toastBody: { flex: 1 },
+  toastTitle: { color: colors.yellow, fontSize: 13, fontFamily: fonts.display700 },
+  toastSub: { color: colors.text2, fontSize: 11.5, fontFamily: fonts.display400, marginTop: 2 },
+  toastArrow: { color: colors.yellow, fontSize: 18, fontFamily: fonts.display700 },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   modalCard: {
-    backgroundColor: '#1E1040',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: colors.bg1,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(54, 224, 224, 0.35)',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderLeftColor: colors.lineStrong,
+    borderRightColor: colors.lineStrong,
     padding: 28,
+    paddingTop: 20,
   },
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontFamily: 'DMSans_700Bold',
-    marginBottom: 16,
+  modalHandle: {
+    width: 48,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.lineStrong,
+    alignSelf: 'center',
+    marginBottom: 14,
   },
-  modalBody: {
-    color: '#B0A8C8',
-    fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  helpScroll: {
-    maxHeight: 420,
-    marginBottom: 4,
-  },
-  helpSection: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_700Bold',
-    marginBottom: 8,
-  },
+  modalTitle: { color: colors.text1, fontSize: 22, fontFamily: fonts.display700, marginBottom: 12, letterSpacing: -0.4 },
+  modalBody: { color: colors.text2, fontSize: 14.5, fontFamily: fonts.display400, lineHeight: 22, marginBottom: 18 },
+  helpScroll: { maxHeight: 400, marginBottom: 4 },
+  helpSection: { color: colors.text1, fontSize: 15, fontFamily: fonts.display700, marginBottom: 8 },
+
+  // Inputs
   input: {
-    backgroundColor: '#2A1A50',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'DMSans_500Medium',
+    color: colors.text1,
+    fontSize: 15,
+    fontFamily: fonts.display500,
     marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#3D2870',
+    borderWidth: 1.5,
+    borderColor: colors.lineStrong,
+    minHeight: 46,
   },
-  inputError: {
-    borderColor: '#FF5555',
-  },
-  usernameError: {
-    color: '#FF5555',
-    fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
-    marginBottom: 12,
-  },
-  modalBtn: {
-    backgroundColor: '#9B5DE5',
-    borderRadius: 14,
+  inputMultiline: { height: 110, textAlignVertical: 'top', paddingTop: 12 },
+  inputError: { borderColor: colors.wrong },
+  errorText: { color: colors.wrong, fontSize: 12.5, fontFamily: fonts.display500, marginBottom: 10 },
+  hintText: { color: colors.cyan, fontSize: 13, fontFamily: fonts.display600, marginBottom: 8 },
+
+  // Buttons
+  primaryBtn: {
+    backgroundColor: colors.pink,
+    borderRadius: radius.md,
     paddingVertical: 14,
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  modalBtnDisabled: { opacity: 0.5 },
-  modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
-  cancelBtn: { alignItems: 'center', paddingVertical: 10 },
-  cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
-  changePwBtn: { alignItems: 'center', paddingVertical: 8 },
-  changePwText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  logoutBtn: { alignItems: 'center', paddingVertical: 8 },
-  logoutText: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium' },
-  pwSuccessText: {
-    color: '#4CAF50',
-    fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  modalHint: {
-    color: '#2EC4B6',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
-    marginBottom: 8,
-  },
-  friendsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#2A1A50',
-    marginTop: 4,
-    gap: 8,
-  },
-  friendsBtnText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
-  friendsBadge: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 9,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  friendsBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontFamily: 'DMSans_700Bold',
-    lineHeight: 14,
-  },
-  feedbackInput: {
-    height: 120,
-    textAlignVertical: 'top',
-    paddingTop: 12,
-  },
-  areaSectionLabel: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginTop: 16,
     marginBottom: 8,
   },
-  areaGrid: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
-  areaCard: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#3D2870',
-    backgroundColor: '#2A1A50',
-    gap: 6,
-  },
-  areaCardSelected: {
-    borderColor: '#9B5DE5',
-    backgroundColor: '#3D2070',
-  },
-  areaCardIcon: { fontSize: 28 },
-  areaCardLabel: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  areaCardLabelSelected: {
-    color: '#FFFFFF',
-  },
-  feedbackSuccess: {
-    color: '#A0F0B0',
-    fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
-    textAlign: 'center',
-    marginVertical: 20,
-  },
+  primaryBtnDisabled: { opacity: 0.45 },
+  primaryBtnText: { color: '#1a0010', fontSize: 16, fontFamily: fonts.display700 },
+  ghostModalBtn: { alignItems: 'center', paddingVertical: 10 },
+  ghostModalBtnText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500 },
+  dangerBtn: { alignItems: 'center', paddingVertical: 8 },
+  dangerBtnText: { color: colors.wrong, fontSize: 13, fontFamily: fonts.display500 },
+  successText: { color: colors.correct, fontSize: 16, fontFamily: fonts.display600, textAlign: 'center', marginVertical: 16 },
 });

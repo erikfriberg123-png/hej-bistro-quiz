@@ -1,6 +1,7 @@
 import * as ImageManipulator from 'expo-image-manipulator'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from './supabase'
+import { TABLES } from './appConfig'
 
 const ALLOWED_STORY = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 ,.!?\r\n]+$/
 const ALLOWED_NAME  = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 ,.!?]+$/
@@ -73,7 +74,7 @@ export async function submitStory(
   imageUrl: string | null,
   userId: string | null,
 ): Promise<{ error?: string }> {
-  const { error } = await supabase.from('restaurant_stories').insert({
+  const { error } = await supabase.from(TABLES.stories).insert({
     user_id: userId ?? null,
     display_name: displayName?.trim() || null,
     story_text: storyText.trim(),

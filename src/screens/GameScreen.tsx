@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { colors, fonts, radius } from '../theme/tokens';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -253,7 +254,7 @@ export default function GameScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitBtn}>
@@ -322,18 +323,9 @@ export default function GameScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
-  loading: {
-    flex: 1,
-    backgroundColor: '#12082A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    color: '#FFFFFF',
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 16,
-  },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
+  loading: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: colors.text2, fontFamily: fonts.display400, fontSize: 16 },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -343,51 +335,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   exitBtn: { padding: 8 },
-  exitText: {
-    color: '#B0A8C8',
-    fontSize: 18,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  challengeBadge: {
-    color: '#2EC4B6',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  gameArea: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  timerColumn: {
-    paddingVertical: 12,
-    paddingLeft: 16,
-    paddingRight: 4,
-  },
-  content: {
-    flex: 1,
-  },
-  contentInner: {
-    flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  answersGrid: {
-    marginTop: 0,
-  },
-  nextBtnWrapper: {
-    marginTop: 'auto',
-    paddingTop: 8,
-  },
-  nextBtn: {
-    borderRadius: 16,
-    paddingVertical: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nextBtnDisabled: { opacity: 0.6 },
-  nextBtnText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
-    letterSpacing: 0.3,
-  },
+  exitText: { color: colors.text2, fontSize: 18, fontFamily: fonts.display600 },
+  challengeBadge: { color: colors.cyan, fontSize: 13, fontFamily: fonts.display600 },
+  gameArea: { flex: 1, flexDirection: 'row' },
+  timerColumn: { paddingVertical: 12, paddingLeft: 16, paddingRight: 4 },
+  content: { flex: 1 },
+  contentInner: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 16 },
+  answersGrid: { marginTop: 0 },
+  nextBtnWrapper: { marginTop: 'auto', paddingTop: 8 },
+  nextBtn: { borderRadius: radius.md, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
+  nextBtnDisabled: { opacity: 0.5 },
+  nextBtnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700, letterSpacing: -0.2 },
 });

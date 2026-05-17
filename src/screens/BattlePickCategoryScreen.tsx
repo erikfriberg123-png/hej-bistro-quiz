@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattlePickCategory'>;
 
@@ -36,7 +37,7 @@ export default function BattlePickCategoryScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.topBar}>
         <View style={styles.roundPill}>
@@ -84,7 +85,7 @@ export default function BattlePickCategoryScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   topBar: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -93,21 +94,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   roundPill: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 6,
   },
   roundPillText: {
-    color: '#9B5DE5',
+    color: colors.pink,
     fontSize: 11,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     letterSpacing: 1.5,
   },
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -120,22 +121,22 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   scoreName: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 12,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
   },
   scoreNum: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 28,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
   },
   scoreNumMe: {
-    color: '#9B5DE5',
+    color: colors.pink,
   },
   scoreDash: {
-    color: '#3D2870',
+    color: colors.lineStrong,
     fontSize: 20,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   body: {
     flex: 1,
@@ -143,16 +144,16 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   title: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 22,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
     marginBottom: 4,
   },
   sub: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '47%',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 18,
     borderWidth: 2,
     padding: 16,
@@ -178,15 +179,15 @@ const styles = StyleSheet.create({
   },
   icon: { fontSize: 22 },
   cardName: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 14,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     lineHeight: 18,
   },
   cardDesc: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 11,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 16,
   },
 });
