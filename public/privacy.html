@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integritetspolicy – Proquiz</title>
+  <meta name="description" content="Integritetspolicy för Proquiz-appen." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:    #0A0A0F;
+      --card:  #12121C;
+      --line:  #1E1E32;
+      --pink:  #C13AFF;
+      --cyan:  #36E0E0;
+      --t1:    #F5F5FA;
+      --t2:    #A8A8C0;
+      --t3:    #6B6B88;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--t1);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse 70% 50% at 20% 10%, rgba(193,58,255,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 85% 90%, rgba(54,224,224,0.07) 0%, transparent 70%);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      padding: 28px 24px 0;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .logo-text {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: var(--t1);
+      text-decoration: none;
+    }
+
+    header a.back {
+      margin-left: auto;
+      font-size: 14px;
+      color: var(--t3);
+      text-decoration: none;
+    }
+
+    header a.back:hover { color: var(--t2); }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--t1);
+      margin-bottom: 6px;
+    }
+
+    .updated {
+      font-size: 13px;
+      color: var(--t3);
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .section h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section p {
+      font-size: 15px;
+      color: var(--t2);
+      margin-bottom: 10px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    .section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .section ul li {
+      font-size: 15px;
+      color: var(--t2);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 10px;
+    }
+
+    .section ul li:last-child { border-bottom: none; }
+
+    .section ul li::before {
+      content: '–';
+      color: var(--t3);
+      flex-shrink: 0;
+    }
+
+    .section a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    .section a:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      padding: 0 24px 48px;
+      font-size: 13px;
+      color: var(--t3);
+    }
+
+    footer a {
+      color: var(--t3);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--t2); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/" class="logo-text">PROQUIZ</a>
+    <a href="/" class="back">← Tillbaka</a>
+  </header>
+
+  <main>
+    <h1>Integritetspolicy</h1>
+    <p class="updated">Senast uppdaterad: maj 2025</p>
+
+    <div class="section">
+      <h2>📋 Översikt</h2>
+      <p>Proquiz ("vi", "oss") värnar om din integritet. Denna policy förklarar vilken information vi samlar in, varför vi gör det och hur vi hanterar den när du använder vår app och webbplats.</p>
+    </div>
+
+    <div class="section">
+      <h2>📦 Information vi samlar in</h2>
+      <ul>
+        <li>E-postadress — används för att skapa och identifiera ditt konto</li>
+        <li>Smeknamn — visas på topplistan och i Battle-läget</li>
+        <li>Användar-ID — ett unikt ID som kopplar ihop dina spelresultat med ditt konto</li>
+        <li>Spelresultat och statistik — poäng, rätta svar, sviter och liknande speldata</li>
+        <li>Kroghistorier och bilder — innehåll du frivilligt delar i appen</li>
+        <li>Enhets-ID — används för att säkra din session och förhindra missbruk</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Hur vi använder informationen</h2>
+      <ul>
+        <li>Tillhandahålla och förbättra appens funktioner</li>
+        <li>Visa topplista och Battle-resultat</li>
+        <li>Skicka push-notiser om du väljer att aktivera dem</li>
+        <li>Analysera aggregerad spelstatistik för att förbättra innehållet</li>
+        <li>Granska och eventuellt publicera inskickade kroghistorier i appen</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🔒 Lagring och säkerhet</h2>
+      <p>Din data lagras säkert hos <a href="https://supabase.com/privacy" target="_blank">Supabase</a>, en molntjänst med kryptering i transit och i vila. Vi delar inte din personliga information med tredje part i marknadsföringssyfte.</p>
+      <p>Vi behåller din data så länge ditt konto är aktivt. Du kan när som helst begära att vi raderar ditt konto och all tillhörande data.</p>
+    </div>
+
+    <div class="section">
+      <h2>🔔 Push-notiser</h2>
+      <p>Vi kan skicka push-notiser för att påminna om dagliga quiz eller meddela om nya Battle-utmaningar. Du kan när som helst stänga av notiser i din telefons inställningar.</p>
+    </div>
+
+    <div class="section">
+      <h2>📸 Foton och bilder</h2>
+      <p>Om du väljer att lägga till en bild i en kroghistoria behöver appen tillgång till ditt fotobibliotek. Vi använder aldrig kameran direkt. Bilder skickas till vår server och kan publiceras i appen om historien väljs ut.</p>
+    </div>
+
+    <div class="section">
+      <h2>👶 Barn</h2>
+      <p>Proquiz riktar sig till personer som arbetar inom eller är intresserade av restaurangbranschen. Appen är inte avsedd för barn under 13 år och vi samlar medvetet inte in information från minderåriga.</p>
+    </div>
+
+    <div class="section">
+      <h2>✏️ Dina rättigheter</h2>
+      <p>Du har rätt att begära utdrag, rättelse eller radering av dina personuppgifter. Kontakta oss på <a href="mailto:erik.friberg123@gmail.com">erik.friberg123@gmail.com</a> så hjälper vi dig.</p>
+    </div>
+
+    <div class="section">
+      <h2>📬 Kontakt</h2>
+      <p>Har du frågor om denna policy eller hur vi hanterar din data? Hör av dig till:</p>
+      <p><a href="mailto:erik.friberg123@gmail.com">erik.friberg123@gmail.com</a></p>
+    </div>
+
+  </main>
+
+  <footer>
+    <a href="/support">Support</a> · © 2025 Proquiz
+  </footer>
+
+</body>
+</html>

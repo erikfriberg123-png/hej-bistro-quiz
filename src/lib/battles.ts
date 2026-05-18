@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TABLES } from './appConfig';
 import { CategoryId } from '../types';
 
 export interface BattleTurn {
@@ -35,10 +36,10 @@ export interface BattleComputedState {
 
 export type BattlePhase =
   | 'waiting_opponent'
-  | 'creator_challenge'   // creator picks category & plays
-  | 'opponent_respond'    // opponent sees challenge, accepts or declines
-  | 'opponent_challenge'  // opponent picks category & plays
-  | 'creator_respond'     // creator sees challenge, accepts or declines
+  | 'creator_challenge'
+  | 'opponent_respond'
+  | 'opponent_challenge'
+  | 'creator_respond'
   | 'finished';
 
 function parseJsonbArray(value: unknown): BattleTurn[] {
@@ -97,13 +98,10 @@ export function computeBattleState(battle: Battle): BattleComputedState {
   const ot = battle.opponent_turns.length;
   const completedRounds = Math.min(ct, ot);
 
-  // nextTurn: who needs to act next
-  // If turns are unequal, the one with fewer turns responds
-  // If turns are equal, the challenger for the next round takes their turn (alternates)
   const nextTurn: 'creator' | 'opponent' = (() => {
-    if (ct > ot) return 'opponent'; // creator challenged, opponent responds
-    if (ot > ct) return 'creator';  // opponent challenged, creator responds
-    return ct % 2 === 0 ? 'creator' : 'opponent'; // equal: alternate challenger
+    if (ct > ot) return 'opponent';
+    if (ot > ct) return 'creator';
+    return ct % 2 === 0 ? 'creator' : 'opponent';
   })();
 
   let isFinished = battle.status === 'finished';
@@ -134,7 +132,7 @@ export async function createBattle(
 
   const code = generateCode();
   const { data, error } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .insert({
       code,
       creator_id: user.id,
@@ -158,7 +156,7 @@ export async function findOpenRandomBattle(): Promise<Battle | null> {
   if (!user) return null;
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .eq('match_type', 'random')
     .eq('status', 'waiting_opponent')
@@ -166,7 +164,6 @@ export async function findOpenRandomBattle(): Promise<Battle | null> {
     .order('created_at', { ascending: true })
     .limit(10);
 
-  // Only join battles where the creator has already played their first round
   const battles = (data ?? []).map(normalizeBattle);
   return battles.find(b => b.creator_turns.length > 0) ?? null;
 }
@@ -176,7 +173,7 @@ export async function getPendingBattlesForMe(): Promise<Battle[]> {
   if (!user) return [];
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .eq('target_opponent_id', user.id)
     .eq('status', 'waiting_opponent')
@@ -186,7 +183,7 @@ export async function getPendingBattlesForMe(): Promise<Battle[]> {
 }
 
 export async function declineBattle(battleId: string): Promise<void> {
-  await supabase.from('battles').delete().eq('id', battleId);
+  await supabase.from(TABLES.battles).delete().eq('id', battleId);
 }
 
 export async function joinBattle(battleId: string, opponentName: string): Promise<Battle> {
@@ -200,7 +197,7 @@ export async function joinBattle(battleId: string, opponentName: string): Promis
   const newStatus: Battle['status'] = ct > 0 ? 'opponent_turn' : 'creator_turn';
 
   const { data, error } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .update({ opponent_id: user.id, opponent_name: opponentName, status: newStatus })
     .eq('id', battleId)
     .select('*')
@@ -213,7 +210,7 @@ export async function joinBattle(battleId: string, opponentName: string): Promis
 export async function forfeitBattle(battleId: string, role: 'creator' | 'opponent'): Promise<void> {
   const winner: Battle['winner'] = role === 'creator' ? 'opponent' : 'creator';
   const { error } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .update({ status: 'finished', winner })
     .eq('id', battleId);
   if (error) throw error;
@@ -224,7 +221,7 @@ export async function findActiveBattleBetween(targetOpponentId: string): Promise
   if (!user) return null;
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .neq('status', 'finished')
     .or(
@@ -242,7 +239,7 @@ export async function getBattleByCode(code: string): Promise<Battle | null> {
   const normalized = code.toUpperCase().trim();
   if (normalized.length === 0 || normalized.length > 10) return null;
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .eq('code', normalized)
     .single();
@@ -251,7 +248,7 @@ export async function getBattleByCode(code: string): Promise<Battle | null> {
 
 export async function getBattleById(id: string): Promise<Battle | null> {
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .eq('id', id)
     .single();
@@ -263,7 +260,7 @@ export async function getMyBattles(): Promise<Battle[]> {
   if (!user) return [];
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
     .neq('status', 'finished')
@@ -284,7 +281,7 @@ export async function getHeadToHeadStats(opponentId: string): Promise<HeadToHead
   if (!user) return { myWins: 0, theirWins: 0, draws: 0, total: 0 };
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('creator_id, winner')
     .eq('status', 'finished')
     .or(
@@ -311,7 +308,7 @@ export async function getMyActiveTurns(): Promise<Battle[]> {
   if (!user) return [];
 
   const { data } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .select('*')
     .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
     .in('status', ['creator_turn', 'opponent_turn'])
@@ -374,7 +371,7 @@ export async function submitTurn(
   }
 
   const { data, error } = await supabase
-    .from('battles')
+    .from(TABLES.battles)
     .update(updates)
     .eq('id', battleId)
     .select('*')

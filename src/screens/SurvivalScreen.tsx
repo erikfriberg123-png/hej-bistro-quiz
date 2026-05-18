@@ -14,10 +14,12 @@ import { Question } from '../types';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
 import { useGameStore } from '../store/gameStore';
+import { submitSurvivalScore } from '../lib/scores';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Survival'>;
 
@@ -106,6 +108,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
         setCorrectAnswers(c => {
           setMaxStreak(ms => {
             const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
+            submitSurvivalScore(s);
             navigation.replace('SurvivalResult', {
               score: s,
               correctAnswers: c,
@@ -192,7 +195,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
   }, [advanceOrEnd]);
 
   const category = categoryId !== 'all' ? getCategoryById(categoryId as CategoryId) : null;
-  const accentColor = category?.color ?? '#E84393';
+  const accentColor = category?.color ?? colors.pink;
 
   if (loading || !currentQuestion) {
     return (
@@ -204,7 +207,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       {/* Top bar */}
       <View style={styles.topBar}>
@@ -294,9 +297,9 @@ export default function SurvivalScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
-  loading: { flex: 1, backgroundColor: '#12082A', alignItems: 'center', justifyContent: 'center' },
-  loadingText: { color: '#FFFFFF', fontFamily: 'DMSans_400Regular', fontSize: 16 },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
+  loading: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: colors.text1, fontFamily: fonts.display400, fontSize: 16 },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,26 +309,26 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   exitBtn: { padding: 8 },
-  exitText: { color: '#B0A8C8', fontSize: 18, fontFamily: 'DMSans_600SemiBold' },
+  exitText: { color: colors.text2, fontSize: 18, fontFamily: fonts.display600 },
   livesRow: { flexDirection: 'row', gap: 4 },
   heart: { fontSize: 22 },
   heartLost: { opacity: 0.35 },
   scoreBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  scoreText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
+  scoreText: { color: colors.text1, fontSize: 16, fontFamily: fonts.display700 },
   multBadge: {
     borderRadius: 8,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
-  multText: { color: '#FFFFFF', fontSize: 11, fontFamily: 'DMSans_700Bold' },
+  multText: { color: colors.text1, fontSize: 11, fontFamily: fonts.display700 },
   streakBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 8,
   },
-  streakText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_600SemiBold' },
-  streakMult: { fontSize: 13, fontFamily: 'DMSans_700Bold' },
+  streakText: { color: colors.text2, fontSize: 13, fontFamily: fonts.display600 },
+  streakMult: { fontSize: 13, fontFamily: fonts.display700 },
   gameArea: { flex: 1, flexDirection: 'row' },
   timerColumn: { paddingVertical: 12, paddingLeft: 16, paddingRight: 4 },
   content: { flex: 1 },
@@ -333,5 +336,5 @@ const styles = StyleSheet.create({
   answersGrid: { gap: 8 },
   nextBtnWrapper: { marginTop: 'auto', paddingTop: 8 },
   nextBtn: { borderRadius: 16, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
-  nextBtnText: { color: '#FFFFFF', fontSize: 17, fontFamily: 'DMSans_700Bold', letterSpacing: 0.3 },
+  nextBtnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700, letterSpacing: 0.3 },
 });

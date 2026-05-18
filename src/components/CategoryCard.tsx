@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Category } from '../types';
+import { colors, fonts, radius } from '../theme/tokens';
 
 interface Props {
   category: Category;
@@ -13,20 +14,24 @@ export function CategoryCard({ category, highscore, onPress }: Props) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      style={[styles.card, { backgroundColor: category.color }]}
+      style={styles.card}
     >
+      {/* Neon glow blob in top-right corner */}
+      <View style={[styles.glowBlob, { backgroundColor: category.color }]} />
+
       <Text style={styles.icon}>{category.icon}</Text>
       <Text style={styles.name}>{category.name}</Text>
       <Text style={styles.description} numberOfLines={2}>{category.description}</Text>
-      {highscore > 0 ? (
-        <View style={styles.scoreBadge}>
-          <Text style={styles.scoreText}>🏅 {highscore} XP</Text>
-        </View>
-      ) : (
-        <View style={styles.scoreBadge}>
-          <Text style={styles.noScoreText}>Inget rekord än</Text>
-        </View>
-      )}
+      <View style={styles.scoreBadge}>
+        {highscore > 0 ? (
+          <Text style={styles.scoreText}>
+            <Text style={styles.scoreMono}>{highscore.toLocaleString('sv-SE')}</Text>
+            <Text style={styles.scoreXp}> XP</Text>
+          </Text>
+        ) : (
+          <Text style={styles.noScoreText}>Inget rekord</Text>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -34,44 +39,62 @@ export function CategoryCard({ category, highscore, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 16,
-    padding: 16,
-    margin: 6,
-    minHeight: 160,
+    backgroundColor: colors.bg2,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.lg,
+    padding: 14,
+    margin: 5,
+    minHeight: 130,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  glowBlob: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    opacity: 0.18,
   },
   icon: {
-    fontSize: 32,
+    fontSize: 26,
     marginBottom: 8,
   },
   name: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'DMSans_700Bold',
+    color: colors.text1,
+    fontSize: 14,
+    fontFamily: fonts.display700,
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   description: {
-    color: 'rgba(255,255,255,0.8)',
+    color: colors.text3,
     fontSize: 11,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 15,
     flex: 1,
   },
   scoreBadge: {
     marginTop: 8,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
   },
   scoreText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontSize: 11,
+  },
+  scoreMono: {
+    fontFamily: fonts.mono700,
+    color: colors.yellow,
+    fontSize: 11,
+  },
+  scoreXp: {
+    fontFamily: fonts.mono500,
+    color: colors.text3,
+    fontSize: 10,
   },
   noScoreText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 11,
-    fontFamily: 'DMSans_400Regular',
+    color: colors.text4,
+    fontSize: 10,
+    fontFamily: fonts.display400,
   },
 });

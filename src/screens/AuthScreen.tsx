@@ -18,6 +18,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
 import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
 import { setUsername } from '../lib/scores';
+import { colors, fonts, radius } from '../theme/tokens';
 
 const RL_KEY = 'auth_rate_limit';
 const MAX_ATTEMPTS = 5;
@@ -187,7 +188,7 @@ export default function AuthScreen() {
   if (awaitingConfirm) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+        <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>📧</Text>
           <Text style={styles.confirmTitle}>Kontrollera din e-post</Text>
@@ -210,7 +211,7 @@ export default function AuthScreen() {
   if (mode === 'reset' && resetSent) {
     return (
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+        <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmEmoji}>🔑</Text>
           <Text style={styles.confirmTitle}>Länk skickad!</Text>
@@ -232,7 +233,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
       <KeyboardAvoidingView
         style={styles.kav}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -243,7 +244,7 @@ export default function AuthScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoBlock}>
-            <Image source={require('../../assets/appicon.png')} style={styles.logo} />
+            <Image source={require('../../assets/logo.png')} style={styles.logo} />
             <Text style={styles.tagline}>Quiz för restaurangfolk</Text>
           </View>
 
@@ -261,7 +262,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -275,7 +276,7 @@ export default function AuthScreen() {
                 disabled={!email.trim() || loading}
               >
                 {loading
-                  ? <ActivityIndicator color="#FFFFFF" />
+                  ? <ActivityIndicator color="#1a0010" />
                   : <Text style={styles.submitText}>Skicka återställningslänk</Text>
                 }
               </TouchableOpacity>
@@ -306,7 +307,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="E-postadress"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -317,7 +318,7 @@ export default function AuthScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Lösenord"
-                placeholderTextColor="#6050A0"
+                placeholderTextColor={colors.text3}
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={canSubmit ? handleSubmit : undefined}
@@ -344,7 +345,7 @@ export default function AuthScreen() {
                 disabled={!canSubmit}
               >
                 {loading
-                  ? <ActivityIndicator color="#FFFFFF" />
+                  ? <ActivityIndicator color="#1a0010" />
                   : <Text style={styles.submitText}>
                       {mode === 'signin' ? 'Logga in' : 'Skapa konto'}
                     </Text>
@@ -369,7 +370,7 @@ export default function AuthScreen() {
               {appleLoading
                 ? (
                   <View style={styles.appleBtnPlaceholder}>
-                    <ActivityIndicator color="#FFFFFF" />
+                    <ActivityIndicator color="#1a0010" />
                   </View>
                 )
                 : (
@@ -391,7 +392,7 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   kav: { flex: 1 },
   scroll: {
     flexGrow: 1,
@@ -406,18 +407,18 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    borderRadius: 20,
     marginBottom: 8,
+    opacity: 0.85,
   },
   tagline: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     padding: 4,
     marginBottom: 24,
@@ -428,34 +429,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 11,
   },
-  tabActive: { backgroundColor: '#9B5DE5' },
+  tabActive: { backgroundColor: colors.pink },
   tabText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
-  tabTextActive: { color: '#FFFFFF' },
+  tabTextActive: { color: colors.text1 },
   input: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: colors.wrong,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     marginBottom: 12,
   },
   submitBtn: {
-    backgroundColor: '#9B5DE5',
+    backgroundColor: colors.pink,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -465,9 +466,9 @@ const styles = StyleSheet.create({
   },
   submitBtnDisabled: { opacity: 0.45 },
   submitText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
   divider: {
     flexDirection: 'row',
@@ -478,12 +479,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.lineStrong,
   },
   dividerText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
   },
   appleBtn: {
     width: '100%',
@@ -505,54 +506,54 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#6050A0',
+    borderColor: colors.text3,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   checkboxChecked: {
-    backgroundColor: '#9B5DE5',
-    borderColor: '#9B5DE5',
+    backgroundColor: colors.pink,
+    borderColor: colors.pink,
   },
   checkboxMark: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 13,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     lineHeight: 16,
   },
   checkboxLabel: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
   },
   forgotBtn: {
     alignItems: 'center',
     paddingVertical: 14,
   },
   forgotText: {
-    color: '#9B5DE5',
+    color: colors.pink,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
   },
   resetBackRow: {
     marginBottom: 20,
   },
   resetBackText: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
   },
   resetTitle: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 24,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     marginBottom: 12,
   },
   resetBody: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     lineHeight: 22,
     marginBottom: 24,
   },
@@ -564,33 +565,33 @@ const styles = StyleSheet.create({
   },
   confirmEmoji: { fontSize: 64, marginBottom: 24 },
   confirmTitle: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 24,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
     marginBottom: 16,
   },
   confirmBody: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     lineHeight: 26,
     marginBottom: 32,
   },
   confirmEmail: {
-    color: '#FFFFFF',
-    fontFamily: 'DMSans_600SemiBold',
+    color: colors.text1,
+    fontFamily: fonts.display600,
   },
   backBtn: {
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 32,
   },
   backText: {
-    color: '#9B5DE5',
+    color: colors.pink,
     fontSize: 15,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
 });

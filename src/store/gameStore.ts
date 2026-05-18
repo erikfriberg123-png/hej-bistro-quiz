@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CategoryId, Question, GameResult } from '../types';
 import { fetchRemoteQuestions } from '../lib/remoteQuestions';
+import { type Area, DEFAULT_AREA } from '../lib/branding';
 import { calculateScore } from '../utils/scoring';
 import { shuffle } from '../utils/shuffle';
 
@@ -19,10 +20,12 @@ interface GameState {
   lastPlayedDate: string;
   customQuestions: Question[];
   remoteQuestions: Question[];
+  currentArea: Area;
 
   startGame: (categoryId: CategoryId, count?: number) => void;
   startChallengeGame: (categoryId: CategoryId, questionIds: string[]) => void;
-  loadRemoteQuestions: () => Promise<void>;
+  loadRemoteQuestions: (area?: Area) => Promise<void>;
+  setCurrentArea: (area: Area) => void;
   submitAnswer: (answerIndex: number, timeRemaining: number) => number;
   nextQuestion: () => void;
   endGame: () => { result: GameResult; isNewHighscore: boolean; previousHighscore: number };
@@ -61,10 +64,14 @@ export const useGameStore = create<GameState>()(
       lastPlayedDate: '',
       customQuestions: [],
       remoteQuestions: [],
+      currentArea: DEFAULT_AREA,
 
-      loadRemoteQuestions: async () => {
-        const questions = await fetchRemoteQuestions();
-        set({ remoteQuestions: questions });
+      setCurrentArea: (area) => set({ currentArea: area }),
+
+      loadRemoteQuestions: async (area) => {
+        const targetArea = area ?? get().currentArea;
+        const questions = await fetchRemoteQuestions(targetArea);
+        set({ remoteQuestions: questions, currentArea: targetArea });
       },
 
       startGame: (categoryId, count = 10) => {

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TABLES } from './appConfig';
 import type { CategoryId, Difficulty } from '../types';
 
 export interface Complaint {
@@ -26,7 +27,7 @@ export async function submitQuestion(data: QuestionSubmission): Promise<{ error?
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count } = await supabase
-    .from('submitted_questions')
+    .from(TABLES.submissions)
     .select('id', { count: 'exact', head: true })
     .eq('submitted_by', user.id)
     .gt('created_at', oneHourAgo);
@@ -40,7 +41,7 @@ export async function submitQuestion(data: QuestionSubmission): Promise<{ error?
     .eq('id', user.id)
     .single();
 
-  const { error } = await supabase.from('submitted_questions').insert({
+  const { error } = await supabase.from(TABLES.submissions).insert({
     category_id: data.category,
     question: data.question,
     answers: data.answers,
@@ -64,9 +65,8 @@ export async function submitComplaint(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Inte inloggad' };
 
-  // No duplicate complaints on the same question
   const { count: dupCount } = await supabase
-    .from('question_complaints')
+    .from(TABLES.complaints)
     .select('id', { count: 'exact', head: true })
     .eq('complained_by', user.id)
     .eq('question_id', questionId);
@@ -74,10 +74,9 @@ export async function submitComplaint(
     return { error: 'Du har redan rapporterat den här frågan.' };
   }
 
-  // Max 5 complaints per hour across all questions
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count } = await supabase
-    .from('question_complaints')
+    .from(TABLES.complaints)
     .select('id', { count: 'exact', head: true })
     .eq('complained_by', user.id)
     .gt('created_at', oneHourAgo);
@@ -91,7 +90,7 @@ export async function submitComplaint(
     .eq('id', user.id)
     .single();
 
-  const { error } = await supabase.from('question_complaints').insert({
+  const { error } = await supabase.from(TABLES.complaints).insert({
     question_id: questionId,
     question_text: questionText,
     category_id: categoryId,
@@ -105,7 +104,7 @@ export async function submitComplaint(
 
 export async function getComplaints(): Promise<Complaint[]> {
   const { data, error } = await supabase
-    .from('question_complaints')
+    .from(TABLES.complaints)
     .select('*')
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -113,7 +112,7 @@ export async function getComplaints(): Promise<Complaint[]> {
 }
 
 export async function dismissComplaint(id: string): Promise<void> {
-  const { error } = await supabase.from('question_complaints').delete().eq('id', id);
+  const { error } = await supabase.from(TABLES.complaints).delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -133,7 +132,7 @@ export interface SubmittedQuestion {
 
 export async function getPendingSubmissions(): Promise<SubmittedQuestion[]> {
   const { data, error } = await supabase
-    .from('submitted_questions')
+    .from(TABLES.submissions)
     .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
@@ -143,7 +142,7 @@ export async function getPendingSubmissions(): Promise<SubmittedQuestion[]> {
 
 export async function approveSubmission(sub: SubmittedQuestion): Promise<void> {
   const id = `rq_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  const { error: insertErr } = await supabase.from('remote_questions').insert({
+  const { error: insertErr } = await supabase.from(TABLES.questions).insert({
     id,
     category_id: sub.category_id,
     question: sub.question,
@@ -155,7 +154,7 @@ export async function approveSubmission(sub: SubmittedQuestion): Promise<void> {
   });
   if (insertErr) throw insertErr;
   const { error: updateErr } = await supabase
-    .from('submitted_questions')
+    .from(TABLES.submissions)
     .update({ status: 'approved' })
     .eq('id', sub.id);
   if (updateErr) throw updateErr;
@@ -163,7 +162,7 @@ export async function approveSubmission(sub: SubmittedQuestion): Promise<void> {
 
 export async function rejectSubmission(id: string): Promise<void> {
   const { error } = await supabase
-    .from('submitted_questions')
+    .from(TABLES.submissions)
     .update({ status: 'rejected' })
     .eq('id', id);
   if (error) throw error;

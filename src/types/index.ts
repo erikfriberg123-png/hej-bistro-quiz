@@ -14,6 +14,16 @@ export type CategoryId =
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+export type TofDifficulty = 'easy' | 'easy_medium' | 'medium' | 'medium_hard' | 'hard';
+
+export interface TofQuestion {
+  id: string;
+  statement: string;
+  answer: boolean;
+  difficulty: TofDifficulty;
+  area: string;
+}
+
 export interface Question {
   id: string;
   category: CategoryId;
@@ -48,6 +58,7 @@ export type AuthStackParamList = {
 
 export type RootStackParamList = {
   Home: undefined;
+  Welcome: undefined;
   Game: {
     categoryId: CategoryId;
     challengeMode?: 'create' | 'join';
@@ -129,4 +140,12 @@ export type RootStackParamList = {
     previousHighscore: number;
   };
   Friends: undefined;
+  SantEllerFalskt: { round: number };
+  SantEllerFalsktResult: {
+    round: number;
+    score: number;
+    correctAnswers: number;
+    isNewBest: boolean;
+    previousBest: number;
+  };
 };

@@ -16,6 +16,7 @@ import { getCategoryById } from '../data/categories';
 import { submitComplaint } from '../lib/submissions';
 import { ComplaintModal } from '../components/ComplaintModal';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
@@ -80,7 +81,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -121,7 +122,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 
         <TouchableOpacity
           onPress={handlePlayAgain}
-          style={[styles.btn, { backgroundColor: category?.color ?? '#9B5DE5' }]}
+          style={[styles.btn, { backgroundColor: colors.pink }]}
         >
           <Text style={styles.btnText}>Spela igen</Text>
         </TouchableOpacity>
@@ -175,10 +176,7 @@ export default function ResultScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#12082A',
-  },
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flexGrow: 1,
     alignItems: 'center',
@@ -186,157 +184,94 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
-  emoji: {
-    fontSize: 64,
-    marginBottom: 8,
-  },
+  emoji: { fontSize: 64, marginBottom: 8 },
   newRecordBadge: {
-    backgroundColor: '#F7C948',
-    borderRadius: 20,
+    backgroundColor: colors.yellow,
+    borderRadius: radius.pill,
     paddingHorizontal: 16,
     paddingVertical: 6,
     marginBottom: 12,
   },
-  newRecordText: {
-    color: '#12082A',
-    fontSize: 14,
-    fontFamily: 'DMSans_800ExtraBold',
-    letterSpacing: 1,
-  },
+  newRecordText: { color: colors.bg1, fontSize: 14, fontFamily: fonts.display700, letterSpacing: 1 },
   scoreLabel: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 2,
-    marginBottom: 4,
+    color: colors.text3,
+    fontSize: 10.5,
+    fontFamily: fonts.mono700,
+    letterSpacing: 0.22 * 10.5,
+    textTransform: 'uppercase',
+    marginBottom: 6,
   },
   scoreValue: {
-    color: '#FFFFFF',
-    fontSize: 52,
-    fontFamily: 'DMSans_800ExtraBold',
+    color: colors.yellow,
+    fontSize: 64,
+    fontFamily: fonts.mono700,
     marginBottom: 24,
+    lineHeight: 70,
+    letterSpacing: -2,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#1E1040',
-    borderRadius: 16,
+    backgroundColor: colors.bg2,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.lg,
     paddingVertical: 16,
     paddingHorizontal: 8,
     width: '100%',
     marginBottom: 16,
   },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statDivider: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#2A1A50',
-  },
-  statValue: {
-    color: '#FFFFFF',
-    fontSize: 26,
-    fontFamily: 'DMSans_700Bold',
-  },
-  statLabel: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
-    marginTop: 2,
-  },
-  prevHighscore: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
-    marginBottom: 12,
-  },
+  statBox: { flex: 1, alignItems: 'center' },
+  statDivider: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.lineStrong },
+  statValue: { color: colors.text1, fontSize: 26, fontFamily: fonts.display700 },
+  statLabel: { color: colors.text3, fontSize: 12, fontFamily: fonts.display400, marginTop: 2 },
+  prevHighscore: { color: colors.text3, fontSize: 13, fontFamily: fonts.display400, marginBottom: 12 },
   tagline: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_800ExtraBold',
-    letterSpacing: 1.5,
+    color: colors.text3,
+    fontSize: 10.5,
+    fontFamily: fonts.mono700,
+    letterSpacing: 0.22 * 10.5,
+    textTransform: 'uppercase',
     marginBottom: 24,
   },
-  btn: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  btnText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
-  },
+  btn: { width: '100%', paddingVertical: 14, borderRadius: radius.md, alignItems: 'center', marginBottom: 10 },
+  btnText: { color: '#1a0010', fontSize: 17, fontFamily: fonts.display700 },
   btnOutline: {
     width: '100%',
-    paddingVertical: 15,
-    borderRadius: 14,
+    paddingVertical: 14,
+    borderRadius: radius.md,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#3D2870',
-    marginBottom: 12,
+    borderColor: colors.lineStrong,
+    marginBottom: 10,
   },
-  btnOutlineText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  shareBtn: {
-    paddingVertical: 8,
-  },
-  shareText: {
-    color: '#B0A8C8',
-    fontSize: 14,
-    fontFamily: 'DMSans_500Medium',
-  },
+  btnOutlineText: { color: colors.text1, fontSize: 16, fontFamily: fonts.display600 },
+  shareBtn: { paddingVertical: 8 },
+  shareText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500 },
   complainSection: {
     width: '100%',
     marginTop: 24,
     borderTopWidth: 1,
-    borderTopColor: '#2A1A50',
+    borderTopColor: colors.line,
     paddingTop: 16,
     gap: 10,
   },
-  complainTitle: {
-    color: '#B0A8C8',
-    fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
+  complainTitle: { color: colors.text2, fontSize: 13, fontFamily: fonts.display600, letterSpacing: 0.5, marginBottom: 4 },
   complainRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 12,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 10,
   },
-  complainQ: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
-    lineHeight: 18,
-  },
+  complainQ: { flex: 1, color: colors.text1, fontSize: 13, fontFamily: fonts.display400, lineHeight: 18 },
   complainBtn: {
-    backgroundColor: '#3D2870',
-    borderRadius: 8,
+    backgroundColor: colors.bg3,
+    borderRadius: radius.sm,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  complainBtnText: {
-    color: '#B0A8C8',
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
-  },
-  complainedBadge: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
-  },
+  complainBtnText: { color: colors.text2, fontSize: 12, fontFamily: fonts.display600 },
+  complainedBadge: { color: colors.correct, fontSize: 12, fontFamily: fonts.display600 },
 });

@@ -12,10 +12,24 @@ import {
   DMSans_700Bold,
   DMSans_800ExtraBold,
 } from '@expo-google-fonts/dm-sans';
+import {
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from '@expo-google-fonts/space-grotesk';
+import {
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from '@expo-google-fonts/jetbrains-mono';
+import {
+  Caveat_700Bold,
+} from '@expo-google-fonts/caveat';
 import { AuthStackParamList, RootStackParamList } from './src/types';
 import { supabase } from './src/lib/supabase';
 import { useGameStore } from './src/store/gameStore';
 import { registerPushToken } from './src/lib/pushNotifications';
+import { colors } from './src/theme/tokens';
 import HomeScreen from './src/screens/HomeScreen';
 import GameScreen from './src/screens/GameScreen';
 import ResultScreen from './src/screens/ResultScreen';
@@ -30,9 +44,13 @@ import BattlePickCategoryScreen from './src/screens/BattlePickCategoryScreen';
 import BattleRoundScreen from './src/screens/BattleRoundScreen';
 import BattleBoardScreen from './src/screens/BattleBoardScreen';
 import BattleResultScreen from './src/screens/BattleResultScreen';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 import SurvivalScreen from './src/screens/SurvivalScreen';
 import SurvivalResultScreen from './src/screens/SurvivalResultScreen';
+import SantEllerFalsktScreen from './src/screens/SantEllerFalsktScreen';
+import SantEllerFalsktResultScreen from './src/screens/SantEllerFalsktResultScreen';
 import UpdatePasswordScreen from './src/screens/UpdatePasswordScreen';
+import AppStoreBanner from './src/components/AppStoreBanner';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -53,6 +71,13 @@ export default function App() {
     DMSans_600SemiBold,
     DMSans_700Bold,
     DMSans_800ExtraBold,
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
+    Caveat_700Bold,
   });
 
   const [isReady, setIsReady] = useState(false);
@@ -92,7 +117,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load remote questions whenever we have a session
   useEffect(() => {
     if (session) loadRemoteQuestions();
   }, [!!session]);
@@ -112,7 +136,7 @@ export default function App() {
   if (!fontsLoaded || !isReady) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color="#9B5DE5" />
+        <ActivityIndicator color={colors.pink} />
       </View>
     );
   }
@@ -131,6 +155,7 @@ export default function App() {
     <NavigationContainer linking={linking}>
       <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
         <AppStack.Screen name="Home" component={HomeScreen} />
+        <AppStack.Screen name="Welcome" component={WelcomeScreen} />
         <AppStack.Screen name="Game" component={GameScreen} />
         <AppStack.Screen name="Result" component={ResultScreen} />
         <AppStack.Screen name="Leaderboard" component={LeaderboardScreen} />
@@ -143,6 +168,8 @@ export default function App() {
         <AppStack.Screen name="BattleResult" component={BattleResultScreen} />
         <AppStack.Screen name="Survival" component={SurvivalScreen} />
         <AppStack.Screen name="SurvivalResult" component={SurvivalResultScreen} />
+        <AppStack.Screen name="SantEllerFalskt" component={SantEllerFalsktScreen} />
+        <AppStack.Screen name="SantEllerFalsktResult" component={SantEllerFalsktResultScreen} />
         <AppStack.Screen name="Friends" component={FriendsScreen} />
       </AppStack.Navigator>
     </NavigationContainer>
@@ -151,6 +178,7 @@ export default function App() {
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webOuter}>
+        <AppStoreBanner />
         <View style={styles.webInner}>
           {navContent}
         </View>
@@ -164,13 +192,13 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#12082A',
+    backgroundColor: colors.bg1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   webOuter: {
     flex: 1,
-    backgroundColor: '#0A0520',
+    backgroundColor: colors.bg0,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
