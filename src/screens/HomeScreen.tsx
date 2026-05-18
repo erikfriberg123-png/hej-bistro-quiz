@@ -57,6 +57,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [feedbackError, setFeedbackError] = useState('');
   const [storyVisible, setStoryVisible] = useState(false);
+  const [deleteAccountVisible, setDeleteAccountVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const prevMyTurnIdsRef = useRef<Set<string> | null>(null);
   const userIdRef = useRef<string | null>(null);
 
@@ -258,6 +260,25 @@ export default function HomeScreen({ navigation }: Props) {
       setPwError('Något gick fel. Försök igen.');
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase.rpc('delete_user');
+      if (error) throw error;
+      setDeleteAccountVisible(false);
+      setProfileVisible(false);
+      await supabase.auth.signOut();
+    } catch {
+      if (Platform.OS === 'web') {
+        window.alert('Kunde inte radera kontot. Försök igen.');
+      } else {
+        Alert.alert('Fel', 'Kunde inte radera kontot. Försök igen.');
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -571,6 +592,42 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
       </Modal>
 
+      {/* Delete account confirmation modal */}
+      <Modal visible={deleteAccountVisible} transparent animationType="fade" onRequestClose={() => setDeleteAccountVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => !deleteLoading && setDeleteAccountVisible(false)}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+              <View style={styles.modalCard}>
+                <Text style={styles.modalTitle}>Radera konto?</Text>
+                <Text style={styles.modalBody}>
+                  {'All din data raderas permanent — poäng, statistik och vänskapsband. Det går inte att ångra.'}
+                </Text>
+                <TouchableOpacity
+                  onPress={handleDeleteAccount}
+                  style={[styles.deleteConfirmBtn, deleteLoading && styles.modalBtnDisabled]}
+                  disabled={deleteLoading}
+                >
+                  <Text style={styles.deleteConfirmText}>
+                    {deleteLoading ? 'Raderar...' : 'Ja, radera mitt konto'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setDeleteAccountVisible(false)}
+                  style={styles.cancelBtn}
+                  disabled={deleteLoading}
+                >
+                  <Text style={styles.cancelText}>Avbryt</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       {/* Profile / username modal */}
       <Modal
         visible={profileVisible}
@@ -637,6 +694,10 @@ export default function HomeScreen({ navigation }: Props) {
 
               {!usernameRequired && !changePwVisible && (
                 <>
+                  <TouchableOpacity onPress={() => setDeleteAccountVisible(true)} style={styles.deleteAccountBtn}>
+                    <Text style={styles.deleteAccountText}>🗑️  Radera konto</Text>
+                  </TouchableOpacity>
+
                   <TouchableOpacity onPress={openChangePw} style={styles.changePwBtn}>
                     <Text style={styles.changePwText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
@@ -1102,6 +1163,16 @@ const styles = StyleSheet.create({
   modalBtnText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
   cancelText: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_500Medium' },
+  deleteAccountBtn: { alignItems: 'center', paddingVertical: 8 },
+  deleteAccountText: { color: '#FF5555', fontSize: 13, fontFamily: 'DMSans_500Medium' },
+  deleteConfirmBtn: {
+    backgroundColor: '#CC2222',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  deleteConfirmText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'DMSans_700Bold' },
   changePwBtn: { alignItems: 'center', paddingVertical: 8 },
   changePwText: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_500Medium' },
   logoutBtn: { alignItems: 'center', paddingVertical: 8 },
