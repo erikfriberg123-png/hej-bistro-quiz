@@ -400,7 +400,9 @@ const QUESTIONS_TABLE =
 
 File: `daily-quizine/src/components/SegmentLogo.tsx`
 
-Add a new branch before the default return for the new segment. The logo is a 38×38 container with an inline SVG (viewBox "0 0 52 52"). Use the accent color from question 9e as the stroke and glow filter color. Base the SVG path/shape on the description from question 9f:
+Add a new branch before the default return for the new segment. The logo is a 38×38 container with an inline SVG (viewBox "0 0 52 52"). Use the accent color from question 9e as the stroke and glow filter color. Base the SVG path/shape on the description from question 9f.
+
+**The SVG shape MUST match the logo used on the `daily.quizine.se` landing page (`daily-quizine/landing-page.html`).** Read that file first and copy the exact paths for the matching segment card icon, updating only stroke-width to 2.5 (from 2) for the React version.
 
 ```tsx
 if (SEGMENT === '[WORKGROUP_ID]') {
@@ -416,7 +418,7 @@ if (SEGMENT === '[WORKGROUP_ID]') {
     }}>
       <svg width="24" height="24" viewBox="0 0 52 52" fill="none"
         style={{ filter: 'drop-shadow(0 0 5px [BRAND_COLOR])' }}>
-        {/* SVG paths from question 9f */}
+        {/* SVG paths copied from the matching card in landing-page.html */}
       </svg>
     </div>
   )
@@ -425,7 +427,20 @@ if (SEGMENT === '[WORKGROUP_ID]') {
 
 ---
 
-### 2.B.6 — `vite.config.[WORKGROUP_ID].ts`
+### 2.B.6 — Score & Hall of Fame isolation
+
+**Critical:** Every segment must have its own isolated leaderboard and Hall of Fame. Scores from different segments must never appear in each other's lists.
+
+The `daily_scores` table has a `segment` column (added via `supabase/add_segment_to_daily_scores.sql`). The `dailyScores.ts` library already filters all reads and writes by `SEGMENT`. Since the new Vite config sets `__SEGMENT__` to `'[WORKGROUP_ID]'`, no extra code change is needed — the isolation is automatic as long as:
+
+1. The `segment` column exists in `daily_scores` (run the migration if not already done).
+2. The new segment's `localStoragePrefix` in `segments.ts` is unique (e.g. `'[WORKGROUP_ID]_'`) — this keeps local played-state and session data isolated too.
+
+Verify by checking `daily-quizine/src/lib/dailyScores.ts` — every Supabase query must include `.eq('segment', SEGMENT)`. If a new query is added in future, always include this filter.
+
+---
+
+### 2.B.8 — `vite.config.[WORKGROUP_ID].ts`
 
 File: `daily-quizine/vite.config.[WORKGROUP_ID].ts`
 
@@ -485,11 +500,12 @@ After all changes, print a checklist for the user (include the daily-quizine blo
 ⬜ .env.local — Add any new env vars (if separate Supabase project)
 
 -- daily.quizine.se (only if opted in) --
-✅ segments.ts — CONFIGS entry added
+✅ segments.ts — CONFIGS entry added (unique localStoragePrefix)
 ✅ index.css — html[data-segment] theme block added
 ✅ categories.ts (daily) — CATEGORY_DISPLAY entries added
 ✅ questions.ts — QUESTIONS_TABLE extended
-✅ SegmentLogo.tsx — new segment logo branch added
+✅ SegmentLogo.tsx — logo branch added (matching landing-page.html SVG)
+✅ Score isolation — dailyScores.ts filters by SEGMENT; migration run
 ✅ vite.config.[WORKGROUP_ID].ts — new Vite config created
 ```
 
