@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
-const APP_STORE_URL = 'https://apps.apple.com/app/idXXXXXXXXX';
+const APP_STORE_URL = 'https://apps.apple.com/app/id6770026482';
 
 export default function AppStoreBanner() {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -25,7 +28,7 @@ export default function AppStoreBanner() {
         <Text style={styles.iconText}>🎯</Text>
       </View>
       <View style={styles.textBlock}>
-        <Text style={styles.title}>ProQuiz</Text>
+        <Text style={styles.title}>Quizine</Text>
         <Text style={styles.sub}>Ladda ner appen för bästa upplevelsen</Text>
       </View>
       <Pressable style={styles.button} onPress={() => Linking.openURL(APP_STORE_URL)}>
@@ -38,7 +41,7 @@ export default function AppStoreBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   banner: {
     width: '100%',
     backgroundColor: colors.bg2,

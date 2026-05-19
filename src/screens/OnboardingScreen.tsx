@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,53 +6,64 @@ import {
   SafeAreaView,
   StatusBar,
   TouchableOpacity,
+  FlatList,
+  Dimensions,
 } from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
-import { colors, fonts, radius, spacing } from '../theme/tokens';
+import { fonts, radius, spacing } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
-const PAGES = [
+type AccentKey = 'pink' | 'yellow' | 'cyan';
+
+const PAGE_DEFS = [
   {
     emoji: '🍽️',
     neon: '~ välkommen ~',
     title: 'Välkommen till\nQuizine!',
     body: 'Det roligaste sättet att lära sig mer om mat, dryck och restaurangbranschen.',
-    accent: colors.pink,
-    glow: colors.pinkGlow,
+    accentKey: 'pink' as AccentKey,
   },
   {
     emoji: '🏆',
     neon: '~ samla XP ~',
     title: 'Tävla med\ndina kollegor',
-    body: 'Samla XP, bygg din streak och klättra på topplistan. Spela varje dag för att hålla igång!',
-    accent: colors.yellow,
-    glow: colors.yellowGlow,
+    body: 'Samla XP och klättra på topplistan. Tävla mot dina kollegor och se vem som kan mest!',
+    accentKey: 'yellow' as AccentKey,
   },
   {
     emoji: '👥',
     neon: '~ hitta varandra ~',
     title: 'Lägg till\nvänner',
     body: 'Gå till Vänner-fliken och sök på en kollegas användarnamn. Skicka en vänförfrågan — när de accepterar kan ni se varandras resultat och utmana varandra.',
-    accent: colors.cyan,
-    glow: colors.cyanGlow,
+    accentKey: 'cyan' as AccentKey,
   },
   {
     emoji: '⚔️',
     neon: '~ vem är bäst? ~',
     title: 'Battle-läget',
     body: 'Utmana en vän på ett ämne du väljer. Ni spelar var för sig och svarar på samma frågor — vinnaren är den med flest poäng när båda är klara.',
-    accent: colors.cyan,
-    glow: colors.cyanGlow,
+    accentKey: 'cyan' as AccentKey,
   },
 ];
 
 export default function OnboardingScreen({ navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [page, setPage] = useState(0);
-  const current = PAGES[page];
-  const isLast = page === PAGES.length - 1;
+  const flatListRef = useRef<FlatList>(null);
+
+  const def = PAGE_DEFS[page];
+  const accent = colors[def.accentKey];
+  const glow = colors[`${def.accentKey}Glow` as keyof Colors] as string;
+  const isLast = page === PAGE_DEFS.length - 1;
 
   const finish = async () => {
     await AsyncStorage.setItem('onboarding-done', '1');
@@ -63,56 +74,71 @@ export default function OnboardingScreen({ navigation }: Props) {
     if (isLast) {
       finish();
     } else {
-      setPage(p => p + 1);
+      flatListRef.current?.scrollToIndex({ index: page + 1, animated: true });
     }
+  };
+
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setPage(viewableItems[0].index);
+    }
+  }, []);
+
+  const renderPage = ({ item }: { item: typeof PAGE_DEFS[0] }) => {
+    const pageAccent = colors[item.accentKey];
+    return (
+      <View style={styles.content}>
+        <Text style={[styles.neonLabel, { color: pageAccent }]}>{item.neon}</Text>
+        <View style={[styles.emojiRing, { borderColor: pageAccent, shadowColor: pageAccent }]}>
+          <Text style={styles.emoji}>{item.emoji}</Text>
+        </View>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.body}>{item.body}</Text>
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg0} />
 
-      {/* Ambient glow blob — changes with accent */}
-      <View
-        pointerEvents="none"
-        style={[styles.glowBlob, { backgroundColor: current.glow }]}
-      />
+      <View pointerEvents="none" style={[styles.glowBlob, { backgroundColor: glow }]} />
 
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.pageCounter}>
-          {String(page + 1).padStart(2, '0')} / {String(PAGES.length).padStart(2, '0')}
+          {String(page + 1).padStart(2, '0')} / {String(PAGE_DEFS.length).padStart(2, '0')}
         </Text>
         <TouchableOpacity onPress={finish} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Text style={styles.skipText}>Hoppa över</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
-      <View style={styles.content}>
-        <Text style={[styles.neonLabel, { color: current.accent }]}>{current.neon}</Text>
-
-        <View style={[
-          styles.emojiRing,
-          { borderColor: current.accent, shadowColor: current.accent },
-        ]}>
-          <Text style={styles.emoji}>{current.emoji}</Text>
-        </View>
-
-        <Text style={styles.title}>{current.title}</Text>
-        <Text style={styles.body}>{current.body}</Text>
-      </View>
+      {/* Swipeable pages */}
+      <FlatList
+        ref={flatListRef}
+        data={PAGE_DEFS}
+        renderItem={renderPage}
+        keyExtractor={(_, i) => String(i)}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+        style={styles.flatList}
+      />
 
       {/* Progress dots */}
       <View style={styles.dots}>
-        {PAGES.map((_, i) => (
+        {PAGE_DEFS.map((_, i) => (
           <View
             key={i}
             style={[
               styles.dot,
               i === page && {
-                backgroundColor: current.accent,
+                backgroundColor: accent,
                 width: 24,
-                shadowColor: current.accent,
+                shadowColor: accent,
                 shadowOpacity: 0.7,
                 shadowRadius: 6,
                 elevation: 4,
@@ -124,7 +150,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
       {/* Footer CTA */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={next} style={styles.nextBtn} activeOpacity={0.85}>
+        <TouchableOpacity onPress={next} style={[styles.nextBtn, { backgroundColor: accent, shadowColor: accent }]} activeOpacity={0.85}>
           <Text style={styles.nextText}>{isLast ? 'Kom igång!' : 'Nästa  →'}</Text>
         </TouchableOpacity>
       </View>
@@ -132,7 +158,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg0 },
 
   glowBlob: {
@@ -165,7 +191,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display500,
   },
 
+  flatList: {
+    flex: 1,
+  },
   content: {
+    width: SCREEN_WIDTH,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -229,11 +259,9 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
   },
   nextBtn: {
-    backgroundColor: colors.pink,
     borderRadius: radius.lg,
     paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: colors.pink,
     shadowOpacity: 0.55,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 20,
