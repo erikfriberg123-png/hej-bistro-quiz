@@ -60,6 +60,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [feedbackError, setFeedbackError] = useState('');
   const [storyVisible, setStoryVisible] = useState(false);
+  const [deleteAccountVisible, setDeleteAccountVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const prevMyTurnIdsRef = useRef<Set<string> | null>(null);
   const userIdRef = useRef<string | null>(null);
 
@@ -234,6 +236,25 @@ export default function HomeScreen({ navigation }: Props) {
       setPwError('Något gick fel. Försök igen.');
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase.rpc('delete_user');
+      if (error) throw error;
+      setDeleteAccountVisible(false);
+      setProfileVisible(false);
+      await supabase.auth.signOut();
+    } catch {
+      if (Platform.OS === 'web') {
+        window.alert('Kunde inte radera kontot. Försök igen.');
+      } else {
+        Alert.alert('Fel', 'Kunde inte radera kontot. Försök igen.');
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -528,6 +549,42 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
       </Modal>
 
+      {/* Delete account confirmation modal */}
+      <Modal visible={deleteAccountVisible} transparent animationType="fade" onRequestClose={() => setDeleteAccountVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => !deleteLoading && setDeleteAccountVisible(false)}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+              <View style={styles.modalCard}>
+                <Text style={styles.modalTitle}>Radera konto?</Text>
+                <Text style={styles.modalBody}>
+                  {'All din data raderas permanent — poäng, statistik och vänskapsband. Det går inte att ångra.'}
+                </Text>
+                <TouchableOpacity
+                  onPress={handleDeleteAccount}
+                  style={[styles.deleteConfirmBtn, deleteLoading && styles.primaryBtnDisabled]}
+                  disabled={deleteLoading}
+                >
+                  <Text style={styles.deleteConfirmText}>
+                    {deleteLoading ? 'Raderar...' : 'Ja, radera mitt konto'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setDeleteAccountVisible(false)}
+                  style={styles.ghostModalBtn}
+                  disabled={deleteLoading}
+                >
+                  <Text style={styles.ghostModalBtnText}>Avbryt</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       {/* Profile modal */}
       <Modal
         visible={profileVisible}
@@ -568,6 +625,10 @@ export default function HomeScreen({ navigation }: Props) {
 
               {!changePwVisible && (
                 <>
+                  <TouchableOpacity onPress={() => setDeleteAccountVisible(true)} style={styles.dangerBtn}>
+                    <Text style={styles.dangerBtnText}>🗑️  Radera konto</Text>
+                  </TouchableOpacity>
+
                   <TouchableOpacity onPress={openChangePw} style={styles.ghostModalBtn}>
                     <Text style={styles.ghostModalBtnText}>🔑  Byt lösenord</Text>
                   </TouchableOpacity>
@@ -976,5 +1037,13 @@ const styles = StyleSheet.create({
   ghostModalBtnText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display500 },
   dangerBtn: { alignItems: 'center', paddingVertical: 8 },
   dangerBtnText: { color: colors.wrong, fontSize: 13, fontFamily: fonts.display500 },
+  deleteConfirmBtn: {
+    backgroundColor: '#CC2222',
+    borderRadius: radius.md,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  deleteConfirmText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts.display700 },
   successText: { color: colors.correct, fontSize: 16, fontFamily: fonts.display600, textAlign: 'center', marginVertical: 16 },
 });
