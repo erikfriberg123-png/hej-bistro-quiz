@@ -4,6 +4,7 @@ export interface AreaBranding {
   label: string;
   brandName: string;
   brandColor: string;
+  neonLine: string;
   icon: string;
   tagline: string;
   authTagline: string;
@@ -12,26 +13,30 @@ export interface AreaBranding {
   storyTitle: string;
   storySubtitle: string;
   storyPlaceholder: string;
+  dailyPath: string;
 }
 
 export const AREA_BRANDING: Record<Area, AreaBranding> = {
   krogen: {
-    label: 'Hotel & Restaurang',
+    label: 'Hotell och Restaurang',
     brandName: 'Hej Bistro',
     brandColor: '#9B5DE5',
+    neonLine: 'Quizine',
     icon: '🍺',
-    tagline: 'Quiz för kroganställda',
+    tagline: 'Quizet för Hotell & Restaurang',
     authTagline: 'Quiz för restaurangfolk',
     storyButtonText: 'Berätta en kroghistoria',
     storyButtonIcon: '🍽️',
     storyTitle: '🍽️ Berätta en kroghistoria',
     storySubtitle: 'Intressanta historier kan publiceras på sajten.',
     storyPlaceholder: 'Berätta en intressant händelse som du varit med om på restaurang.',
+    dailyPath: 'quizine',
   },
   sjukvard: {
-    label: 'Vård & Omsorg',
+    label: 'Vård och omsorg',
     brandName: 'Den vakna',
-    brandColor: '#FF38A5',
+    brandColor: '#36E0E0',
+    neonLine: '~ alltid i tjänst ~',
     icon: '💗',
     tagline: 'Quiz för vårdpersonal',
     authTagline: 'Quiz för vårdpersonal',
@@ -40,6 +45,7 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
     storyTitle: '🏥 Berätta en arbetshistoria',
     storySubtitle: 'Intressanta historier kan publiceras på sajten.',
     storyPlaceholder: 'Berätta en intressant händelse som du varit med om på jobbet.',
+    dailyPath: 'voo',
   },
 };
 

@@ -4,28 +4,30 @@ const appId = (process.env.EXPO_PUBLIC_APP_ID ?? 'quizine') as AppId
 
 const TABLE_MAPS = {
   quizine: {
-    questions:   'remote_questions',
-    battles:     'battles',
-    challenges:  'challenges',
-    feedback:    'feedback',
-    stories:     'restaurant_stories',
-    submissions: 'submitted_questions',
-    complaints:  'question_complaints',
-    scores:      'scores',
-    attempts:    'question_attempts',
-    leaderboard: 'leaderboard',
+    questions:    'remote_questions',
+    tofQuestions: 'truth_or_false_questions',
+    battles:      'battles',
+    challenges:   'challenges',
+    feedback:     'feedback',
+    stories:      'restaurant_stories',
+    submissions:  'submitted_questions',
+    complaints:   'question_complaints',
+    scores:       'scores',
+    attempts:     'question_attempts',
+    leaderboard:  'leaderboard',
   },
   voo: {
-    questions:   'voo_remote_questions',
-    battles:     'voo_battles',
-    challenges:  'voo_challenges',
-    feedback:    'voo_feedback',
-    stories:     'voo_restaurant_stories',
-    submissions: 'voo_submitted_questions',
-    complaints:  'voo_question_complaints',
-    scores:      'voo_scores',
-    attempts:    'voo_question_attempts',
-    leaderboard: 'voo_leaderboard',
+    questions:    'voo_remote_questions',
+    tofQuestions: 'voo_truth_or_false_questions',
+    battles:      'voo_battles',
+    challenges:   'voo_challenges',
+    feedback:     'voo_feedback',
+    stories:      'voo_restaurant_stories',
+    submissions:  'voo_submitted_questions',
+    complaints:   'voo_question_complaints',
+    scores:       'voo_scores',
+    attempts:     'voo_question_attempts',
+    leaderboard:  'voo_leaderboard',
   },
 } as const
 
@@ -43,3 +45,9 @@ const RPC_MAPS = {
 export const APP_ID: AppId = appId
 export const TABLES = TABLE_MAPS[appId]
 export const RPCS = RPC_MAPS[appId]
+
+// Returns the right table set for a given user area at runtime.
+// 'krogen' → quizine tables, 'sjukvard' → voo tables.
+export function tablesForArea(area: string) {
+  return area === 'sjukvard' ? TABLE_MAPS.voo : TABLE_MAPS.quizine;
+}

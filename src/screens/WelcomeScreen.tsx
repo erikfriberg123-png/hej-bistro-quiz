@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -12,54 +12,44 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Path, Line } from 'react-native-svg';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { checkUsernameAvailable, setUsername } from '../lib/scores';
 import { useGameStore } from '../store/gameStore';
 import { AREA_BRANDING, AREAS, type Area } from '../lib/branding';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 
 function KrogenLogo() {
   return (
-    <Image
-      source={require('../../assets/logo.png')}
-      style={styles.areaLogo}
-      resizeMode="contain"
-    />
+    <Svg width={72} height={72} viewBox="0 0 1024 1024">
+      <Circle cx="512" cy="512" r="490" fill="#1A0520" />
+      <Circle cx="512" cy="512" r="490" fill="none" stroke="#9B5DE5" strokeWidth="6" opacity={0.35} />
+      <Path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
+      <Line x1="512" y1="582" x2="512" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
+      <Line x1="376" y1="764" x2="648" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
+      <Circle cx="512" cy="548" r="24" fill="#FFFFFF" opacity={0.9} />
+    </Svg>
   );
 }
 
 function VooLogo() {
   return (
-    <Svg width={72} height={72} viewBox="0 0 72 72">
-      <Circle cx="36" cy="36" r="34" fill="#1A0520" />
-      <Circle cx="36" cy="36" r="34" fill="none" stroke="#FF38A5" strokeWidth="1.5" opacity="0.35" />
-      {/* EKG glow */}
-      <Path
-        d="M8 38 L19 38 L23 27 L28 50 L33 16 L38 50 L43 38 L64 38"
-        stroke="#FF38A5"
-        strokeWidth="7"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.15"
-      />
-      {/* EKG line */}
-      <Path
-        d="M8 38 L19 38 L23 27 L28 50 L33 16 L38 50 L43 38 L64 38"
-        stroke="#FF38A5"
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <Image
+      source={require('../../assets/health-icon-1-stethoscope.png')}
+      style={{ width: 72, height: 72 }}
+      resizeMode="contain"
+    />
   );
 }
 
 export default function WelcomeScreen({ navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
   const [alias, setAlias] = useState('');
   const [error, setError] = useState('');
@@ -90,7 +80,7 @@ export default function WelcomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A0520" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -149,7 +139,7 @@ export default function WelcomeScreen({ navigation }: Props) {
             value={alias}
             onChangeText={v => { setAlias(v); setError(''); }}
             placeholder="Ditt smeknamn..."
-            placeholderTextColor="#6050A0"
+            placeholderTextColor={colors.text3}
             maxLength={20}
             autoCapitalize="none"
             autoCorrect={false}
@@ -157,7 +147,11 @@ export default function WelcomeScreen({ navigation }: Props) {
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <TouchableOpacity
-            style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
+            style={[
+              styles.submitBtn,
+              selectedArea && { backgroundColor: AREA_BRANDING[selectedArea].brandColor },
+              !canSubmit && styles.submitBtnDisabled,
+            ]}
             onPress={handleSubmit}
             disabled={!canSubmit}
             activeOpacity={0.85}
@@ -172,8 +166,8 @@ export default function WelcomeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0A0520' },
+const makeStyles = (colors: Colors) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   flex: { flex: 1 },
   scroll: {
     paddingHorizontal: 20,
@@ -186,25 +180,25 @@ const styles = StyleSheet.create({
     marginBottom: 36,
   },
   welcome: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 34,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 15,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     textAlign: 'center',
     lineHeight: 22,
     maxWidth: 300,
   },
 
   sectionLabel: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -213,10 +207,10 @@ const styles = StyleSheet.create({
   areaCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.xl,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     padding: 18,
     marginBottom: 12,
     gap: 16,
@@ -228,29 +222,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  areaLogo: {
-    width: 72,
-    height: 72,
-  },
   areaTextWrap: {
     flex: 1,
     gap: 3,
   },
   areaBrandName: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 22,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     letterSpacing: -0.3,
   },
   areaLabel: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 13,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
   },
   areaTagline: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 12,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginTop: 1,
   },
   selectedDot: {
@@ -262,43 +252,43 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   selectedDotTick: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 14,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
 
   aliasHint: {
-    color: '#6050A0',
+    color: colors.text3,
     fontSize: 13,
-    fontFamily: 'DMSans_400Regular',
+    fontFamily: fonts.display400,
     marginBottom: 10,
     lineHeight: 18,
   },
   input: {
-    backgroundColor: '#1E1040',
-    borderRadius: 14,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.md,
     paddingHorizontal: 18,
     paddingVertical: 14,
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 16,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     marginBottom: 6,
   },
   inputError: {
-    borderColor: '#FF5555',
+    borderColor: colors.wrong,
   },
   errorText: {
-    color: '#FF5555',
+    color: colors.wrong,
     fontSize: 13,
-    fontFamily: 'DMSans_500Medium',
+    fontFamily: fonts.display500,
     marginBottom: 10,
   },
 
   submitBtn: {
-    backgroundColor: '#9B5DE5',
-    borderRadius: 16,
+    backgroundColor: colors.pink,
+    borderRadius: radius.lg,
     paddingVertical: 18,
     alignItems: 'center',
     marginTop: 16,
@@ -307,8 +297,8 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   submitBtnText: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 17,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
   },
 });

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Tab {
   route: string;
@@ -23,6 +25,8 @@ interface Props {
 }
 
 export function NeonTabBar({ activeRoute, onPress, pendingCount = 0 }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
 
   return (
@@ -54,7 +58,7 @@ export function NeonTabBar({ activeRoute, onPress, pendingCount = 0 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: colors.bg1,

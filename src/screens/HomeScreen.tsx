@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
+  Switch,
   TouchableOpacity,
   Modal,
   TextInput,
@@ -18,22 +19,28 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { CATEGORIES } from '../data/categories';
+import { getCategoriesForArea } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { NeonTabBar } from '../components/NeonTabBar';
 import { getUserProfile, setUsername, setArea as saveArea, checkUsernameAvailable } from '../lib/scores';
 import { type Area, AREA_BRANDING, AREAS, DEFAULT_AREA } from '../lib/branding';
+import { tablesForArea } from '../lib/appConfig';
 import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
 import { submitFeedback } from '../lib/feedback';
 import { StoryModal } from '../components/StoryModal';
-import { colors, fonts, radius, spacing } from '../theme/tokens';
+import { fonts, radius, spacing } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import Svg, { Circle, Path, Line } from 'react-native-svg';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const { survivalHighscores, streak, checkStreak, loadRemoteQuestions } = useGameStore();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { survivalHighscores, loadRemoteQuestions, resetGame, isDarkMode, toggleDarkMode } = useGameStore();
   const [helpVisible, setHelpVisible] = useState(false);
   const [profileVisible, setProfileVisible] = useState(false);
   const [username, setUsernameState] = useState<string | null>(null);
@@ -69,13 +76,13 @@ export default function HomeScreen({ navigation }: Props) {
   const myTurnCount = myTurnBattles.length;
 
   useEffect(() => {
-    checkStreak();
     getUserProfile().then(({ username: name, area: userArea }) => {
       if (!name) { navigation.replace('Welcome'); return; }
       setUsernameState(name);
       setInputName(name);
       setAreaState(userArea);
       setSelectedArea(userArea);
+      loadRemoteQuestions(userArea);
     });
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) { userIdRef.current = user.id; setUserId(user.id); }
@@ -84,8 +91,8 @@ export default function HomeScreen({ navigation }: Props) {
 
   const refreshBattleState = useCallback(async (notifyOnNew: boolean) => {
     const [newMyTurns, newPending] = await Promise.all([
-      getMyActiveTurns().catch((): Battle[] => []),
-      getPendingBattlesForMe().catch((): Battle[] => []),
+      getMyActiveTurns(area).catch((): Battle[] => []),
+      getPendingBattlesForMe(area).catch((): Battle[] => []),
     ]);
 
     if (notifyOnNew && prevMyTurnIdsRef.current !== null) {
@@ -103,7 +110,7 @@ export default function HomeScreen({ navigation }: Props) {
     prevMyTurnIdsRef.current = new Set(newMyTurns.map(b => b.id));
     setMyTurnBattles(newMyTurns);
     setPendingBattles(newPending);
-  }, []);
+  }, [area]);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,16 +123,17 @@ export default function HomeScreen({ navigation }: Props) {
     if (!userId) return;
     const suffix = Date.now();
     const onUpdate = () => refreshBattleState(true);
+    const battlesTable = tablesForArea(area).battles;
     const ch1 = supabase
       .channel(`home-cr-${userId}-${suffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `creator_id=eq.${userId}` }, onUpdate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: battlesTable, filter: `creator_id=eq.${userId}` }, onUpdate)
       .subscribe();
     const ch2 = supabase
       .channel(`home-op-${userId}-${suffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `opponent_id=eq.${userId}` }, onUpdate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: battlesTable, filter: `opponent_id=eq.${userId}` }, onUpdate)
       .subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [userId, refreshBattleState]);
+  }, [userId, area, refreshBattleState]);
 
   useEffect(() => {
     if (!turnNotification) return;
@@ -153,13 +161,40 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  const handleChangeArea = async (newArea: Area) => {
-    if (newArea === area) return;
+  const doChangeArea = async (newArea: Area) => {
     try {
       await saveArea(newArea);
+      resetGame();
+      setMode(null);
       setAreaState(newArea);
+      setSelectedArea(newArea);
       loadRemoteQuestions(newArea);
+      setProfileVisible(false);
     } catch {}
+  };
+
+  const handleChangeArea = (newArea: Area) => {
+    if (newArea === area) return;
+    const newBranding = AREA_BRANDING[newArea];
+    const hasPending = myTurnBattles.length > 0 || pendingBattles.length > 0;
+    const warningLine = hasPending
+      ? `Pågående battles och spel avslutas.`
+      : `Pågående spel avslutas.`;
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Byta till ${newBranding.brandName}?\n${warningLine}`)) {
+        doChangeArea(newArea);
+      }
+      return;
+    }
+    Alert.alert(
+      `Byta till ${newBranding.brandName}?`,
+      warningLine,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        { text: 'Byt bransch', style: 'destructive', onPress: () => doChangeArea(newArea) },
+      ],
+    );
   };
 
   const handlePendingBattlePress = async () => {
@@ -182,25 +217,10 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const handleDailyQuiz = async () => {
-    if (Platform.OS === 'web') {
-      const win = window.open('', '_blank');
-      const { data: { session } } = await supabase.auth.getSession();
-      let url = 'https://daily.quizine.se';
-      if (session?.access_token && session?.refresh_token) {
-        const params = new URLSearchParams({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-          token_type: 'bearer',
-          expires_in: String(session.expires_in ?? 3600),
-          type: 'magiclink',
-        });
-        url = `https://daily.quizine.se#${params.toString()}`;
-      }
-      if (win) { win.location.href = url; } else { Linking.openURL(url); }
-      return;
-    }
+    const dailyPath = AREA_BRANDING[area].dailyPath;
+    const base = `https://daily.quizine.se/${dailyPath}`;
     const { data: { session } } = await supabase.auth.getSession();
-    let url = 'https://daily.quizine.se';
+    let url = base;
     if (session?.access_token && session?.refresh_token) {
       const params = new URLSearchParams({
         access_token: session.access_token,
@@ -209,7 +229,12 @@ export default function HomeScreen({ navigation }: Props) {
         expires_in: String(session.expires_in ?? 3600),
         type: 'magiclink',
       });
-      url = `https://daily.quizine.se#${params.toString()}`;
+      url = `${base}#${params.toString()}`;
+    }
+    if (Platform.OS === 'web') {
+      const win = window.open('', '_blank');
+      if (win) { win.location.href = url; } else { Linking.openURL(url); }
+      return;
     }
     Linking.openURL(url);
   };
@@ -275,7 +300,7 @@ export default function HomeScreen({ navigation }: Props) {
   const handleFeedbackSubmit = async () => {
     if (!feedbackText.trim()) return;
     setFeedbackSending(true); setFeedbackError('');
-    const { error } = await submitFeedback(feedbackText, userId, username);
+    const { error } = await submitFeedback(feedbackText, userId, username, area);
     setFeedbackSending(false);
     if (error) { setFeedbackError('Något gick fel. Försök igen.'); return; }
     setFeedbackSent(true);
@@ -320,9 +345,24 @@ export default function HomeScreen({ navigation }: Props) {
 
         {/* Brand block */}
         <View style={styles.brandBlock}>
-          <Text style={styles.brandNeon}>~ open all night ~</Text>
-          <Image source={require('../../assets/logo.png')} style={styles.logo} />
-          <Text style={styles.brandTagline}>QUIZ FÖR KROGANSTÄLLDA</Text>
+          <Text style={[styles.brandNeon, { color: AREA_BRANDING[area].brandColor }]}>
+            {AREA_BRANDING[area].neonLine}
+          </Text>
+          {area === 'krogen' ? (
+            <Svg width={56} height={56} viewBox="0 0 1024 1024" style={styles.logo}>
+              <Circle cx="512" cy="512" r="490" fill="#1A0520" />
+              <Circle cx="512" cy="512" r="490" fill="none" stroke="#9B5DE5" strokeWidth="6" opacity={0.35} />
+              <Path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
+              <Line x1="512" y1="582" x2="512" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
+              <Line x1="376" y1="764" x2="648" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
+              <Circle cx="512" cy="548" r="24" fill="#FFFFFF" opacity={0.9} />
+            </Svg>
+          ) : (
+            <Image source={require('../../assets/health-icon-1-stethoscope.png')} style={styles.logo} />
+          )}
+          <Text style={[styles.brandTagline, { color: AREA_BRANDING[area].brandColor }]}>
+            {AREA_BRANDING[area].tagline.toUpperCase()}
+          </Text>
         </View>
 
         {/* My turn banner */}
@@ -334,13 +374,6 @@ export default function HomeScreen({ navigation }: Props) {
             </Text>
             <Text style={styles.bannerArrow}>→</Text>
           </TouchableOpacity>
-        )}
-
-        {/* Streak */}
-        {streak > 0 && (
-          <View style={styles.streakPill}>
-            <Text style={styles.streakText}>🔥 {streak} dag{streak !== 1 ? 'ar' : ''} i rad!</Text>
-          </View>
         )}
 
         {mode === null ? (
@@ -360,32 +393,44 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
 
             {/* Survival */}
-            <TouchableOpacity style={[styles.modeCard, styles.modeCardSurvival]} onPress={() => setMode('survival')} activeOpacity={0.85}>
-              <View style={[styles.modeIcon, styles.modeIconSurvival]}>
+            <TouchableOpacity
+              style={[styles.modeCard, { borderColor: AREA_BRANDING[area].brandColor + '8C' }]}
+              onPress={() => setMode('survival')}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.modeIcon, { backgroundColor: AREA_BRANDING[area].brandColor + '23' }]}>
                 <Text style={styles.modeEmoji}>❤️</Text>
               </View>
               <View style={styles.modeInfo}>
                 <Text style={styles.modeTitle}>Överlevnadsläge</Text>
                 <Text style={styles.modeDesc}>3 liv — svara rätt och håll sviten vid liv</Text>
               </View>
-              <Text style={[styles.modeArrow, { color: colors.pink }]}>→</Text>
+              <Text style={[styles.modeArrow, { color: AREA_BRANDING[area].brandColor }]}>→</Text>
             </TouchableOpacity>
 
             {/* Sant eller Falskt */}
-            <TouchableOpacity style={[styles.modeCard, styles.modeCardTof]} onPress={() => navigation.navigate('SantEllerFalskt', { round: 1 })} activeOpacity={0.85}>
-              <View style={[styles.modeIcon, styles.modeIconTof]}>
+            <TouchableOpacity
+              style={[styles.modeCard, { borderColor: AREA_BRANDING[area].brandColor + '8C' }]}
+              onPress={() => navigation.navigate('SantEllerFalskt', { round: 1 })}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.modeIcon, { backgroundColor: AREA_BRANDING[area].brandColor + '23' }]}>
                 <Text style={styles.modeEmoji}>🔀</Text>
               </View>
               <View style={styles.modeInfo}>
                 <Text style={styles.modeTitle}>Sant eller Falskt</Text>
                 <Text style={styles.modeDesc}>Svep rätt eller vänster — 3 rundor, 7 sekunder per fråga</Text>
               </View>
-              <Text style={[styles.modeArrow, { color: colors.cyan }]}>→</Text>
+              <Text style={[styles.modeArrow, { color: AREA_BRANDING[area].brandColor }]}>→</Text>
             </TouchableOpacity>
 
             {/* Battle */}
-            <TouchableOpacity style={[styles.modeCard, styles.modeCardBattle]} onPress={handleChallengePress} activeOpacity={0.85}>
-              <View style={[styles.modeIcon, styles.modeIconBattle]}>
+            <TouchableOpacity
+              style={[styles.modeCard, { borderColor: AREA_BRANDING[area].brandColor + '8C' }]}
+              onPress={handleChallengePress}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.modeIcon, { backgroundColor: AREA_BRANDING[area].brandColor + '23' }]}>
                 <Text style={styles.modeEmoji}>⚔️</Text>
               </View>
               <View style={styles.modeInfo}>
@@ -393,11 +438,11 @@ export default function HomeScreen({ navigation }: Props) {
                 <Text style={styles.modeDesc}>Utmana en kompis i ett riktigt quiz-duell</Text>
               </View>
               {pendingBattleCount > 0 ? (
-                <View style={styles.modeBadge}>
+                <View style={[styles.modeBadge, { backgroundColor: AREA_BRANDING[area].brandColor }]}>
                   <Text style={styles.modeBadgeText}>{pendingBattleCount}</Text>
                 </View>
               ) : (
-                <Text style={[styles.modeArrow, { color: colors.cyan }]}>→</Text>
+                <Text style={[styles.modeArrow, { color: AREA_BRANDING[area].brandColor }]}>→</Text>
               )}
             </TouchableOpacity>
 
@@ -444,7 +489,7 @@ export default function HomeScreen({ navigation }: Props) {
             )}
 
             <View style={styles.grid}>
-              {CATEGORIES.map((cat) => (
+              {getCategoriesForArea(area).map((cat) => (
                 <View key={cat.id} style={styles.gridItem}>
                   <CategoryCard
                     category={cat}
@@ -464,8 +509,8 @@ export default function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setStoryVisible(true)} style={styles.ghostBtn}>
-          <Text style={styles.ghostBtnIcon}>🍽️</Text>
-          <Text style={styles.ghostBtnText}>Berätta en kroghistoria</Text>
+          <Text style={styles.ghostBtnIcon}>{AREA_BRANDING[area].storyButtonIcon}</Text>
+          <Text style={styles.ghostBtnText}>{AREA_BRANDING[area].storyButtonText}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -615,9 +660,39 @@ export default function HomeScreen({ navigation }: Props) {
               />
               {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
 
+              <Text style={[styles.sectionLabel, { marginTop: 18, marginBottom: 10 }]}>Din bransch</Text>
+              <View style={styles.areaToggleRow}>
+                {AREAS.map(a => {
+                  const b = AREA_BRANDING[a];
+                  const active = area === a;
+                  return (
+                    <TouchableOpacity
+                      key={a}
+                      style={[styles.areaToggleBtn, active && { borderColor: b.brandColor, backgroundColor: `${b.brandColor}18` }]}
+                      onPress={() => handleChangeArea(a)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.areaToggleName, active && { color: b.brandColor }]}>{b.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={[styles.sectionLabel, { marginTop: 18, marginBottom: 10 }]}>Utseende</Text>
+              <View style={styles.themeRow}>
+                <Text style={styles.themeRowLabel}>{isDarkMode ? '🌙 Mörkt läge' : '☀️ Ljust läge'}</Text>
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={toggleDarkMode}
+                  trackColor={{ false: colors.lineStrong, true: colors.pink + '60' }}
+                  thumbColor={isDarkMode ? colors.pink : colors.text3}
+                  ios_backgroundColor={colors.lineStrong}
+                />
+              </View>
+
               <TouchableOpacity
                 onPress={handleSaveUsername}
-                style={[styles.primaryBtn, (!inputName.trim() || saving) && styles.primaryBtnDisabled]}
+                style={[styles.primaryBtn, { marginTop: 16 }, (!inputName.trim() || saving) && styles.primaryBtnDisabled]}
                 disabled={!inputName.trim() || saving}
               >
                 <Text style={styles.primaryBtnText}>{saving ? 'Kontrollerar...' : 'Spara'}</Text>
@@ -707,13 +782,13 @@ export default function HomeScreen({ navigation }: Props) {
       )}
 
       {storyVisible && (
-        <StoryModal userId={userId} username={username} onClose={() => setStoryVisible(false)} />
+        <StoryModal userId={userId} username={username} area={area} onClose={() => setStoryVisible(false)} />
       )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   scroll: { paddingHorizontal: spacing.s4, paddingBottom: spacing.s7 },
 
@@ -822,17 +897,20 @@ const styles = StyleSheet.create({
   },
   bannerText: { flex: 1, color: colors.cyan, fontSize: 13.5, fontFamily: fonts.display600 },
   bannerArrow: { color: colors.cyan, fontFamily: fonts.display700, fontSize: 16 },
-  streakPill: {
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255, 56, 165, 0.1)',
+
+  // Area toggle (profile modal)
+  areaToggleRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
+  areaToggleBtn: {
+    flex: 1,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 56, 165, 0.4)',
-    borderRadius: radius.pill,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    marginBottom: 16,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    alignItems: 'center',
   },
-  streakText: { color: colors.pink, fontSize: 13, fontFamily: fonts.display700 },
+  areaToggleName: { color: colors.text1, fontSize: 14, fontFamily: fonts.display700, marginBottom: 2 },
+  areaToggleLabel: { color: colors.text3, fontSize: 11, fontFamily: fonts.display400 },
 
   // Section label
   sectionLabel: {
@@ -857,9 +935,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.03)',
   },
   modeCardDaily: { borderColor: 'rgba(255, 213, 79, 0.5)' },
-  modeCardSurvival: { borderColor: 'rgba(255, 56, 165, 0.55)' },
-  modeCardTof: { borderColor: 'rgba(54, 224, 224, 0.5)' },
-  modeCardBattle: { borderColor: 'rgba(54, 224, 224, 0.5)' },
   modeIcon: {
     width: 48,
     height: 48,
@@ -869,9 +944,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   modeIconDaily: { backgroundColor: 'rgba(255, 213, 79, 0.14)' },
-  modeIconSurvival: { backgroundColor: 'rgba(255, 56, 165, 0.14)' },
-  modeIconTof: { backgroundColor: 'rgba(54, 224, 224, 0.14)' },
-  modeIconBattle: { backgroundColor: 'rgba(54, 224, 224, 0.14)' },
   modeEmoji: { fontSize: 22 },
   modeInfo: { flex: 1 },
   modeTitle: { color: colors.text1, fontSize: 16, fontFamily: fonts.display700, marginBottom: 2, letterSpacing: -0.4 },
@@ -1046,4 +1118,6 @@ const styles = StyleSheet.create({
   },
   deleteConfirmText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts.display700 },
   successText: { color: colors.correct, fontSize: 16, fontFamily: fonts.display600, textAlign: 'center', marginVertical: 16 },
+  themeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  themeRowLabel: { color: colors.text1, fontSize: 14, fontFamily: fonts.display600 },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,17 @@ import {
   StatusBar,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius, spacing } from '../theme/tokens';
+import { fonts, radius, spacing } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Props {
   onDone: () => void;
 }
 
 export default function UpdatePasswordScreen({ onDone }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +88,7 @@ export default function UpdatePasswordScreen({ onDone }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,

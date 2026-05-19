@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,18 +16,22 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId, Question } from '../types';
-import { CATEGORIES } from '../data/categories';
+import { getCategoriesForArea } from '../data/categories';
 import { useGameStore } from '../store/gameStore';
 import { submitQuestion } from '../lib/submissions';
 import { pickAndUploadQuestionImage } from '../lib/imageUpload';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateQuestion'>;
 
 const EMPTY_ANSWERS: [string, string, string, string] = ['', '', '', ''];
 
 export default function CreateQuestionScreen({ navigation }: Props) {
-  const { customQuestions, addCustomQuestion, deleteCustomQuestion } = useGameStore();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { customQuestions, addCustomQuestion, deleteCustomQuestion, currentArea } = useGameStore();
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [questionText, setQuestionText] = useState('');
@@ -39,7 +43,8 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const category = CATEGORIES.find(c => c.id === selectedCategory) ?? CATEGORIES[0]
+  const areaCategories = getCategoriesForArea(currentArea);
+  const category = areaCategories.find(c => c.id === selectedCategory) ?? areaCategories[0];
 
   const handlePickImage = async () => {
     setUploadingImage(true);
@@ -50,7 +55,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       return;
     }
     setImageUrl(result.url);
-  };;
+  };
 
   const updateAnswer = (index: number, value: string) => {
     const next = [...answers] as [string, string, string, string];
@@ -92,7 +97,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
       correctIndex: correctIndex as 0 | 1 | 2 | 3,
       difficulty: 'medium',
       ...(imageUrl ? { imageUrl } : {}),
-    });
+    }, currentArea);
 
     if (error) {
       Alert.alert('Fel', 'Kunde inte skicka frågan. Försök igen.');
@@ -228,7 +233,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
           {/* Category picker */}
           <Text style={styles.label}>Kategori</Text>
           <View style={styles.categoryGrid}>
-            {CATEGORIES.map(cat => {
+            {areaCategories.map(cat => {
               const selected = selectedCategory === cat.id;
               return (
                 <TouchableOpacity
@@ -257,7 +262,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
                 Mina frågor ({customQuestions.length})
               </Text>
               {customQuestions.map(q => {
-                const cat = CATEGORIES.find(c => c.id === q.category);
+                const cat = areaCategories.find(c => c.id === q.category);
                 return (
                   <View key={q.id} style={styles.savedCard}>
                     <View style={styles.savedCardHeader}>
@@ -297,7 +302,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   header: {
     flexDirection: 'row',

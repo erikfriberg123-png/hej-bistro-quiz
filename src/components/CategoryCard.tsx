@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Category } from '../types';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Props {
   category: Category;
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export function CategoryCard({ category, highscore, onPress }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -36,7 +40,7 @@ export function CategoryCard({ category, highscore, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: colors.bg2,

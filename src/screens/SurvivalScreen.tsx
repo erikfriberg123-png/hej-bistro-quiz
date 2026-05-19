@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, Platform,
@@ -19,7 +19,9 @@ import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Survival'>;
 
@@ -38,8 +40,11 @@ function timeBonus(timeRemaining: number): number {
 }
 
 export default function SurvivalScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { categoryId } = route.params;
   const checkSurvivalHighscore = useGameStore(s => s.checkSurvivalHighscore);
+  const currentArea = useGameStore(s => s.currentArea);
 
   const [pool, setPool] = useState<Question[]>([]);
   const [poolIndex, setPoolIndex] = useState(0);
@@ -73,14 +78,14 @@ export default function SurvivalScreen({ route, navigation }: Props) {
 
   // Load question pool
   useEffect(() => {
-    fetchRemoteQuestions().then(all => {
+    fetchRemoteQuestions(currentArea).then(all => {
       const filtered = categoryId === 'all'
         ? all
         : all.filter(q => q.category === categoryId);
       setPool(shuffle(filtered));
       setLoading(false);
     });
-  }, []);
+  }, [currentArea, categoryId]);
 
   const currentQuestion = pool[poolIndex] ?? null;
   const multiplier = streakMultiplier(streak);
@@ -108,7 +113,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
         setCorrectAnswers(c => {
           setMaxStreak(ms => {
             const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
-            submitSurvivalScore(s);
+            submitSurvivalScore(s, currentArea);
             navigation.replace('SurvivalResult', {
               score: s,
               correctAnswers: c,
@@ -296,7 +301,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   loading: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: colors.text1, fontFamily: fonts.display400, fontSize: 16 },

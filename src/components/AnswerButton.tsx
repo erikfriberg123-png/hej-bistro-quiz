@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 export type AnswerState = 'default' | 'correct' | 'wrong' | 'show-correct' | 'disabled';
 
@@ -15,6 +17,8 @@ interface Props {
 const LABELS = ['A', 'B', 'C', 'D'];
 
 export function AnswerButton({ text, state, onPress, index, compact }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const isDisabled = state === 'disabled' || state === 'correct' || state === 'wrong' || state === 'show-correct';
 
   const isCorrect = state === 'correct' || state === 'show-correct';
@@ -52,7 +56,7 @@ export function AnswerButton({ text, state, onPress, index, compact }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',

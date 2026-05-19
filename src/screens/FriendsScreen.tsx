@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,11 +26,15 @@ import {
   getFriendStatusBatch,
 } from '../lib/friends';
 import { NeonTabBar } from '../components/NeonTabBar';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 
 export default function FriendsScreen({ navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<FriendProfile & { status: FriendStatus }>>([]);
@@ -286,6 +290,8 @@ export default function FriendsScreen({ navigation }: Props) {
 }
 
 function UserRow({ username, right, isNew }: { username: string; right: React.ReactNode; isNew?: boolean }) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.userRow}>
       <View style={styles.avatar}>
@@ -300,7 +306,7 @@ function UserRow({ username, right, isNew }: { username: string; right: React.Re
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

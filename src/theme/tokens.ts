@@ -1,5 +1,6 @@
 // Neon Diner design tokens — single source of truth
-export const colors = {
+
+export const darkColors = {
   // Surfaces
   bg0: '#07070c',
   bg1: '#0d0d15',
@@ -28,6 +29,39 @@ export const colors = {
   text3: '#6b6b88',
   text4: '#44445a',
 } as const;
+
+export const lightColors = {
+  // Surfaces
+  bg0: '#f0eeff',
+  bg1: '#fafaff',
+  bg2: '#efefff',
+  bg3: '#e5e4f8',
+  line: '#d4d4ea',
+  lineStrong: '#b8b8d8',
+
+  // Neon accents (same — they pop on light too)
+  pink: '#ff38a5',
+  pinkGlow: 'rgba(255, 56, 165, 0.18)',
+  cyan: '#36e0e0',
+  cyanGlow: 'rgba(54, 224, 224, 0.18)',
+  yellow: '#ffd54f',
+  yellowGlow: 'rgba(255, 213, 79, 0.18)',
+
+  // Semantic
+  correct: '#1dbf85',
+  correctGlow: 'rgba(29, 191, 133, 0.18)',
+  wrong: '#e03030',
+  wrongGlow: 'rgba(224, 48, 48, 0.18)',
+
+  // Text
+  text1: '#0d0d20',
+  text2: '#3a3a5e',
+  text3: '#6b6b88',
+  text4: '#9898b4',
+} as const;
+
+// Default export keeps existing imports working (always dark — runtime theming via useTheme())
+export const colors = darkColors;
 
 export const fonts = {
   display400: 'SpaceGrotesk_400Regular',

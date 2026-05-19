@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { tablesForArea } from './appConfig';
 import { type TofQuestion, type TofDifficulty } from '../types';
 import { type Area } from './branding';
 
@@ -24,10 +25,10 @@ export const TOF_DIFFICULTY_LABEL: Record<TofDifficulty, string> = {
 export async function fetchTofQuestions(area: Area, difficulty: TofDifficulty): Promise<TofQuestion[]> {
   const { data, error } = await supabase
     .from('truth_or_false_questions')
-    .select('id, statement, answer, difficulty, area')
+    .select('id, statement, answer, difficulty')
     .eq('active', true)
-    .eq('area', area)
     .eq('difficulty', difficulty)
+    .eq('area', area)
     .is('deleted_at', null);
 
   if (error) throw error;

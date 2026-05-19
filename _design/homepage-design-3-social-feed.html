@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizine Daily — Design 3: Social Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #0D0D12;
+    --bg-card:      #161620;
+    --bg-card-2:    #1C1C2A;
+    --border:       #252535;
+    --border-light: #323248;
+
+    --purple:       #7C3AED;
+    --purple-light: #A855F7;
+    --purple-glow:  rgba(124,58,237,0.25);
+    --pink:         #EC4899;
+    --pink-glow:    rgba(236,72,153,0.2);
+    --green:        #22C55E;
+    --green-glow:   rgba(34,197,94,0.15);
+    --orange:       #F97316;
+    --orange-glow:  rgba(249,115,22,0.2);
+    --blue:         #3B82F6;
+    --yellow:       #EAB308;
+
+    --white:        #F1F0F8;
+    --text-muted:   #6B6B8A;
+    --text-dim:     #3A3A55;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(13,13,18,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .logo-row { display: flex; align-items: center; gap: 8px; }
+  .logo-icon-soc {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .logo-text-soc { font-size: 16px; font-weight: 800; color: var(--white); }
+  .logo-sub-soc  { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+  .btn-login-soc {
+    font-size: 13px; font-weight: 700;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+    color: #fff; padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-login-soc:hover { opacity: 0.85; }
+  .notif-btn {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 5px; right: 5px;
+    width: 7px; height: 7px; background: var(--pink); border-radius: 50%;
+    border: 1.5px solid var(--bg);
+  }
+
+  /* ─── STORIES STRIP ─── */
+  .stories-strip {
+    display: flex; gap: 12px; padding: 14px 16px;
+    overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .stories-strip::-webkit-scrollbar { display: none; }
+
+  .story {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .story-ring {
+    width: 52px; height: 52px; border-radius: 50%;
+    padding: 2.5px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 50%, var(--orange) 100%);
+  }
+  .story-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: var(--bg-card-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 2px solid var(--bg);
+  }
+  .story.seen .story-ring { background: var(--border); }
+  .story-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-align: center; max-width: 56px; }
+
+  /* ─── DAILY CARD ─── */
+  .daily-card {
+    margin: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  .daily-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--orange));
+  }
+
+  .daily-card-top {
+    padding: 18px 18px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .daily-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: 1.2px; text-transform: uppercase;
+  }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+  }
+  .live-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; animation: blink 1s ease infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .daily-main { padding: 0 18px 18px; }
+  .daily-title { font-size: 24px; font-weight: 900; line-height: 1.2; margin-bottom: 6px; }
+  .daily-title span {
+    background: linear-gradient(90deg, var(--purple-light), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .daily-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6; }
+
+  /* Sparkler */
+  .sparkler-social {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card-2); border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 16px;
+  }
+  .sp-emoji { font-size: 16px; }
+  .sp-track { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .sp-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--purple) 0%, var(--pink) 60%, #FFD700 100%);
+    animation: spBurn 3s linear infinite;
+    position: relative;
+  }
+  .sp-fill::after {
+    content: '✦'; position: absolute; right: -2px; top: 50%;
+    transform: translateY(-50%); font-size: 13px; color: #FFD700;
+    text-shadow: 0 0 10px #FFD700;
+    animation: spGlow 0.35s ease infinite alternate;
+  }
+  @keyframes spBurn { from{width:100%;} to{width:0%;} }
+  @keyframes spGlow { from{opacity:1;} to{opacity:0.4;} }
+  .sp-time { font-size: 18px; font-weight: 900; color: var(--white); min-width: 28px; }
+
+  .btn-start-soc {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+    color: #fff; border-radius: 14px;
+    font-size: 17px; font-weight: 800; cursor: pointer; border: none;
+    box-shadow: 0 4px 24px var(--purple-glow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-start-soc:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--purple-glow);
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; margin: 0 16px 16px;
+  }
+  .stat-soc {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 10px; text-align: center;
+    transition: all 0.2s;
+  }
+  .stat-soc:hover { border-color: var(--border-light); transform: translateY(-1px); }
+  .stat-soc-icon { font-size: 20px; margin-bottom: 4px; }
+  .stat-soc-val  { font-size: 17px; font-weight: 900; }
+  .stat-soc-sub  { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ─── FRIEND CHALLENGE ─── */
+  .section { margin: 0 16px 20px; }
+  .section-title-soc {
+    font-size: 13px; font-weight: 800; color: var(--text-muted);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+  }
+
+  .challenge-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 8px; transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .challenge-card:hover { border-color: var(--border-light); }
+  .challenge-card.hot { border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.04); }
+
+  .ch-avatars { display: flex; }
+  .ch-av {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; border: 2px solid var(--bg);
+    margin-right: -10px;
+  }
+  .ch-av:last-child { margin-right: 0; }
+
+  .ch-info { flex: 1; }
+  .ch-title { font-size: 14px; font-weight: 700; color: var(--white); }
+  .ch-sub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .ch-action {
+    font-size: 12px; font-weight: 700;
+    padding: 6px 12px; border-radius: 10px; cursor: pointer;
+    border: none; transition: all 0.2s;
+  }
+  .ch-action.accept { background: rgba(34,197,94,0.15); color: var(--green); }
+  .ch-action.accept:hover { background: rgba(34,197,94,0.25); }
+  .ch-action.view   { background: var(--bg-card-2); color: var(--text-muted); }
+  .ch-action.view:hover { color: var(--white); }
+
+  /* ─── LEADERBOARD FEED ─── */
+  .lb-feed { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+  .lb-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  }
+  .lb-tab-soc {
+    flex: 1; padding: 12px; text-align: center;
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent;
+  }
+  .lb-tab-soc.active { color: var(--purple-light); border-bottom-color: var(--purple-light); background: rgba(168,85,247,0.05); }
+
+  .lb-entry {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-bottom: 1px solid rgba(37,37,53,0.5);
+    transition: background 0.15s;
+  }
+  .lb-entry:last-child { border-bottom: none; }
+  .lb-entry:hover { background: rgba(255,255,255,0.02); }
+  .lb-entry.me { background: rgba(124,58,237,0.07); border-left: 3px solid var(--purple); }
+
+  .lb-rank-soc { font-size: 13px; font-weight: 800; color: var(--text-dim); min-width: 20px; text-align: center; }
+  .lb-rank-soc.g { font-size: 17px; color: var(--yellow); }
+  .lb-rank-soc.s { font-size: 17px; color: #C0C0C0; }
+  .lb-rank-soc.b { font-size: 17px; color: #CD7F32; }
+
+  .lb-av-soc { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+
+  .lb-info-soc { flex: 1; }
+  .lb-name-soc  { font-size: 14px; font-weight: 700; color: var(--white); }
+  .lb-meta-soc  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .lb-right { text-align: right; }
+  .lb-pts-soc   { font-size: 15px; font-weight: 900; }
+  .lb-streak { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .trend-up   { color: var(--green);  font-size: 11px; }
+  .trend-down { color: #EF4444; font-size: 11px; }
+
+  /* ─── ACTION BUTTONS ─── */
+  .action-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin: 0 16px 16px;
+  }
+  .action-soc {
+    display: flex; align-items: center; gap: 8px;
+    padding: 13px 14px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 14px;
+    font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .action-soc:hover { border-color: var(--purple-light); color: var(--purple-light); background: rgba(168,85,247,0.06); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 16px; text-align: center; border-top: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+  .footer-link-soc {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px;
+    transition: all 0.2s;
+  }
+  .footer-link-soc:hover { color: var(--white); border-color: var(--border-light); }
+
+  .design-label {
+    position: fixed; bottom: 16px; right: 16px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; z-index: 100; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-row">
+    <div class="logo-icon-soc">🍽️</div>
+    <div>
+      <div class="logo-text-soc">Quizine Daily</div>
+      <div class="logo-sub-soc">Quiz om krogen</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+    <button class="btn-login-soc">Logga in</button>
+  </div>
+</header>
+
+<!-- STORIES STRIP -->
+<div class="stories-strip">
+  <div class="story">
+    <div class="story-ring"><div class="story-inner">🎯</div></div>
+    <div class="story-label">Idag</div>
+  </div>
+  <div class="story">
+    <div class="story-ring"><div class="story-inner">🍷</div></div>
+    <div class="story-label">Vin & Dryck</div>
+  </div>
+  <div class="story">
+    <div class="story-ring"><div class="story-inner">🍳</div></div>
+    <div class="story-label">Tillagning</div>
+  </div>
+  <div class="story seen">
+    <div class="story-ring"><div class="story-inner">🤵</div></div>
+    <div class="story-label">Service</div>
+  </div>
+  <div class="story seen">
+    <div class="story-ring"><div class="story-inner">⭐</div></div>
+    <div class="story-label">Kockar</div>
+  </div>
+  <div class="story seen">
+    <div class="story-ring"><div class="story-inner">😅</div></div>
+    <div class="story-label">På golvet</div>
+  </div>
+</div>
+
+<!-- DAILY CARD -->
+<div class="daily-card">
+  <div class="daily-card-top">
+    <div class="daily-label">Torsdag 14 Maj 2026</div>
+    <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+  </div>
+  <div class="daily-main">
+    <div class="daily-title">Dagens quiz <span>är redo! 🎯</span></div>
+    <div class="daily-desc">3 frågor · tävla med 127 spelare idag</div>
+
+    <!-- Sparkler timer -->
+    <div class="sparkler-social">
+      <span class="sp-emoji">✨</span>
+      <div class="sp-track"><div class="sp-fill"></div></div>
+      <span class="sp-time" id="timerSoc">15</span>
+      <span style="font-size:12px; color:var(--text-muted);">sek</span>
+    </div>
+
+    <button class="btn-start-soc" onclick="alert('Startar quiz...')">
+      🎮 &nbsp;Spela nu — gratis
+    </button>
+  </div>
+</div>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-soc">
+    <div class="stat-soc-icon">👥</div>
+    <div class="stat-soc-val" style="color:var(--purple-light);">127</div>
+    <div class="stat-soc-sub">Spelar idag</div>
+  </div>
+  <div class="stat-soc">
+    <div class="stat-soc-icon">🔥</div>
+    <div class="stat-soc-val" style="color:var(--orange);">12</div>
+    <div class="stat-soc-sub">Dagars streak</div>
+  </div>
+  <div class="stat-soc">
+    <div class="stat-soc-icon">🏆</div>
+    <div class="stat-soc-val" style="color:var(--yellow);">500</div>
+    <div class="stat-soc-sub">Max XP</div>
+  </div>
+</div>
+
+<!-- FRIEND CHALLENGES -->
+<div class="section">
+  <div class="section-title-soc">⚔️ Utmaningar</div>
+
+  <div class="challenge-card hot">
+    <div class="ch-avatars">
+      <div class="ch-av" style="background:rgba(124,58,237,0.2);">👨‍🍳</div>
+      <div class="ch-av" style="background:rgba(236,72,153,0.2);">🍸</div>
+    </div>
+    <div class="ch-info">
+      <div class="ch-title">Marco_Cooks utmanar dig!</div>
+      <div class="ch-sub">🔥 Utgår om 2 timmar</div>
+    </div>
+    <button class="ch-action accept">Acceptera</button>
+  </div>
+
+  <div class="challenge-card">
+    <div class="ch-avatars">
+      <div class="ch-av" style="background:rgba(34,197,94,0.15);">👩‍🍳</div>
+    </div>
+    <div class="ch-info">
+      <div class="ch-title">Sofia_Bistro slog dig igår</div>
+      <div class="ch-sub">4 100 vs 3 800 XP · Hämnd?</div>
+    </div>
+    <button class="ch-action view">Utmana</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="section">
+  <div class="section-title-soc">🏆 Topplista</div>
+  <div class="lb-feed">
+    <div class="lb-tabs">
+      <div class="lb-tab-soc active">Denna vecka</div>
+      <div class="lb-tab-soc">Alla tider</div>
+      <div class="lb-tab-soc">Vänner</div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank-soc g">🥇</div>
+      <div class="lb-av-soc" style="background:rgba(255,215,0,0.12);">👨‍🍳</div>
+      <div class="lb-info-soc">
+        <div class="lb-name-soc">Marco_Cooks</div>
+        <div class="lb-meta-soc">🔥 14 dagars streak</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts-soc" style="color:var(--yellow);">4 850</div>
+        <div class="lb-streak trend-up">↑ +2</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank-soc s">🥈</div>
+      <div class="lb-av-soc" style="background:rgba(192,192,192,0.12);">🍸</div>
+      <div class="lb-info-soc">
+        <div class="lb-name-soc">BartendraBea</div>
+        <div class="lb-meta-soc">🔥 7 dagars streak</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts-soc" style="color:#C0C0C0;">4 200</div>
+        <div class="lb-streak trend-down">↓ -1</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank-soc b">🥉</div>
+      <div class="lb-av-soc" style="background:rgba(205,127,50,0.12);">👩‍🍳</div>
+      <div class="lb-info-soc">
+        <div class="lb-name-soc">Sofia_Bistro</div>
+        <div class="lb-meta-soc">🔥 5 dagars streak</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts-soc" style="color:#CD7F32;">3 900</div>
+        <div class="lb-streak trend-up">↑ +1</div>
+      </div>
+    </div>
+
+    <div class="lb-entry">
+      <div class="lb-rank-soc">4</div>
+      <div class="lb-av-soc" style="background:rgba(59,130,246,0.12);">🍕</div>
+      <div class="lb-info-soc">
+        <div class="lb-name-soc">PizzaKung</div>
+        <div class="lb-meta-soc">3 dagars streak</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts-soc" style="color:var(--purple-light);">3 450</div>
+        <div class="lb-streak trend-up">↑ +3</div>
+      </div>
+    </div>
+
+    <div class="lb-entry me">
+      <div class="lb-rank-soc">—</div>
+      <div class="lb-av-soc" style="background:rgba(124,58,237,0.2);">😎</div>
+      <div class="lb-info-soc">
+        <div class="lb-name-soc" style="color:var(--purple-light);">Du (logga in!)</div>
+        <div class="lb-meta-soc">Kom med &amp; tävla</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts-soc" style="color:var(--purple-light);">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="action-row">
+  <button class="action-soc">✏️ &nbsp;Skicka in fråga</button>
+  <button class="action-soc">🍽️ &nbsp;Kroghistoria</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-link-soc">⚔️ Spela mer på Quizine.se</div>
+</footer>
+
+<div class="design-label">Design 3 · Social Feed</div>
+
+<script>
+  let t = 15;
+  const el = document.getElementById('timerSoc');
+  setInterval(() => {
+    t = t <= 0 ? 15 : t - 1;
+    el.textContent = t;
+    if (t <= 5) el.style.color = '#EC4899';
+    else el.style.color = 'var(--white)';
+  }, 200);
+
+  // Tabs
+  document.querySelectorAll('.lb-tab-soc').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.lb-tab-soc').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Stories
+  document.querySelectorAll('.story').forEach(s => {
+    s.addEventListener('click', () => s.classList.add('seen'));
+  });
+</script>
+</body>
+</html>

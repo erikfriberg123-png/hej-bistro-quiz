@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -10,7 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Props {
   visible: boolean;
@@ -20,6 +22,8 @@ interface Props {
 }
 
 export function ComplaintModal({ visible, questionText, onClose, onSubmit }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -84,7 +88,7 @@ export function ComplaintModal({ visible, questionText, onClose, onSubmit }: Pro
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',

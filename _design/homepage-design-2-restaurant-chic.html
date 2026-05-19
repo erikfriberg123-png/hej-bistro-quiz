@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizine Daily — Design 2: Restaurant Chic</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #0A0805;
+    --bg-warm:      #130F0A;
+    --bg-card:      #1C1510;
+    --bg-card-2:    #221A13;
+    --border:       #2E2218;
+    --border-light: #3E3020;
+
+    --gold:         #C9922A;
+    --gold-light:   #E8B04A;
+    --gold-glow:    rgba(201,146,42,0.2);
+    --cream:        #F5EDD5;
+    --rust:         #C0441A;
+    --rust-light:   #E05527;
+
+    --white:        #F9F4ED;
+    --text-muted:   #8A7355;
+    --text-dim:     #4A3B28;
+
+    --success:      #5BA65B;
+    --blue:         #2A6EA6;
+    --blue-light:   #4A8EC8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(19,15,10,0.95);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .logo-row { display: flex; align-items: center; gap: 12px; }
+  .logo-icon-chic {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--rust) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 12px var(--gold-glow);
+  }
+  .logo-text-chic {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700; color: var(--cream);
+    letter-spacing: 0.5px;
+  }
+  .logo-sub-chic  { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
+
+  .divider-fancy {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 24px;
+    opacity: 0.3;
+  }
+
+  .btn-login-chic {
+    font-size: 13px; font-weight: 600; color: var(--gold-light);
+    background: rgba(201,146,42,0.1); padding: 8px 16px;
+    border: 1px solid rgba(201,146,42,0.3); border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .btn-login-chic:hover { background: rgba(201,146,42,0.18); border-color: var(--gold-light); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,146,42,0.08) 0%, transparent 65%);
+  }
+
+  .menu-tag {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 16px;
+  }
+
+  .ornament { color: var(--gold); opacity: 0.5; font-size: 14px; margin: 0 8px; }
+
+  .hero-title-chic {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 8vw, 52px);
+    font-weight: 800; line-height: 1.1;
+    color: var(--cream); margin-bottom: 8px;
+  }
+  .hero-title-chic em { color: var(--gold-light); font-style: italic; }
+
+  .rule-line {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin: 14px 0 24px;
+  }
+  .rule-line::before, .rule-line::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-light));
+  }
+  .rule-line::after { background: linear-gradient(90deg, var(--border-light), transparent); }
+  .rule-text { font-size: 12px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
+
+  .hero-sub {
+    font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 32px;
+  }
+
+  /* ─── MENU CARD ─── */
+  .menu-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin: 0 20px 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .menu-card-header {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .menu-date {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px; color: var(--cream); font-weight: 700;
+  }
+  .menu-edition {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .menu-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 22px; border-bottom: 1px solid rgba(46,34,24,0.5);
+    transition: background 0.2s;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:hover { background: rgba(255,255,255,0.02); }
+
+  .menu-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700; color: var(--border-light);
+    min-width: 28px;
+  }
+  .menu-emoji { font-size: 24px; }
+  .menu-item-text { flex: 1; }
+  .menu-item-name { font-size: 14px; font-weight: 700; color: var(--cream); }
+  .menu-item-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .menu-item-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .badge-gold    { background: rgba(201,146,42,0.15); color: var(--gold-light); border: 1px solid rgba(201,146,42,0.3); }
+  .badge-new     { background: rgba(192,68,26,0.15); color: var(--rust-light); border: 1px solid rgba(192,68,26,0.3); }
+
+  /* Sparkler row */
+  .sparkler-row {
+    padding: 16px 22px;
+    background: var(--bg-card-2);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .sparkler-label { font-size: 12px; color: var(--text-muted); min-width: 80px; }
+  .sparkler-track-chic {
+    flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+  }
+  .sparkler-fill-chic {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold) 0%, #FFD700 80%, #FFF 100%);
+    animation: burnChic 3s linear infinite;
+    position: relative;
+  }
+  .sparkler-fill-chic::after {
+    content: '✦'; position: absolute; right: -3px; top: 50%;
+    transform: translateY(-50%); font-size: 12px; color: #FFD700;
+    text-shadow: 0 0 8px #FFD700, 0 0 16px var(--gold);
+    animation: glowChic 0.4s ease infinite alternate;
+  }
+  @keyframes burnChic { from { width:100%; } to { width:0%; } }
+  @keyframes glowChic { from { opacity:1; } to { opacity:0.5; } }
+  .sparkler-time { font-size: 20px; font-weight: 900; color: var(--gold-light); min-width: 30px; }
+
+  /* ─── START BUTTON ─── */
+  .btn-start-chic {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: calc(100% - 40px); margin: 0 20px 12px;
+    padding: 17px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--rust) 100%);
+    color: var(--cream); border-radius: 14px;
+    font-size: 17px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 4px 24px var(--gold-glow);
+    border: none; transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .btn-start-chic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(201,146,42,0.35);
+  }
+  .anon-hint-chic {
+    text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 28px;
+  }
+  .anon-hint-chic a { color: var(--gold-light); cursor: pointer; }
+
+  /* ─── LEADERBOARD ─── */
+  .section { padding: 0 20px; margin-bottom: 28px; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .section-title-chic {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700; color: var(--cream);
+  }
+  .section-link { font-size: 12px; color: var(--text-muted); cursor: pointer; }
+
+  .lb-card-chic {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; overflow: hidden;
+  }
+  .lb-row-chic {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 18px; border-bottom: 1px solid rgba(46,34,24,0.6);
+    transition: background 0.2s;
+  }
+  .lb-row-chic:last-child { border-bottom: none; }
+  .lb-row-chic:hover { background: rgba(255,255,255,0.02); }
+  .lb-row-chic.me { background: rgba(201,146,42,0.07); border-left: 3px solid var(--gold); }
+
+  .lb-rank-chic { font-size: 13px; font-weight: 800; color: var(--text-dim); min-width: 22px; text-align: center; }
+  .lb-rank-chic.g { color: #FFD700; font-size: 17px; }
+  .lb-rank-chic.s { color: #C0C0C0; font-size: 17px; }
+  .lb-rank-chic.b { color: #CD7F32; font-size: 17px; }
+
+  .lb-avatar-chic {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    border: 1px solid var(--border-light);
+  }
+  .lb-name-chic { flex: 1; font-size: 14px; font-weight: 600; color: var(--cream); }
+  .lb-score-chic { font-size: 14px; font-weight: 800; color: var(--gold-light); }
+  .lb-xp-chic { font-size: 10px; color: var(--text-muted); }
+
+  /* ─── ACTION BUTTONS ─── */
+  .action-grid-chic {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 0 20px; margin-bottom: 20px;
+  }
+  .action-btn-chic {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 18px 14px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 16px;
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .action-btn-chic:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,146,42,0.05); }
+  .action-btn-chic-icon { font-size: 28px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 24px; text-align: center; border-top: 1px solid var(--border);
+  }
+  .footer-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px; color: var(--text-muted); font-style: italic;
+    margin-bottom: 10px;
+  }
+  .footer-link-chic {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+    padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .footer-link-chic:hover { color: var(--gold-light); border-color: rgba(201,146,42,0.3); }
+
+  .design-label {
+    position: fixed; bottom: 16px; right: 16px;
+    background: rgba(201,146,42,0.9); color: var(--bg); font-size: 11px; font-weight: 700;
+    padding: 6px 12px; border-radius: 20px; z-index: 100; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-row">
+    <div class="logo-icon-chic">🍽️</div>
+    <div>
+      <div class="logo-text-chic">Quizine Daily</div>
+      <div class="logo-sub-chic">Quiz om krogen</div>
+    </div>
+  </div>
+  <button class="btn-login-chic">Logga in</button>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="menu-tag">
+    <span class="ornament">✦</span> Torsdag 14 Maj 2026 <span class="ornament">✦</span>
+  </div>
+  <h1 class="hero-title-chic">Dagens quiz<br>är <em>serverat.</em></h1>
+  <div class="rule-line">
+    <span class="rule-text">Tre frågor · Börjar nu</span>
+  </div>
+  <p class="hero-sub">Visa vad du kan om livet på krogen.<br>Tävla med kollegorna.</p>
+</div>
+
+<!-- MENU CARD -->
+<div class="menu-card">
+  <div class="menu-card-header">
+    <div>
+      <div class="menu-date">Dagens meny</div>
+      <div class="menu-edition">Edition #127</div>
+    </div>
+    <div style="font-size:24px;">📋</div>
+  </div>
+
+  <div class="menu-item">
+    <div class="menu-num">I.</div>
+    <div class="menu-emoji">🍷</div>
+    <div class="menu-item-text">
+      <div class="menu-item-name">Vin & Dryck</div>
+      <div class="menu-item-desc">Druvor, regioner, pairings</div>
+    </div>
+    <div class="menu-item-badge badge-gold">Dagens</div>
+  </div>
+  <div class="menu-item">
+    <div class="menu-num">II.</div>
+    <div class="menu-emoji">🍳</div>
+    <div class="menu-item-text">
+      <div class="menu-item-name">Tillagning</div>
+      <div class="menu-item-desc">Tekniker & terminologi</div>
+    </div>
+    <div class="menu-item-badge badge-gold">Dagens</div>
+  </div>
+  <div class="menu-item">
+    <div class="menu-num">III.</div>
+    <div class="menu-emoji">🤵</div>
+    <div class="menu-item-text">
+      <div class="menu-item-name">Service & Gäster</div>
+      <div class="menu-item-desc">Etikett & scenarion</div>
+    </div>
+    <div class="menu-item-badge badge-new">Nytt!</div>
+  </div>
+
+  <!-- Sparkler -->
+  <div class="sparkler-row">
+    <div class="sparkler-label">⏱ Tid per fråga</div>
+    <div class="sparkler-track-chic">
+      <div class="sparkler-fill-chic"></div>
+    </div>
+    <div class="sparkler-time" id="timerChic">15</div>
+  </div>
+</div>
+
+<!-- START BUTTON -->
+<button class="btn-start-chic" onclick="alert('Startar quiz...')">
+  🎯 &nbsp;Starta quiz — utan konto
+</button>
+<div class="anon-hint-chic">eller <a>logga in</a> för att synas på topplistan</div>
+
+<!-- LEADERBOARD -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title-chic">Veckans topplista</div>
+    <div class="section-link">Alla tider →</div>
+  </div>
+  <div class="lb-card-chic">
+    <div class="lb-row-chic">
+      <div class="lb-rank-chic g">🥇</div>
+      <div class="lb-avatar-chic" style="background:rgba(255,215,0,0.1);">👨‍🍳</div>
+      <div class="lb-name-chic">Marco_Cooks</div>
+      <div><div class="lb-score-chic">4 850</div><div class="lb-xp-chic">XP</div></div>
+    </div>
+    <div class="lb-row-chic">
+      <div class="lb-rank-chic s">🥈</div>
+      <div class="lb-avatar-chic" style="background:rgba(192,192,192,0.1);">🍸</div>
+      <div class="lb-name-chic">BartendraBea</div>
+      <div><div class="lb-score-chic">4 200</div><div class="lb-xp-chic">XP</div></div>
+    </div>
+    <div class="lb-row-chic">
+      <div class="lb-rank-chic b">🥉</div>
+      <div class="lb-avatar-chic" style="background:rgba(205,127,50,0.1);">👩‍🍳</div>
+      <div class="lb-name-chic">Sofia_Bistro</div>
+      <div><div class="lb-score-chic">3 900</div><div class="lb-xp-chic">XP</div></div>
+    </div>
+    <div class="lb-row-chic">
+      <div class="lb-rank-chic">4</div>
+      <div class="lb-avatar-chic">🍕</div>
+      <div class="lb-name-chic">PizzaKung</div>
+      <div><div class="lb-score-chic">3 450</div><div class="lb-xp-chic">XP</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="action-grid-chic">
+  <button class="action-btn-chic">
+    <span class="action-btn-chic-icon">✍️</span>
+    <span>Skicka in<br>en fråga</span>
+  </button>
+  <button class="action-btn-chic">
+    <span class="action-btn-chic-icon">🍽️</span>
+    <span>Berätta en<br>kroghistoria</span>
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-tagline">"För dem som lever och lever av krogen."</div>
+  <div class="footer-link-chic">⚔️ Spela mer på Quizine.se</div>
+</footer>
+
+<div class="design-label">Design 2 · Restaurant Chic</div>
+
+<script>
+  let t = 15;
+  const el = document.getElementById('timerChic');
+  setInterval(() => {
+    t = t <= 0 ? 15 : t - 1;
+    el.textContent = t;
+    if (t <= 5) el.style.color = '#C0441A';
+    else el.style.color = 'var(--gold-light)';
+  }, 200);
+</script>
+</body>
+</html>

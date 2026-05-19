@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   PanResponder,
@@ -25,6 +25,9 @@ import {
   shuffleArray,
 } from '../lib/tofQuestions';
 import { updateTofHighscore } from '../lib/tofHighscores';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SantEllerFalskt'>;
 
@@ -34,7 +37,9 @@ const CARD_FLY_DISTANCE = 600;
 type FeedbackState = 'correct' | 'wrong' | 'timeout' | null;
 
 export default function SantEllerFalsktScreen({ route, navigation }: Props) {
-  const { round } = route.params;
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { round, cumulativeScore: prevCumulative = 0 } = route.params;
   const currentArea = useGameStore(s => s.currentArea);
   const difficulty = TOF_ROUND_DIFFICULTIES[round - 1];
 
@@ -79,6 +84,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
           correctAnswers: finalCorrect,
           isNewBest,
           previousBest,
+          cumulativeScore: prevCumulative + finalScore,
         });
       });
       return;
@@ -212,7 +218,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   });
   const timerBarColor = timerAnim.interpolate({
     inputRange: [0, 0.3, 1],
-    outputRange: ['#FF3B30', '#F4C842', '#4CAF50'],
+    outputRange: [colors.wrong, colors.yellow, colors.correct],
   });
 
   const currentQuestion = questions[currentIndex] ?? null;
@@ -250,7 +256,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       {/* Top bar */}
       <View style={styles.topBar}>
@@ -309,8 +315,8 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
             ]}
             {...panResponder.panHandlers}
           >
-            <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: '#4CAF50', opacity: cardGreenTint }]} />
-            <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: '#FF3B30', opacity: cardRedTint }]} />
+            <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: colors.correct, opacity: cardGreenTint }]} />
+            <Animated.View style={[StyleSheet.absoluteFill, styles.cardTint, { backgroundColor: colors.wrong, opacity: cardRedTint }]} />
             <Text style={styles.questionNumber}>{currentIndex + 1} / {TOF_QUESTIONS_PER_ROUND}</Text>
             <Text style={styles.statement}>{currentQuestion.statement}</Text>
           </Animated.View>
@@ -349,17 +355,17 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
-  loading: { flex: 1, backgroundColor: '#12082A', alignItems: 'center', justifyContent: 'center' },
-  loadingText: { color: '#B0A8C8', fontFamily: 'DMSans_400Regular', fontSize: 16 },
+const makeStyles = (colors: Colors) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.bg1 },
+  loading: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: colors.text2, fontFamily: fonts.display400, fontSize: 16 },
 
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
   emptyIcon: { fontSize: 48 },
-  emptyTitle: { color: '#FFFFFF', fontSize: 22, fontFamily: 'DMSans_700Bold', textAlign: 'center' },
-  emptyBody: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_400Regular', textAlign: 'center', lineHeight: 22 },
-  backBtn: { marginTop: 8, paddingVertical: 14, paddingHorizontal: 28, backgroundColor: '#1E1040', borderRadius: 14, borderWidth: 1, borderColor: '#3D2870' },
-  backBtnText: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  emptyTitle: { color: colors.text1, fontSize: 22, fontFamily: fonts.display700, textAlign: 'center' },
+  emptyBody: { color: colors.text2, fontSize: 15, fontFamily: fonts.display400, textAlign: 'center', lineHeight: 22 },
+  backBtn: { marginTop: 8, paddingVertical: 14, paddingHorizontal: 28, backgroundColor: colors.bg2, borderRadius: radius.md, borderWidth: 1, borderColor: colors.lineStrong },
+  backBtnText: { color: colors.text2, fontSize: 15, fontFamily: fonts.display600 },
 
   topBar: {
     flexDirection: 'row',
@@ -370,13 +376,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   exitBtn: { padding: 8, minWidth: 40 },
-  exitText: { color: '#B0A8C8', fontSize: 18, fontFamily: 'DMSans_600SemiBold' },
+  exitText: { color: colors.text2, fontSize: 18, fontFamily: fonts.display600 },
   topCenter: { alignItems: 'center' },
-  roundLabel: { color: '#FFFFFF', fontSize: 15, fontFamily: 'DMSans_700Bold' },
-  difficultyLabel: { color: '#B0A8C8', fontSize: 11, fontFamily: 'DMSans_500Medium', marginTop: 1 },
+  roundLabel: { color: colors.text1, fontSize: 15, fontFamily: fonts.display700 },
+  difficultyLabel: { color: colors.text2, fontSize: 11, fontFamily: fonts.display500, marginTop: 1 },
   scoreBox: { flexDirection: 'row', alignItems: 'baseline', gap: 2, minWidth: 40, justifyContent: 'flex-end' },
-  scoreText: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_800ExtraBold' },
-  scoreUnit: { color: '#B0A8C8', fontSize: 12, fontFamily: 'DMSans_500Medium' },
+  scoreText: { color: colors.text1, fontSize: 20, fontFamily: fonts.display700 },
+  scoreUnit: { color: colors.text2, fontSize: 12, fontFamily: fonts.display500 },
 
   progressRow: {
     flexDirection: 'row',
@@ -385,11 +391,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     justifyContent: 'center',
   },
-  progressDot: { width: 20, height: 6, borderRadius: 3, backgroundColor: '#2A1A50' },
-  progressDotCorrect: { backgroundColor: '#4CAF50' },
-  progressDotActive: { backgroundColor: '#9B5DE5' },
+  progressDot: { width: 20, height: 6, borderRadius: 3, backgroundColor: colors.bg3 },
+  progressDotCorrect: { backgroundColor: colors.correct },
+  progressDotActive: { backgroundColor: colors.pink },
 
-  timerTrack: { height: 4, backgroundColor: '#1E1040', marginHorizontal: 20, borderRadius: 2, overflow: 'hidden' },
+  timerTrack: { height: 4, backgroundColor: colors.bg2, marginHorizontal: 20, borderRadius: 2, overflow: 'hidden' },
   timerBar: { height: '100%', borderRadius: 2 },
 
   gameArea: { flex: 1, alignItems: 'center', justifyContent: 'center', position: 'relative' },
@@ -399,22 +405,22 @@ const styles = StyleSheet.create({
     top: '40%',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 2,
   },
-  sideLabelLeft: { left: 12, borderColor: '#FF3B30', backgroundColor: 'rgba(255,59,48,0.12)' },
-  sideLabelRight: { right: 12, borderColor: '#4CAF50', backgroundColor: 'rgba(76,175,80,0.12)' },
-  sideLabelTextFalskt: { color: '#FF3B30', fontSize: 14, fontFamily: 'DMSans_800ExtraBold', letterSpacing: 1 },
-  sideLabelTextSant: { color: '#4CAF50', fontSize: 14, fontFamily: 'DMSans_800ExtraBold', letterSpacing: 1 },
+  sideLabelLeft: { left: 12, borderColor: colors.wrong, backgroundColor: `${colors.wrong}20` },
+  sideLabelRight: { right: 12, borderColor: colors.correct, backgroundColor: `${colors.correct}20` },
+  sideLabelTextFalskt: { color: colors.wrong, fontSize: 14, fontFamily: fonts.display700, letterSpacing: 1 },
+  sideLabelTextSant: { color: colors.correct, fontSize: 14, fontFamily: fonts.display700, letterSpacing: 1 },
 
   cardContainer: { width: '82%', alignItems: 'center' },
   card: {
     width: '100%',
     minHeight: 220,
-    backgroundColor: '#1E1040',
-    borderRadius: 24,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.xl,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     padding: 28,
     alignItems: 'center',
     justifyContent: 'center',
@@ -427,11 +433,11 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   cardTint: { borderRadius: 22 },
-  questionNumber: { color: '#6050A0', fontSize: 12, fontFamily: 'DMSans_500Medium', letterSpacing: 0.5 },
+  questionNumber: { color: colors.text3, fontSize: 12, fontFamily: fonts.display500, letterSpacing: 0.5 },
   statement: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 22,
-    fontFamily: 'DMSans_700Bold',
+    fontFamily: fonts.display700,
     textAlign: 'center',
     lineHeight: 30,
   },
@@ -441,17 +447,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#12082A',
-    borderRadius: 20,
+    backgroundColor: colors.bg1,
+    borderRadius: radius.xl,
     paddingHorizontal: 32,
     paddingVertical: 24,
     borderWidth: 1.5,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
   },
   feedbackEmoji: { fontSize: 40 },
-  feedbackText: { fontSize: 17, fontFamily: 'DMSans_700Bold', textAlign: 'center' },
-  feedbackCorrect: { color: '#4CAF50' },
-  feedbackWrong: { color: '#FF5555' },
+  feedbackText: { fontSize: 17, fontFamily: fonts.display700, textAlign: 'center' },
+  feedbackCorrect: { color: colors.correct },
+  feedbackWrong: { color: colors.wrong },
 
   buttonRow: {
     flexDirection: 'row',
@@ -463,29 +469,29 @@ const styles = StyleSheet.create({
   answerBtn: {
     flex: 1,
     paddingVertical: 20,
-    borderRadius: 18,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
   },
   falsktBtn: {
-    backgroundColor: 'rgba(255,59,48,0.1)',
-    borderColor: '#FF3B30',
+    backgroundColor: `${colors.wrong}1a`,
+    borderColor: colors.wrong,
   },
   santBtn: {
-    backgroundColor: 'rgba(76,175,80,0.1)',
-    borderColor: '#4CAF50',
+    backgroundColor: `${colors.correct}1a`,
+    borderColor: colors.correct,
   },
   falsktBtnText: {
-    color: '#FF3B30',
+    color: colors.wrong,
     fontSize: 18,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     letterSpacing: 0.5,
   },
   santBtnText: {
-    color: '#4CAF50',
+    color: colors.correct,
     fontSize: 18,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     letterSpacing: 0.5,
   },
   btnDisabled: { opacity: 0.35 },

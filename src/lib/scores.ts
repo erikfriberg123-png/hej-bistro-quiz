@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { type Area, DEFAULT_AREA } from './branding';
-import { TABLES } from './appConfig';
+import { TABLES, tablesForArea } from './appConfig';
 
 export interface LeaderboardEntry {
   user_id: string;
@@ -23,9 +23,15 @@ export interface SurvivalLeaderboardEntry {
   best_score: number;
 }
 
-export async function fetchBattleLeaderboard(): Promise<BattleLeaderboardEntry[]> {
+export interface TofLeaderboardEntry {
+  user_id: string;
+  username: string;
+  best_score: number;
+}
+
+export async function fetchBattleLeaderboard(area: Area): Promise<BattleLeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('creator_id, creator_name, opponent_id, opponent_name, creator_turns, opponent_turns, winner')
     .eq('status', 'finished')
     .not('opponent_id', 'is', null);
@@ -56,19 +62,41 @@ export async function fetchBattleLeaderboard(): Promise<BattleLeaderboardEntry[]
     .slice(0, 50);
 }
 
-export async function submitSurvivalScore(score: number): Promise<void> {
+export async function submitTofScore(totalScore: number, area: Area): Promise<void> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from(TABLES.scores).insert({ user_id: user.id, category_id: 'survival_all', score });
+    await supabase.from(TABLES.scores).insert({ user_id: user.id, category_id: `tof_total_${area}`, score: totalScore });
   } catch {
     // silent fail — local gameplay is unaffected
   }
 }
 
-export async function fetchSurvivalLeaderboard(): Promise<SurvivalLeaderboardEntry[]> {
+export async function fetchTofLeaderboard(area: Area): Promise<TofLeaderboardEntry[]> {
   const { data, error } = await supabase
     .from(TABLES.leaderboard)
+    .select('user_id, username, best_score')
+    .eq('category_id', `tof_total_${area}`)
+    .order('best_score', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+  return (data ?? []) as TofLeaderboardEntry[];
+}
+
+export async function submitSurvivalScore(score: number, area: Area): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from(tablesForArea(area).scores).insert({ user_id: user.id, category_id: 'survival_all', score });
+  } catch {
+    // silent fail — local gameplay is unaffected
+  }
+}
+
+export async function fetchSurvivalLeaderboard(area: Area): Promise<SurvivalLeaderboardEntry[]> {
+  const { data, error } = await supabase
+    .from(tablesForArea(area).leaderboard)
     .select('user_id, username, best_score')
     .eq('category_id', 'survival_all')
     .order('best_score', { ascending: false })
@@ -78,19 +106,19 @@ export async function fetchSurvivalLeaderboard(): Promise<SurvivalLeaderboardEnt
   return (data ?? []) as SurvivalLeaderboardEntry[];
 }
 
-export async function submitScore(categoryId: string, score: number): Promise<void> {
+export async function submitScore(categoryId: string, score: number, area: Area): Promise<void> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from(TABLES.scores).insert({ user_id: user.id, category_id: categoryId, score });
+    await supabase.from(tablesForArea(area).scores).insert({ user_id: user.id, category_id: categoryId, score });
   } catch {
     // silent fail — local gameplay is unaffected
   }
 }
 
-export async function fetchLeaderboard(categoryId: string): Promise<LeaderboardEntry[]> {
+export async function fetchLeaderboard(categoryId: string, area: Area): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from(TABLES.leaderboard)
+    .from(tablesForArea(area).leaderboard)
     .select('*')
     .eq('category_id', categoryId)
     .order('best_score', { ascending: false })

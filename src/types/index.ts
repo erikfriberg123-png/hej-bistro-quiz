@@ -10,7 +10,16 @@ export type CategoryId =
   | 'food_cost'
   | 'scheduling_labor'
   | 'guest_psychology'
-  | 'service_pressure';
+  | 'service_pressure'
+  | 'anatomy_body'
+  | 'diagnoses_symptoms'
+  | 'emergency_firstaid'
+  | 'ethics_communication'
+  | 'infections_hygiene'
+  | 'medical_history'
+  | 'medications_pharma'
+  | 'popculture_healthcare'
+  | 'psychiatry_psychology';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -140,12 +149,13 @@ export type RootStackParamList = {
     previousHighscore: number;
   };
   Friends: undefined;
-  SantEllerFalskt: { round: number };
+  SantEllerFalskt: { round: number; cumulativeScore?: number };
   SantEllerFalsktResult: {
     round: number;
     score: number;
     correctAnswers: number;
     isNewBest: boolean;
     previousBest: number;
+    cumulativeScore: number;
   };
 };

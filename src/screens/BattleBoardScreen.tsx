@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -14,45 +14,52 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { Battle, computeBattleState, computeBattlePhase, getChallengeForResponder, forfeitBattle, getBattleById, normalizeBattle, joinBattle } from '../lib/battles';
 import { getUsername } from '../lib/scores';
-import { CATEGORIES, getCategoryById } from '../data/categories';
+import { getCategoryById } from '../data/categories';
 import { supabase } from '../lib/supabase';
+import { tablesForArea } from '../lib/appConfig';
 import { useGameStore } from '../store/gameStore';
 import { submitComplaint } from '../lib/submissions';
 import { ComplaintModal } from '../components/ComplaintModal';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import { play } from '../services/SoundManager';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleBoard'>;
 
 function RoundResultCard({ correct, total }: { correct: number; total: number }) {
+  const colors = useTheme();
+  const cardStyles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.bg2,
+      borderRadius: radius.lg,
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      marginBottom: 16,
+      alignItems: 'center',
+      gap: 6,
+      borderWidth: 1,
+      borderColor: colors.cyan,
+    },
+    stars: { fontSize: 20, letterSpacing: 4 },
+    text: { color: colors.text2, fontSize: 14, fontFamily: fonts.display400 },
+    highlight: { color: colors.text1, fontFamily: fonts.display700 },
+  }), [colors]);
   const stars = Array.from({ length: total }, (_, i) => i < correct ? '⭐' : '○');
   return (
-    <View style={roundCardStyles.card}>
-      <Text style={roundCardStyles.stars}>{stars.join('  ')}</Text>
-      <Text style={roundCardStyles.text}>
-        Du klarade <Text style={roundCardStyles.highlight}>{correct}</Text> av {total} frågor
+    <View style={cardStyles.card}>
+      <Text style={cardStyles.stars}>{stars.join('  ')}</Text>
+      <Text style={cardStyles.text}>
+        Du klarade <Text style={cardStyles.highlight}>{correct}</Text> av {total} frågor
       </Text>
     </View>
   );
 }
 
-const roundCardStyles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.bg2,
-    borderRadius: radius.lg,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.cyan,
-  },
-  stars: { fontSize: 20, letterSpacing: 4 },
-  text: { color: colors.text2, fontSize: 14, fontFamily: fonts.display400 },
-  highlight: { color: colors.text1, fontFamily: fonts.display700 },
-});
-
 export default function BattleBoardScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const resultCards = useMemo(() => makeResultCards(colors), [colors]);
   const { battleId, code, role, lastRoundCorrect, lastRoundTotal, lastRoundResults } = route.params;
   const [battle, setBattle] = useState<Battle | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,10 +71,20 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
   const { questions: lastRoundQuestions } = useGameStore();
+  const currentArea = useGameStore(s => s.currentArea);
+
+  // Fire star sounds when a round result lands on this screen
+  useEffect(() => {
+    if (lastRoundCorrect === undefined) return;
+    const n = lastRoundCorrect;
+    if (n >= 1) setTimeout(() => play('battle_star_1'), 300);
+    if (n >= 2) setTimeout(() => play('battle_star_2'), 800);
+    if (n >= 3) setTimeout(() => play('battle_star_3'), 1300);
+  }, []);
 
   const loadBattle = useCallback(async () => {
     try {
-      const b = await getBattleById(battleId);
+      const b = await getBattleById(currentArea, battleId);
       setBattle(b);
     } catch {
       // keep previous state if refresh fails
@@ -81,20 +98,23 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     loadBattle();
   }, [loadBattle]));
 
-  // Realtime subscription — unique name per mount so remounting never hits an already-subscribed channel
+  // Realtime subscription — subscribe to both area tables so cross-area battles also update
   useEffect(() => {
-    const channelName = `battle-${battleId}-${Date.now()}`;
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'battles', filter: `id=eq.${battleId}` },
-        payload => { setBattle(normalizeBattle(payload.new)); },
-      )
+    const table = tablesForArea(currentArea).battles;
+    const fallbackTable = tablesForArea(currentArea === 'sjukvard' ? 'krogen' : 'sjukvard').battles;
+    const ts = Date.now();
+    const onUpdate = (payload: any) => { setBattle(normalizeBattle(payload.new)); };
+    const ch1 = supabase
+      .channel(`battle-${battleId}-${ts}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table, filter: `id=eq.${battleId}` }, onUpdate)
+      .subscribe();
+    const ch2 = supabase
+      .channel(`battle-fb-${battleId}-${ts}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: fallbackTable, filter: `id=eq.${battleId}` }, onUpdate)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [battleId]);
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
+  }, [battleId, currentArea]);
 
   // Detect when opponent forfeits or finishes — show congrats banner
   useEffect(() => {
@@ -131,7 +151,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
     if (role === 'opponent' && !battle.opponent_id) {
       const name = await getUsername() ?? 'Anonym';
       try {
-        current = await joinBattle(battleId, name);
+        current = await joinBattle(currentArea, battleId, name);
         setBattle(current);
       } catch {
         return;
@@ -176,7 +196,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   const doForfeit = async () => {
     setForfeiting(true);
     try {
-      await forfeitBattle(battleId, role);
+      await forfeitBattle(currentArea, battleId, role);
       const b = battle;
       navigation.replace('BattleResult', {
         battleId,
@@ -493,7 +513,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   centered: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
   errorText: { color: colors.text2, fontSize: 15, fontFamily: fonts.display400, marginBottom: 16 },
@@ -585,7 +605,7 @@ const styles = StyleSheet.create({
   forfeitConfirmBtnText: { color: colors.wrong, fontSize: 14, fontFamily: fonts.display700 },
 });
 
-const resultCards = StyleSheet.create({
+const makeResultCards = (colors: Colors) => StyleSheet.create({
   container: { gap: 10, marginBottom: 16 },
   card: { borderRadius: radius.md, borderWidth: 1.5, padding: 14, gap: 0 },
   cardCorrect: { backgroundColor: 'rgba(54, 224, 168, 0.08)', borderColor: colors.correct },

@@ -16,8 +16,6 @@ interface GameState {
 
   highscores: Record<CategoryId, number>;
   survivalHighscores: Record<string, number>;
-  streak: number;
-  lastPlayedDate: string;
   customQuestions: Question[];
   remoteQuestions: Question[];
   currentArea: Area;
@@ -31,9 +29,17 @@ interface GameState {
   endGame: () => { result: GameResult; isNewHighscore: boolean; previousHighscore: number };
   checkSurvivalHighscore: (categoryId: string, score: number) => { isNewHighscore: boolean; previousHighscore: number };
   resetGame: () => void;
-  checkStreak: () => void;
   addCustomQuestion: (q: Question) => void;
   deleteCustomQuestion: (id: string) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+
+  soundEnabled: boolean;
+  hapticsEnabled: boolean;
+  muteTimerTicks: boolean;
+  setSoundEnabled: (val: boolean) => void;
+  setHapticsEnabled: (val: boolean) => void;
+  setMuteTimerTicks: (val: boolean) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -60,11 +66,18 @@ export const useGameStore = create<GameState>()(
         service_pressure: 0,
       },
       survivalHighscores: {},
-      streak: 0,
-      lastPlayedDate: '',
       customQuestions: [],
       remoteQuestions: [],
       currentArea: DEFAULT_AREA,
+      isDarkMode: true,
+      toggleDarkMode: () => set(s => ({ isDarkMode: !s.isDarkMode })),
+
+      soundEnabled: true,
+      hapticsEnabled: true,
+      muteTimerTicks: false,
+      setSoundEnabled: (val) => set({ soundEnabled: val }),
+      setHapticsEnabled: (val) => set({ hapticsEnabled: val }),
+      setMuteTimerTicks: (val) => set({ muteTimerTicks: val }),
 
       setCurrentArea: (area) => set({ currentArea: area }),
 
@@ -120,7 +133,7 @@ export const useGameStore = create<GameState>()(
       },
 
       endGame: () => {
-        const { selectedCategory, questions, score, answers, highscores, streak, lastPlayedDate } = get();
+        const { selectedCategory, questions, score, answers, highscores } = get();
         const correctAnswers = answers.filter(a => a === true).length;
 
         const result: GameResult = {
@@ -139,19 +152,7 @@ export const useGameStore = create<GameState>()(
           newHighscores[selectedCategory!] = score;
         }
 
-        const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-        let newStreak = streak;
-        if (lastPlayedDate === today) {
-          // already played today
-        } else if (lastPlayedDate === yesterday || lastPlayedDate === '') {
-          newStreak = streak + 1;
-        } else {
-          newStreak = 1;
-        }
-
-        set({ highscores: newHighscores, streak: newStreak, lastPlayedDate: today });
+        set({ highscores: newHighscores });
 
         return { result, isNewHighscore, previousHighscore };
       },
@@ -176,16 +177,6 @@ export const useGameStore = create<GameState>()(
         });
       },
 
-      checkStreak: () => {
-        const { lastPlayedDate, streak } = get();
-        if (!lastPlayedDate || streak === 0) return;
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        const today = new Date().toISOString().split('T')[0];
-        if (lastPlayedDate !== today && lastPlayedDate !== yesterday) {
-          set({ streak: 0 });
-        }
-      },
-
       addCustomQuestion: (q) => {
         set(state => ({ customQuestions: [...state.customQuestions, q] }));
       },
@@ -200,9 +191,12 @@ export const useGameStore = create<GameState>()(
       partialize: (state) => ({
         highscores: state.highscores,
         survivalHighscores: state.survivalHighscores,
-        streak: state.streak,
-        lastPlayedDate: state.lastPlayedDate,
         customQuestions: state.customQuestions,
+        currentArea: state.currentArea,
+        isDarkMode: state.isDarkMode,
+        soundEnabled: state.soundEnabled,
+        hapticsEnabled: state.hapticsEnabled,
+        muteTimerTicks: state.muteTimerTicks,
       }),
     }
   )

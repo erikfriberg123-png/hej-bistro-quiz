@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,6 +14,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { tablesForArea } from '../lib/appConfig';
 import { getFriends, FriendProfile } from '../lib/friends';
 import {
   Battle,
@@ -28,12 +29,19 @@ import {
 } from '../lib/battles';
 import { getUsername } from '../lib/scores';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius, spacing } from '../theme/tokens';
+import { useGameStore } from '../store/gameStore';
+import { fonts, radius, spacing } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import { NeonTabBar } from '../components/NeonTabBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChallengeLobby'>;
 
 export default function ChallengeLobbyScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { preselectedFriendId, preselectedFriendName } = route.params ?? {};
+  const currentArea = useGameStore(s => s.currentArea);
 
   const [tab, setTab] = useState<'create' | 'join'>('create');
   const [friends, setFriends] = useState<FriendProfile[]>([]);
@@ -48,12 +56,12 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
 
   const refreshAll = useCallback(async () => {
     const [battles, pending] = await Promise.all([
-      getMyBattles().catch((): Battle[] => []),
-      getPendingBattlesForMe().catch((): Battle[] => []),
+      getMyBattles(currentArea).catch((): Battle[] => []),
+      getPendingBattlesForMe(currentArea).catch((): Battle[] => []),
     ]);
     setMyBattles(battles);
     setPendingBattles(pending);
-  }, []);
+  }, [currentArea]);
 
   useEffect(() => {
     getFriends().then(setFriends).catch(() => {});
@@ -70,22 +78,37 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
     const uid = userId;
     if (!uid) return;
     const suffix = Date.now();
+    const table = tablesForArea(currentArea).battles;
+    const fallbackTable = tablesForArea(currentArea === 'sjukvard' ? 'krogen' : 'sjukvard').battles;
     const ch1 = supabase
       .channel(`lobby-cr-${uid}-${suffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `creator_id=eq.${uid}` }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table, filter: `creator_id=eq.${uid}` }, refreshAll)
       .subscribe();
     const ch2 = supabase
       .channel(`lobby-op-${uid}-${suffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles', filter: `opponent_id=eq.${uid}` }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table, filter: `opponent_id=eq.${uid}` }, refreshAll)
       .subscribe();
-    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [userId, refreshAll]);
+    const ch3 = supabase
+      .channel(`lobby-cr2-${uid}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: fallbackTable, filter: `creator_id=eq.${uid}` }, refreshAll)
+      .subscribe();
+    const ch4 = supabase
+      .channel(`lobby-op2-${uid}-${suffix}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: fallbackTable, filter: `opponent_id=eq.${uid}` }, refreshAll)
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch1);
+      supabase.removeChannel(ch2);
+      supabase.removeChannel(ch3);
+      supabase.removeChannel(ch4);
+    };
+  }, [userId, currentArea, refreshAll]);
 
   const handleChallengeFriend = async (friend: FriendProfile) => {
     setCreatingFor(friend.user_id);
     try {
       const name = (await getUsername()) ?? 'Anonym';
-      const existing = await findActiveBattleBetween(friend.user_id);
+      const existing = await findActiveBattleBetween(currentArea, friend.user_id);
       if (existing) {
         const { data: { user } } = await supabase.auth.getUser();
         const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
@@ -99,7 +122,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
         );
         return;
       }
-      const battle = await createBattle(name, friend.user_id, 'friend');
+      const battle = await createBattle(currentArea, name, friend.user_id, 'friend');
       navigation.navigate('BattlePickCategory', {
         battleId: battle.id,
         code: battle.code,
@@ -121,7 +144,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
     setFindingRandom(true);
     try {
       const name = (await getUsername()) ?? 'Anonym';
-      const openBattle = await findOpenRandomBattle();
+      const openBattle = await findOpenRandomBattle(currentArea);
 
       if (openBattle) {
         const state = computeBattleState(openBattle);
@@ -145,7 +168,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
           navigation.navigate('BattleBoard', { battleId: openBattle.id, code: openBattle.code, role: 'opponent' });
         }
       } else {
-        const battle = await createBattle(name, undefined, 'random');
+        const battle = await createBattle(currentArea, name, undefined, 'random');
         navigation.navigate('BattlePickCategory', {
           battleId: battle.id,
           code: battle.code,
@@ -169,7 +192,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
     if (trimmed.length < 6) return;
     setJoining(true);
     try {
-      const battle = await getBattleByCode(trimmed);
+      const battle = await getBattleByCode(currentArea, trimmed);
       if (!battle) {
         Alert.alert('Hittades inte', 'Ingen battle med den koden. Kontrollera koden och försök igen.');
         return;
@@ -265,7 +288,7 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
 
   const handleDeclineChallenge = async (battle: Battle) => {
     try {
-      await declineBattle(battle.id);
+      await declineBattle(currentArea, battle.id);
       setPendingBattles(prev => prev.filter(b => b.id !== battle.id));
     } catch {
       Alert.alert('Fel', 'Kunde inte avböja utmaningen.');
@@ -421,11 +444,17 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
           </View>
         )}
       </ScrollView>
+      <NeonTabBar
+        activeRoute="ChallengeLobby"
+        onPress={(route) => navigation.navigate(route as any)}
+      />
     </SafeAreaView>
   );
 }
 
 function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => void }) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const state = computeBattleState(battle);
   const opponent = battle.opponent_name ?? 'Väntar på motståndare...';
   const rounds = Math.max(battle.creator_turns.length, battle.opponent_turns.length);
@@ -445,7 +474,7 @@ function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   header: {
     flexDirection: 'row',

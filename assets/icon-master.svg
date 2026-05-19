@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg-glow" cx="50%" cy="42%" r="52%">
+      <stop offset="0%" stop-color="#2a0040" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#0A0A0F" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bowl-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C13AFF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#C13AFF" stop-opacity="0.03"/>
+    </linearGradient>
+    <filter id="glow-xl" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="32"/>
+    </filter>
+    <filter id="glow-lg" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="glow-md" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <filter id="glow-sm" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1024" height="1024" fill="#0A0A0F"/>
+  <rect width="1024" height="1024" fill="url(#bg-glow)"/>
+
+  <!--
+    Glass geometry (all strokes share same path):
+      Bowl: two lines from rim corners converging to stem top
+        Left rim:  (188, 168)
+        Right rim: (836, 168)
+        Stem top:  (512, 582)
+      Stem: (512,582) -> (512,764)
+      Base: (376,764) -> (648,764)
+  -->
+
+  <!-- XL outer halo bloom -->
+  <g filter="url(#glow-xl)">
+    <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#C13AFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+    <line x1="512" y1="582" x2="512" y2="764" stroke="#C13AFF" stroke-width="20" stroke-linecap="round" opacity="0.18"/>
+    <line x1="376" y1="764" x2="648" y2="764" stroke="#C13AFF" stroke-width="20" stroke-linecap="round" opacity="0.18"/>
+  </g>
+
+  <!-- LG outer glow -->
+  <g filter="url(#glow-lg)">
+    <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#C13AFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+    <line x1="512" y1="582" x2="512" y2="764" stroke="#C13AFF" stroke-width="14" stroke-linecap="round" opacity="0.45"/>
+    <line x1="376" y1="764" x2="648" y2="764" stroke="#C13AFF" stroke-width="14" stroke-linecap="round" opacity="0.45"/>
+  </g>
+
+  <!-- Bowl interior fill -->
+  <path d="M 188 168 L 512 582 L 836 168 Z" fill="url(#bowl-fill)"/>
+
+  <!-- MD saturated glow -->
+  <g filter="url(#glow-md)">
+    <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#C13AFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+    <line x1="512" y1="582" x2="512" y2="764" stroke="#C13AFF" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+    <line x1="376" y1="764" x2="648" y2="764" stroke="#C13AFF" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+  </g>
+
+  <!-- SM tight glow -->
+  <g filter="url(#glow-sm)">
+    <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#D456FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.90"/>
+    <line x1="512" y1="582" x2="512" y2="764" stroke="#D456FF" stroke-width="6" stroke-linecap="round" opacity="0.90"/>
+    <line x1="376" y1="764" x2="648" y2="764" stroke="#D456FF" stroke-width="6" stroke-linecap="round" opacity="0.90"/>
+  </g>
+
+  <!-- Inner glow layer -->
+  <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#F2BBFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.90"/>
+  <line x1="512" y1="582" x2="512" y2="764" stroke="#F2BBFF" stroke-width="3.5" stroke-linecap="round" opacity="0.90"/>
+  <line x1="376" y1="764" x2="648" y2="764" stroke="#F2BBFF" stroke-width="3.5" stroke-linecap="round" opacity="0.90"/>
+
+  <!-- White core -->
+  <path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  <line x1="512" y1="582" x2="512" y2="764" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.95"/>
+  <line x1="376" y1="764" x2="648" y2="764" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.95"/>
+
+  <!--
+    Question mark as SVG path (no font dependency).
+    Centered in the upper bowl area: x=512, drawn in a ~200px tall space from y≈220 to y≈490.
+    The dot is replaced by the "olive" circle at V-point (see below).
+
+    Path describes:
+      - Arc: curves right from top, comes back left, curves under (the hook)
+      - Vertical short bar descending from hook
+      (No dot — olive circle handles that at the V-point)
+
+    Scale: designed in a 200x220 box centered at (512,340).
+    Original design coords (origin 0,0 = top of ?), then translated.
+  -->
+  <!-- Q-mark path stored in defs (does not render on its own) -->
+  <defs>
+    <path id="qpath"
+      d="M 460,-95
+         C 460,-140 564,-140 564,-95
+         C 564,-50  524,-40  512,-10
+         L 512, 60"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+  </defs>
+
+  <!-- Q-mark XL bloom -->
+  <g filter="url(#glow-xl)" opacity="0.30">
+    <use href="#qpath" fill="none" stroke="#C13AFF" stroke-width="62" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,340)"/>
+  </g>
+  <!-- Q-mark LG glow -->
+  <g filter="url(#glow-lg)" opacity="0.60">
+    <use href="#qpath" fill="none" stroke="#C13AFF" stroke-width="54" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,340)"/>
+  </g>
+  <!-- Q-mark MD glow -->
+  <g filter="url(#glow-md)" opacity="0.80">
+    <use href="#qpath" fill="none" stroke="#D456FF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,340)"/>
+  </g>
+  <!-- Q-mark inner glow -->
+  <g opacity="0.85">
+    <use href="#qpath" fill="none" stroke="#F2BBFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,340)"/>
+  </g>
+  <!-- Q-mark white core -->
+  <g opacity="0.95">
+    <use href="#qpath" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,340)"/>
+  </g>
+
+  <!--
+    Olive (dot) at the V-point of the glass (512, 582).
+    Positioned slightly above so it reads cleanly inside the bowl: y=548.
+  -->
+  <!-- Olive XL bloom -->
+  <circle cx="512" cy="548" r="36" fill="#C13AFF" opacity="0.20" filter="url(#glow-xl)"/>
+  <!-- Olive LG glow -->
+  <circle cx="512" cy="548" r="26" fill="#C13AFF" opacity="0.55" filter="url(#glow-lg)"/>
+  <!-- Olive MD glow -->
+  <circle cx="512" cy="548" r="20" fill="#D456FF" opacity="0.80" filter="url(#glow-md)"/>
+  <!-- Olive core -->
+  <circle cx="512" cy="548" r="14" fill="#FFFFFF" opacity="0.92"/>
+
+</svg>

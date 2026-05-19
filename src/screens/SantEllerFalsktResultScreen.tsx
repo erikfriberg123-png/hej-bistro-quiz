@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -10,6 +10,11 @@ import {
   TOF_ROUND_DIFFICULTIES,
 } from '../lib/tofQuestions';
 import { getTofHighscores } from '../lib/tofHighscores';
+import { submitTofScore } from '../lib/scores';
+import { useGameStore } from '../store/gameStore';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SantEllerFalsktResult'>;
 
@@ -23,12 +28,16 @@ function roundTitle(correct: number): string {
 }
 
 export default function SantEllerFalsktResultScreen({ route, navigation }: Props) {
-  const { round, score, correctAnswers, isNewBest, previousBest } = route.params;
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { round, score, correctAnswers, isNewBest, previousBest, cumulativeScore } = route.params;
   const isLastRound = round >= TOF_TOTAL_ROUNDS;
+  const currentArea = useGameStore(s => s.currentArea);
   const [allBests, setAllBests] = useState<Record<number, number>>({});
 
   useEffect(() => {
     getTofHighscores().then(setAllBests);
+    if (isLastRound) submitTofScore(cumulativeScore, currentArea);
   }, []);
 
   const maxScore = TOF_QUESTIONS_PER_ROUND * TOF_POINTS_PER_CORRECT;
@@ -36,7 +45,7 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor="#12082A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
       <View style={styles.container}>
         <Text style={styles.modeLabel}>Sant eller Falskt</Text>
@@ -91,10 +100,18 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
           })}
         </View>
 
+        {/* Total score on last round */}
+        {isLastRound && (
+          <View style={styles.totalCard}>
+            <Text style={styles.totalLabel}>Totalt alla rundor</Text>
+            <Text style={styles.totalScore}>{cumulativeScore} <Text style={styles.totalUnit}>p</Text></Text>
+          </View>
+        )}
+
         {/* Actions */}
         {!isLastRound ? (
           <TouchableOpacity
-            onPress={() => navigation.replace('SantEllerFalskt', { round: round + 1 })}
+            onPress={() => navigation.replace('SantEllerFalskt', { round: round + 1, cumulativeScore })}
             style={styles.btnPrimary}
             activeOpacity={0.85}
           >
@@ -122,8 +139,8 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#12082A' },
+const makeStyles = (colors: Colors) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -132,50 +149,50 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   modeLabel: {
-    color: '#B0A8C8',
+    color: colors.text2,
     fontSize: 12,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: fonts.display600,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   roundLabel: {
-    color: '#FFFFFF',
+    color: colors.text1,
     fontSize: 22,
-    fontFamily: 'DMSans_800ExtraBold',
+    fontFamily: fonts.display700,
     marginTop: -6,
   },
   newBestBanner: {
     width: '100%',
-    borderRadius: 14,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
-    borderColor: '#F4C842',
-    backgroundColor: 'rgba(244,200,66,0.08)',
+    borderColor: colors.yellow,
+    backgroundColor: `${colors.yellow}14`,
     paddingVertical: 10,
     paddingHorizontal: 18,
     alignItems: 'center',
     gap: 2,
   },
-  newBestText: { color: '#F4C842', fontSize: 16, fontFamily: 'DMSans_800ExtraBold' },
-  prevBestText: { color: '#6050A0', fontSize: 12, fontFamily: 'DMSans_400Regular' },
+  newBestText: { color: colors.yellow, fontSize: 16, fontFamily: fonts.display700 },
+  prevBestText: { color: colors.text3, fontSize: 12, fontFamily: fonts.display400 },
 
   scoreCard: {
     width: '100%',
-    backgroundColor: '#1E1040',
-    borderRadius: 20,
+    backgroundColor: colors.bg2,
+    borderRadius: radius.xl,
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
     gap: 2,
   },
-  roundTitle: { color: '#B0A8C8', fontSize: 14, fontFamily: 'DMSans_600SemiBold', marginBottom: 6 },
-  scoreValue: { color: '#9B5DE5', fontSize: 64, fontFamily: 'DMSans_800ExtraBold', lineHeight: 70 },
-  scoreUnit: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_600SemiBold', marginBottom: 16 },
+  roundTitle: { color: colors.text2, fontSize: 14, fontFamily: fonts.display600, marginBottom: 6 },
+  scoreValue: { color: colors.pink, fontSize: 64, fontFamily: fonts.display700, lineHeight: 70 },
+  scoreUnit: { color: colors.text2, fontSize: 13, fontFamily: fonts.display600, marginBottom: 16 },
   statRow: { flexDirection: 'row', width: '100%', marginTop: 4 },
   stat: { flex: 1, alignItems: 'center', gap: 3 },
-  statValue: { color: '#FFFFFF', fontSize: 20, fontFamily: 'DMSans_700Bold' },
-  statLabel: { color: '#6050A0', fontSize: 11, fontFamily: 'DMSans_400Regular', textAlign: 'center' },
-  statDivider: { width: 1, backgroundColor: '#3D2870', marginVertical: 4 },
+  statValue: { color: colors.text1, fontSize: 20, fontFamily: fonts.display700 },
+  statLabel: { color: colors.text3, fontSize: 11, fontFamily: fonts.display400, textAlign: 'center' },
+  statDivider: { width: 1, backgroundColor: colors.lineStrong, marginVertical: 4 },
 
   roundProgress: {
     flexDirection: 'row',
@@ -187,33 +204,48 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: '#2A1A50',
-    backgroundColor: '#150B30',
+    borderColor: colors.line,
+    backgroundColor: colors.bg3,
     gap: 2,
   },
-  roundPipCurrent: { borderColor: '#9B5DE5', backgroundColor: '#2A1060' },
-  roundPipDone: { borderColor: '#4CAF50', backgroundColor: 'rgba(76,175,80,0.08)' },
-  roundPipNum: { color: '#B0A8C8', fontSize: 13, fontFamily: 'DMSans_700Bold' },
-  roundPipScore: { color: '#6050A0', fontSize: 10, fontFamily: 'DMSans_500Medium' },
+  roundPipCurrent: { borderColor: colors.pink, backgroundColor: `${colors.pink}18` },
+  roundPipDone: { borderColor: colors.correct, backgroundColor: `${colors.correct}14` },
+  roundPipNum: { color: colors.text2, fontSize: 13, fontFamily: fonts.display700 },
+  roundPipScore: { color: colors.text3, fontSize: 10, fontFamily: fonts.display500 },
+
+  totalCard: {
+    width: '100%',
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.pink,
+    backgroundColor: `${colors.pink}14`,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 2,
+  },
+  totalLabel: { color: colors.text2, fontSize: 11, fontFamily: fonts.display600, letterSpacing: 1, textTransform: 'uppercase' },
+  totalScore: { color: colors.pink, fontSize: 40, fontFamily: fonts.display700, lineHeight: 46 },
+  totalUnit: { fontSize: 18, color: colors.text2 },
 
   btnPrimary: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: radius.lg,
     paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: '#9B5DE5',
+    backgroundColor: colors.pink,
   },
-  btnPrimaryText: { color: '#FFFFFF', fontSize: 17, fontFamily: 'DMSans_700Bold' },
+  btnPrimaryText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700 },
   btnSecondary: {
     width: '100%',
-    borderRadius: 16,
+    borderRadius: radius.lg,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#1E1040',
+    backgroundColor: colors.bg2,
     borderWidth: 1,
-    borderColor: '#3D2870',
+    borderColor: colors.lineStrong,
   },
-  btnSecondaryText: { color: '#B0A8C8', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
+  btnSecondaryText: { color: colors.text2, fontSize: 15, fontFamily: fonts.display600 },
 });

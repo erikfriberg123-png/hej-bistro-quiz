@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import { TABLES } from './appConfig';
+import { tablesForArea } from './appConfig';
+import { type Area } from './branding';
 import type { CategoryId, Difficulty } from '../types';
 
 export interface Complaint {
@@ -21,13 +22,14 @@ export interface QuestionSubmission {
   imageUrl?: string;
 }
 
-export async function submitQuestion(data: QuestionSubmission): Promise<{ error?: string }> {
+export async function submitQuestion(data: QuestionSubmission, area: Area = 'krogen'): Promise<{ error?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Inte inloggad' };
 
+  const tables = tablesForArea(area);
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count } = await supabase
-    .from(TABLES.submissions)
+    .from(tables.submissions)
     .select('id', { count: 'exact', head: true })
     .eq('submitted_by', user.id)
     .gt('created_at', oneHourAgo);
@@ -41,7 +43,7 @@ export async function submitQuestion(data: QuestionSubmission): Promise<{ error?
     .eq('id', user.id)
     .single();
 
-  const { error } = await supabase.from(TABLES.submissions).insert({
+  const { error } = await supabase.from(tables.submissions).insert({
     category_id: data.category,
     question: data.question,
     answers: data.answers,

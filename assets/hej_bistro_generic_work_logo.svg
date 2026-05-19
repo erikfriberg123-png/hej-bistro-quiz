@@ -1,0 +1,60 @@
+<svg width="100%" viewBox="0 0 680 680" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Generic work quiz logo</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Neon orange briefcase with a question mark, representing all work industries</desc>
+  <defs>
+    <filter id="glow-soft" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10" result="b1"/>
+      <feGaussianBlur stdDeviation="4" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-hard" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b1"/>
+      <feMerge>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="680" height="680" fill="#090909" style="fill:rgb(9, 9, 9);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Briefcase outer ambient glow -->
+  <g fill="none" stroke="#FF8000" stroke-linecap="round" stroke-linejoin="round" stroke-width="28" opacity="0.1" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:28px;stroke-linecap:round;stroke-linejoin:round;opacity:0.1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <rect x="175" y="248" width="330" height="258" rx="18" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:28px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M258,248 L258,196 Q258,164 292,164 L388,164 Q420,164 420,196 L420,248" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:28px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+
+  <!-- Briefcase medium glow -->
+  <g fill="none" stroke="#FF8000" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" opacity="0.22" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:10px;stroke-linecap:round;stroke-linejoin:round;opacity:0.22;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <rect x="175" y="248" width="330" height="258" rx="18" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:10px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M258,248 L258,196 Q258,164 292,164 L388,164 Q420,164 420,196 L420,248" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:10px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+
+  <!-- Briefcase main neon line with glow filter -->
+  <g fill="none" stroke="#FF8800" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" filter="url(#glow-soft)" style="fill:none;stroke:rgb(255, 136, 0);color:rgb(0, 0, 0);stroke-width:2.8px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <rect x="175" y="248" width="330" height="258" rx="18" style="fill:none;stroke:rgb(255, 136, 0);color:rgb(0, 0, 0);stroke-width:2.8px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M258,248 L258,196 Q258,164 292,164 L388,164 Q420,164 420,196 L420,248" style="fill:none;stroke:rgb(255, 136, 0);color:rgb(0, 0, 0);stroke-width:2.8px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+
+  <!-- Bright centre highlight on briefcase -->
+  <g fill="none" stroke="#FFDD88" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.9" opacity="0.75" style="fill:none;stroke:rgb(255, 221, 136);color:rgb(0, 0, 0);stroke-width:0.9px;stroke-linecap:round;stroke-linejoin:round;opacity:0.75;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <rect x="175" y="248" width="330" height="258" rx="18" style="fill:none;stroke:rgb(255, 221, 136);color:rgb(0, 0, 0);stroke-width:0.9px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M258,248 L258,196 Q258,164 292,164 L388,164 Q420,164 420,196 L420,248" style="fill:none;stroke:rgb(255, 221, 136);color:rgb(0, 0, 0);stroke-width:0.9px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+
+  <!-- Question mark outer ambient glow -->
+  <text x="340" y="455" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="136" font-weight="200" fill="none" stroke="#FF8000" stroke-width="28" opacity="0.1" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:28px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.1;font-family:&quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size:136px;font-weight:200;text-anchor:middle;dominant-baseline:auto">?</text>
+
+  <!-- Question mark medium glow -->
+  <text x="340" y="455" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="136" font-weight="200" fill="none" stroke="#FF8000" stroke-width="10" opacity="0.22" style="fill:none;stroke:rgb(255, 128, 0);color:rgb(0, 0, 0);stroke-width:10px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.22;font-family:&quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size:136px;font-weight:200;text-anchor:middle;dominant-baseline:auto">?</text>
+
+  <!-- Question mark neon line -->
+  <text x="340" y="455" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="136" font-weight="200" fill="none" stroke="#FF8800" stroke-width="2.8" filter="url(#glow-soft)" style="fill:none;stroke:rgb(255, 136, 0);color:rgb(0, 0, 0);stroke-width:2.8px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size:136px;font-weight:200;text-anchor:middle;dominant-baseline:auto">?</text>
+
+  <!-- Question mark bright centre -->
+  <text x="340" y="455" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="136" font-weight="200" fill="none" stroke="#FFDD88" stroke-width="0.9" opacity="0.75" style="fill:none;stroke:rgb(255, 221, 136);color:rgb(0, 0, 0);stroke-width:0.9px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.75;font-family:&quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif;font-size:136px;font-weight:200;text-anchor:middle;dominant-baseline:auto">?</text>
+</svg>

@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { fonts } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Props {
   score: number;
@@ -8,6 +10,8 @@ interface Props {
 }
 
 export function ScoreBadge({ score, pointsAwarded }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <Text style={styles.score}>{score} XP</Text>
@@ -18,7 +22,7 @@ export function ScoreBadge({ score, pointsAwarded }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   container: {
     alignItems: 'flex-end',
   },

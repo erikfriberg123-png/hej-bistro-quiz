@@ -9,19 +9,28 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId } from '../types';
-import { CATEGORIES } from '../data/categories';
+import { getCategoriesForArea } from '../data/categories';
+import { useGameStore } from '../store/gameStore';
 import { shuffle } from '../utils/shuffle';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattlePickCategory'>;
 
 export default function BattlePickCategoryScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const {
     battleId, code, role, roundNumber,
     creatorScore, opponentScore, creatorName, opponentName,
   } = route.params;
 
-  const fourCategories = useMemo(() => shuffle([...CATEGORIES]).slice(0, 4), []);
+  const currentArea = useGameStore(s => s.currentArea);
+  const fourCategories = useMemo(
+    () => shuffle([...getCategoriesForArea(currentArea)]).slice(0, 4),
+    [currentArea],
+  );
 
   const myScore = role === 'creator' ? creatorScore : opponentScore;
   const theirScore = role === 'creator' ? opponentScore : creatorScore;
@@ -84,7 +93,7 @@ export default function BattlePickCategoryScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   topBar: {
     paddingHorizontal: 20,

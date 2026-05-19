@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
-import { APP_ID, TABLES } from './appConfig';
+import { APP_ID, tablesForArea } from './appConfig';
 import { Question, CategoryId, Difficulty } from '../types';
 import { type Area, DEFAULT_AREA } from './branding';
 
@@ -42,10 +42,9 @@ export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Q
 
   try {
     const { data, error } = await supabase
-      .from(TABLES.questions)
+      .from(tablesForArea(area).questions)
       .select('*')
       .eq('active', true)
-      .eq('area', area)
       .order('created_at', { ascending: true });
 
     if (error) throw error;

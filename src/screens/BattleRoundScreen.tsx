@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   Alert,
   AppState,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as Haptics from 'expo-haptics';
+import { play } from '../services/SoundManager';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -34,13 +34,17 @@ import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
 const TIMER_DURATION = 20000;
 
 export default function BattleRoundScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const {
     battleId, code, role, roundNumber,
     category: categoryId, creatorScore, opponentScore,
@@ -50,6 +54,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     questions, currentQuestionIndex, score,
     startGame, startChallengeGame, submitAnswer, nextQuestion, endGame,
   } = useGameStore();
+  const currentArea = useGameStore(s => s.currentArea);
 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [answerStates, setAnswerStates] = useState<AnswerState[]>(['default', 'default', 'default', 'default']);
@@ -62,6 +67,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
+  const streakRef = useRef(0);
 
   // Always-fresh snapshot — read by stable event listeners without stale closures
   const lockRef = useRef({ isTimerRunning: false, isAnswered: false });
@@ -121,6 +127,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     setAnswerStates(['default', 'default', 'default', 'default']);
     setShuffledIndices(shuffle([0, 1, 2, 3]));
     questionStartRef.current = Date.now();
+    if (currentQuestionIndex === 0) {
+      streakRef.current = 0;
+      play('battle_start');
+    }
     setIsTimerRunning(true);
   }, [currentQuestion?.id]);
 
@@ -133,6 +143,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     try {
       const myName = role === 'opponent' ? (await getUsername() ?? 'Anonym') : undefined;
       const updatedBattle = await submitTurn(
+        currentArea,
         battleId,
         role,
         { round: roundNumber, category: categoryId, score: result.totalScore, questionIds: playedQuestionIds },
@@ -182,7 +193,8 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     setIsAnswered(true);
     submitAnswer(-1, 0);
     setPointsAwarded(0);
-    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    play('answer_timeout');
+    streakRef.current = 0;
 
     trackAttempt(currentQuestion.id, false, 'battle');
 
@@ -254,14 +266,20 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       trackAttempt(currentQuestion.id, points > 0, 'battle');
 
       if (points > 0) {
+        play('answer_correct');
+        play('xp_gain');
+        streakRef.current += 1;
+        if (streakRef.current === 3) play('streak_3');
+        else if (streakRef.current === 5) play('streak_5');
+        else if (streakRef.current > 5 && streakRef.current % 5 === 0) play('streak_5');
         const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
         const count = Math.random() < 0.38 ? 2 : 1;
         const picked = [...all].sort(() => Math.random() - 0.5).slice(0, count);
         setCelebrationEffects(picked);
         setShowWow(currentQuestion.difficulty === 'hard');
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        play('answer_wrong');
+        streakRef.current = 0;
       }
 
       const newStates: AnswerState[] = shuffledIndices.map((origIdx, dispIdx) => {
@@ -282,6 +300,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     },
     [isAnswered, currentQuestion, shuffledIndices, submitAnswer, currentQuestionIndex, progressKey],
   );
+
+  const handleTimerTick = useCallback((secondsLeft: number) => {
+    play(secondsLeft <= 5 ? 'timer_warning' : 'timer_tick');
+  }, []);
 
   if (!currentQuestion) {
     return (
@@ -320,6 +342,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
             duration={TIMER_DURATION}
             onExpire={handleTimerExpire}
             isRunning={isTimerRunning}
+            onTick={handleTimerTick}
           />
         </View>
 
@@ -378,7 +401,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   loading: {
     flex: 1,

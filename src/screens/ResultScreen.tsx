@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,11 +16,16 @@ import { getCategoryById } from '../data/categories';
 import { submitComplaint } from '../lib/submissions';
 import { ComplaintModal } from '../components/ComplaintModal';
 import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import { play } from '../services/SoundManager';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export default function ResultScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { categoryId, totalQuestions, correctAnswers, totalScore, isNewHighscore, previousHighscore } =
     route.params;
 
@@ -32,7 +37,8 @@ export default function ResultScreen({ route, navigation }: Props) {
   const [complaintTarget, setComplaintTarget] = useState<{ id: string; question: string; category: string } | null>(null);
 
   useEffect(() => {
-    // Pick 3 random effects for the end-of-round celebration
+    const pct = Math.round((correctAnswers / totalQuestions) * 100);
+    play(pct >= 80 ? 'game_end_win' : 'game_end_neutral');
     const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
     setCelebrationEffects([...all].sort(() => Math.random() - 0.5).slice(0, 3));
   }, []);
@@ -175,7 +181,7 @@ export default function ResultScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flexGrow: 1,

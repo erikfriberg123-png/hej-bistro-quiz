@@ -1,9 +1,11 @@
-import React from 'react';
+﻿import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CategoryId } from '../types';
 import { getCategoryById } from '../data/categories';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SurvivalResult'>;
 
@@ -16,6 +18,8 @@ function streakTitle(maxStreak: number): string {
 }
 
 export default function SurvivalResultScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { score, correctAnswers, maxStreak, categoryId, isNewHighscore, previousHighscore } = route.params;
   const category = categoryId !== 'all' ? getCategoryById(categoryId as CategoryId) : null;
   const accentColor = category?.color ?? colors.pink;
@@ -88,7 +92,7 @@ export default function SurvivalResultScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,
@@ -142,3 +146,6 @@ const styles = StyleSheet.create({
   btnSecondary: { width: '100%', borderRadius: 16, paddingVertical: 16, alignItems: 'center', backgroundColor: colors.bg2, borderWidth: 1, borderColor: colors.lineStrong },
   btnSecondaryText: { color: colors.text2, fontSize: 16, fontFamily: fonts.display600 },
 });
+
+
+

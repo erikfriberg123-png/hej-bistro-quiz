@@ -1,6 +1,10 @@
 import { supabase } from './supabase';
-import { TABLES } from './appConfig';
+import { tablesForArea } from './appConfig';
 import { CategoryId } from '../types';
+
+function otherArea(area: string): string {
+  return area === 'sjukvard' ? 'krogen' : 'sjukvard';
+}
 
 export interface BattleTurn {
   round: number;
@@ -57,6 +61,15 @@ export function normalizeBattle(raw: unknown): Battle {
     creator_turns: parseJsonbArray(b.creator_turns),
     opponent_turns: parseJsonbArray(b.opponent_turns),
   };
+}
+
+// Returns the battle AND which area's table it was found in (needed for cross-area writes)
+async function getBattleByIdWithArea(area: string, id: string): Promise<{ battle: Battle; actualArea: string } | null> {
+  const { data } = await supabase.from(tablesForArea(area).battles).select('*').eq('id', id).maybeSingle();
+  if (data) return { battle: normalizeBattle(data), actualArea: area };
+  const fa = otherArea(area);
+  const { data: data2 } = await supabase.from(tablesForArea(fa).battles).select('*').eq('id', id).maybeSingle();
+  return data2 ? { battle: normalizeBattle(data2), actualArea: fa } : null;
 }
 
 export function computeBattlePhase(battle: Battle): BattlePhase {
@@ -123,6 +136,7 @@ function generateCode(): string {
 }
 
 export async function createBattle(
+  area: string,
   creatorName: string,
   targetOpponentId?: string,
   matchType: 'friend' | 'random' = 'friend',
@@ -132,7 +146,7 @@ export async function createBattle(
 
   const code = generateCode();
   const { data, error } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .insert({
       code,
       creator_id: user.id,
@@ -151,12 +165,12 @@ export async function createBattle(
   return normalizeBattle(data);
 }
 
-export async function findOpenRandomBattle(): Promise<Battle | null> {
+export async function findOpenRandomBattle(area: string): Promise<Battle | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('*')
     .eq('match_type', 'random')
     .eq('status', 'waiting_opponent')
@@ -168,36 +182,42 @@ export async function findOpenRandomBattle(): Promise<Battle | null> {
   return battles.find(b => b.creator_turns.length > 0) ?? null;
 }
 
-export async function getPendingBattlesForMe(): Promise<Battle[]> {
+export async function getPendingBattlesForMe(area: string): Promise<Battle[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
-    .from(TABLES.battles)
-    .select('*')
-    .eq('target_opponent_id', user.id)
-    .eq('status', 'waiting_opponent')
-    .order('created_at', { ascending: false });
+  const [primary, fallback] = await Promise.all([
+    supabase.from(tablesForArea(area).battles).select('*')
+      .eq('target_opponent_id', user.id).eq('status', 'waiting_opponent')
+      .order('created_at', { ascending: false }),
+    supabase.from(tablesForArea(otherArea(area)).battles).select('*')
+      .eq('target_opponent_id', user.id).eq('status', 'waiting_opponent')
+      .order('created_at', { ascending: false }),
+  ]);
 
-  return (data ?? []).map(normalizeBattle);
+  return [...(primary.data ?? []), ...(fallback.data ?? [])].map(normalizeBattle);
 }
 
-export async function declineBattle(battleId: string): Promise<void> {
-  await supabase.from(TABLES.battles).delete().eq('id', battleId);
+export async function declineBattle(area: string, battleId: string): Promise<void> {
+  await Promise.all([
+    supabase.from(tablesForArea(area).battles).delete().eq('id', battleId),
+    supabase.from(tablesForArea(otherArea(area)).battles).delete().eq('id', battleId),
+  ]);
 }
 
-export async function joinBattle(battleId: string, opponentName: string): Promise<Battle> {
+export async function joinBattle(area: string, battleId: string, opponentName: string): Promise<Battle> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Inte inloggad');
 
-  const current = await getBattleById(battleId);
-  if (!current) throw new Error('Slag hittades inte');
+  const found = await getBattleByIdWithArea(area, battleId);
+  if (!found) throw new Error('Slag hittades inte');
+  const { battle: current, actualArea } = found;
 
   const ct = current.creator_turns.length;
   const newStatus: Battle['status'] = ct > 0 ? 'opponent_turn' : 'creator_turn';
 
   const { data, error } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(actualArea).battles)
     .update({ opponent_id: user.id, opponent_name: opponentName, status: newStatus })
     .eq('id', battleId)
     .select('*')
@@ -207,21 +227,20 @@ export async function joinBattle(battleId: string, opponentName: string): Promis
   return normalizeBattle(data);
 }
 
-export async function forfeitBattle(battleId: string, role: 'creator' | 'opponent'): Promise<void> {
+export async function forfeitBattle(area: string, battleId: string, role: 'creator' | 'opponent'): Promise<void> {
   const winner: Battle['winner'] = role === 'creator' ? 'opponent' : 'creator';
-  const { error } = await supabase
-    .from(TABLES.battles)
-    .update({ status: 'finished', winner })
-    .eq('id', battleId);
+  const found = await getBattleByIdWithArea(area, battleId);
+  const table = found ? tablesForArea(found.actualArea).battles : tablesForArea(area).battles;
+  const { error } = await supabase.from(table).update({ status: 'finished', winner }).eq('id', battleId);
   if (error) throw error;
 }
 
-export async function findActiveBattleBetween(targetOpponentId: string): Promise<Battle | null> {
+export async function findActiveBattleBetween(area: string, targetOpponentId: string): Promise<Battle | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('*')
     .neq('status', 'finished')
     .or(
@@ -235,38 +254,53 @@ export async function findActiveBattleBetween(targetOpponentId: string): Promise
   return row ? normalizeBattle(row) : null;
 }
 
-export async function getBattleByCode(code: string): Promise<Battle | null> {
+export async function getBattleByCode(area: string, code: string): Promise<Battle | null> {
   const normalized = code.toUpperCase().trim();
   if (normalized.length === 0 || normalized.length > 10) return null;
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('*')
     .eq('code', normalized)
-    .single();
-  return data ? normalizeBattle(data) : null;
+    .maybeSingle();
+  if (data) return normalizeBattle(data);
+  const { data: data2 } = await supabase
+    .from(tablesForArea(otherArea(area)).battles)
+    .select('*')
+    .eq('code', normalized)
+    .maybeSingle();
+  return data2 ? normalizeBattle(data2) : null;
 }
 
-export async function getBattleById(id: string): Promise<Battle | null> {
+export async function getBattleById(area: string, id: string): Promise<Battle | null> {
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('*')
     .eq('id', id)
-    .single();
-  return data ? normalizeBattle(data) : null;
+    .maybeSingle();
+  if (data) return normalizeBattle(data);
+  const { data: data2 } = await supabase
+    .from(tablesForArea(otherArea(area)).battles)
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  return data2 ? normalizeBattle(data2) : null;
 }
 
-export async function getMyBattles(): Promise<Battle[]> {
+export async function getMyBattles(area: string): Promise<Battle[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
-    .from(TABLES.battles)
-    .select('*')
-    .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
-    .neq('status', 'finished')
-    .order('created_at', { ascending: false });
+  const filter = `creator_id.eq.${user.id},opponent_id.eq.${user.id}`;
+  const [primary, fallback] = await Promise.all([
+    supabase.from(tablesForArea(area).battles).select('*')
+      .or(filter).neq('status', 'finished').order('created_at', { ascending: false }),
+    supabase.from(tablesForArea(otherArea(area)).battles).select('*')
+      .or(filter).neq('status', 'finished').order('created_at', { ascending: false }),
+  ]);
 
-  return (data ?? []).map(normalizeBattle);
+  const all = [...(primary.data ?? []), ...(fallback.data ?? [])].map(normalizeBattle);
+  all.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return all;
 }
 
 export interface HeadToHeadStats {
@@ -276,12 +310,12 @@ export interface HeadToHeadStats {
   total: number;
 }
 
-export async function getHeadToHeadStats(opponentId: string): Promise<HeadToHeadStats> {
+export async function getHeadToHeadStats(area: string, opponentId: string): Promise<HeadToHeadStats> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { myWins: 0, theirWins: 0, draws: 0, total: 0 };
 
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('creator_id, winner')
     .eq('status', 'finished')
     .or(
@@ -303,12 +337,12 @@ export async function getHeadToHeadStats(opponentId: string): Promise<HeadToHead
   return { myWins, theirWins, draws, total: rows.length };
 }
 
-export async function getMyActiveTurns(): Promise<Battle[]> {
+export async function getMyActiveTurns(area: string): Promise<Battle[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(area).battles)
     .select('*')
     .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
     .in('status', ['creator_turn', 'opponent_turn'])
@@ -324,6 +358,7 @@ export async function getMyActiveTurns(): Promise<Battle[]> {
 }
 
 export async function submitTurn(
+  area: string,
   battleId: string,
   role: 'creator' | 'opponent',
   turn: BattleTurn,
@@ -332,8 +367,9 @@ export async function submitTurn(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Inte inloggad');
 
-  const current = await getBattleById(battleId);
-  if (!current) throw new Error('Slag hittades inte');
+  const found = await getBattleByIdWithArea(area, battleId);
+  if (!found) throw new Error('Slag hittades inte');
+  const { battle: current, actualArea } = found;
 
   const updatedCreatorTurns = role === 'creator'
     ? [...current.creator_turns, turn]
@@ -371,7 +407,7 @@ export async function submitTurn(
   }
 
   const { data, error } = await supabase
-    .from(TABLES.battles)
+    .from(tablesForArea(actualArea).battles)
     .update(updates)
     .eq('id', battleId)
     .select('*')

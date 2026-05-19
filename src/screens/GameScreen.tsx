@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
+﻿import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   ScrollView,
@@ -8,11 +8,12 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  Platform,
 } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as Haptics from 'expo-haptics';
+import { play } from '../services/SoundManager';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -38,6 +39,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 const TIMER_DURATION = 20000;
 
 export default function GameScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { categoryId, challengeMode, challengeId, questionIds, targetFriendId, targetFriendName } = route.params;
   const {
     questions,
@@ -49,6 +52,7 @@ export default function GameScreen({ route, navigation }: Props) {
     nextQuestion,
     endGame,
   } = useGameStore();
+  const currentArea = useGameStore(s => s.currentArea);
 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [answerStates, setAnswerStates] = useState<AnswerState[]>(['default', 'default', 'default', 'default']);
@@ -61,6 +65,7 @@ export default function GameScreen({ route, navigation }: Props) {
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
+  const streakRef = useRef(0);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -100,13 +105,17 @@ export default function GameScreen({ route, navigation }: Props) {
     const indices = shuffle([0, 1, 2, 3]);
     setShuffledIndices(indices);
     questionStartRef.current = Date.now();
+    if (currentQuestionIndex === 0) {
+      streakRef.current = 0;
+      play('game_start');
+    }
     setIsTimerRunning(true);
   }, [currentQuestion?.id]);
 
   const finishGame = useCallback(async () => {
     setIsFinishing(true);
     const { result, isNewHighscore, previousHighscore } = endGame();
-    submitScore(result.categoryId, result.totalScore);
+    submitScore(result.categoryId, result.totalScore, currentArea);
 
     try {
       if (challengeMode === 'create') {
@@ -201,14 +210,20 @@ export default function GameScreen({ route, navigation }: Props) {
       setPointsAwarded(points);
 
       if (points > 0) {
+        play('answer_correct');
+        play('xp_gain');
+        streakRef.current += 1;
+        if (streakRef.current === 3) play('streak_3');
+        else if (streakRef.current === 5) play('streak_5');
+        else if (streakRef.current > 5 && streakRef.current % 5 === 0) play('streak_5');
         const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
         const count = Math.random() < 0.38 ? 2 : 1;
         const picked = [...all].sort(() => Math.random() - 0.5).slice(0, count);
         setCelebrationEffects(picked);
         setShowWow(currentQuestion.difficulty === 'hard');
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        play('answer_wrong');
+        streakRef.current = 0;
       }
 
       trackAttempt(currentQuestion.id, points > 0, 'game');
@@ -233,7 +248,8 @@ export default function GameScreen({ route, navigation }: Props) {
     submitAnswer(-1, 0);
     setPointsAwarded(0);
 
-    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    play('answer_timeout');
+    streakRef.current = 0;
 
     trackAttempt(currentQuestion.id, false, 'game');
 
@@ -243,6 +259,10 @@ export default function GameScreen({ route, navigation }: Props) {
     );
     setAnswerStates(newStates);
   }, [isAnswered, currentQuestion, shuffledIndices, submitAnswer]);
+
+  const handleTimerTick = useCallback((secondsLeft: number) => {
+    play(secondsLeft <= 5 ? 'timer_warning' : 'timer_tick');
+  }, []);
 
   if (!currentQuestion) {
     return (
@@ -272,6 +292,7 @@ export default function GameScreen({ route, navigation }: Props) {
             duration={TIMER_DURATION}
             onExpire={handleTimerExpire}
             isRunning={isTimerRunning}
+            onTick={handleTimerTick}
           />
         </View>
 
@@ -322,7 +343,7 @@ export default function GameScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   loading: { flex: 1, backgroundColor: colors.bg1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: colors.text2, fontFamily: fonts.display400, fontSize: 16 },

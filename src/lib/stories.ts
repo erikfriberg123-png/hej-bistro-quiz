@@ -1,7 +1,8 @@
 import * as ImageManipulator from 'expo-image-manipulator'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from './supabase'
-import { TABLES } from './appConfig'
+import { tablesForArea } from './appConfig'
+import { type Area } from './branding'
 
 const ALLOWED_STORY = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 ,.!?\r\n]+$/
 const ALLOWED_NAME  = /^[a-zA-ZåäöÅÄÖéèêëàâùûüïîôœæç0-9 ,.!?]+$/
@@ -73,8 +74,9 @@ export async function submitStory(
   displayName: string | null,
   imageUrl: string | null,
   userId: string | null,
+  area: Area = 'krogen',
 ): Promise<{ error?: string }> {
-  const { error } = await supabase.from(TABLES.stories).insert({
+  const { error } = await supabase.from(tablesForArea(area).stories).insert({
     user_id: userId ?? null,
     display_name: displayName?.trim() || null,
     story_text: storyText.trim(),

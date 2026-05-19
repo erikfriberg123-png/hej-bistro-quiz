@@ -29,7 +29,9 @@ import { AuthStackParamList, RootStackParamList } from './src/types';
 import { supabase } from './src/lib/supabase';
 import { useGameStore } from './src/store/gameStore';
 import { registerPushToken } from './src/lib/pushNotifications';
+import { preloadSounds, setSoundEnabled, setHapticsEnabled, setMuteTimerTicks } from './src/services/SoundManager';
 import { colors } from './src/theme/tokens';
+import { ThemeProvider } from './src/theme/ThemeContext';
 import HomeScreen from './src/screens/HomeScreen';
 import GameScreen from './src/screens/GameScreen';
 import ResultScreen from './src/screens/ResultScreen';
@@ -87,6 +89,18 @@ export default function App() {
   const loadRemoteQuestions = useGameStore(s => s.loadRemoteQuestions);
 
   useEffect(() => {
+    const store = useGameStore.getState();
+    setSoundEnabled(store.soundEnabled);
+    setHapticsEnabled(store.hapticsEnabled);
+    setMuteTimerTicks(store.muteTimerTicks);
+    preloadSounds();
+
+    const storeUnsub = useGameStore.subscribe((state) => {
+      setSoundEnabled(state.soundEnabled);
+      setHapticsEnabled(state.hapticsEnabled);
+      setMuteTimerTicks(state.muteTimerTicks);
+    });
+
     const init = async () => {
       const [{ data: { session } }, done, keepSignedIn] = await Promise.all([
         supabase.auth.getSession(),
@@ -114,7 +128,7 @@ export default function App() {
         registerPushToken().catch(() => {});
       }
     });
-    return () => subscription.unsubscribe();
+    return () => { subscription.unsubscribe(); storeUnsub(); };
   }, []);
 
   useEffect(() => {
@@ -177,16 +191,18 @@ export default function App() {
 
   if (Platform.OS === 'web') {
     return (
-      <View style={styles.webOuter}>
-        <AppStoreBanner />
-        <View style={styles.webInner}>
-          {navContent}
+      <ThemeProvider>
+        <View style={styles.webOuter}>
+          <AppStoreBanner />
+          <View style={styles.webInner}>
+            {navContent}
+          </View>
         </View>
-      </View>
+      </ThemeProvider>
     );
   }
 
-  return navContent;
+  return <ThemeProvider>{navContent}</ThemeProvider>;
 }
 
 const styles = StyleSheet.create({

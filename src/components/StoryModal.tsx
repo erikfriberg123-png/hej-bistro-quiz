@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import {
   Modal,
   View,
@@ -20,15 +20,21 @@ import {
   submitStory,
 } from '../lib/stories'
 import type { ImagePickerAsset } from 'expo-image-picker'
-import { colors, fonts, radius, spacing } from '../theme/tokens'
+import { fonts, radius, spacing } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import { type Area } from '../lib/branding'
 
 interface Props {
   userId: string | null
   username: string | null
+  area: Area
   onClose: () => void
 }
 
-export function StoryModal({ userId, username, onClose }: Props) {
+export function StoryModal({ userId, username, area, onClose }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [text, setText] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [displayName, setDisplayName] = useState(username ?? '')
@@ -75,7 +81,7 @@ export function StoryModal({ userId, username, onClose }: Props) {
     }
 
     const finalName = isAnonymous ? null : (displayName.trim() || null)
-    const { error } = await submitStory(text, finalName, uploadedUrl, userId)
+    const { error } = await submitStory(text, finalName, uploadedUrl, userId, area)
     setSending(false)
     if (error) { setTextError('Något gick fel. Försök igen.'); return }
     setSent(true)
@@ -196,7 +202,7 @@ export function StoryModal({ userId, username, onClose }: Props) {
   )
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.75)',
@@ -400,3 +406,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 })
+
+
+

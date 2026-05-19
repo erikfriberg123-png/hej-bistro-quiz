@@ -1,4 +1,5 @@
 ﻿import { Category } from '../types';
+import { type Area } from '../lib/branding';
 
 export const CATEGORIES: Category[] = [
   {
@@ -87,6 +88,76 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
+export const VOO_CATEGORIES: Category[] = [
+  {
+    id: 'anatomy_body',
+    name: 'Anatomi & Kroppen',
+    icon: '🫀',
+    color: '#FF6B35',
+    description: 'Kroppens organ, system och funktioner',
+  },
+  {
+    id: 'diagnoses_symptoms',
+    name: 'Diagnoser & Symtom',
+    icon: '🩺',
+    color: '#9B5DE5',
+    description: 'Sjukdomstillstånd, symtom och diagnostik',
+  },
+  {
+    id: 'emergency_firstaid',
+    name: 'Akut & Första hjälpen',
+    icon: '🚨',
+    color: '#FF5555',
+    description: 'Akutvård, HLR och livräddande åtgärder',
+  },
+  {
+    id: 'ethics_communication',
+    name: 'Etik & Kommunikation',
+    icon: '🤝',
+    color: '#2EC4B6',
+    description: 'Vårdrelationer, sekretess och bemötande',
+  },
+  {
+    id: 'infections_hygiene',
+    name: 'Infektioner & Hygien',
+    icon: '🦠',
+    color: '#06D6A0',
+    description: 'Smittspridning, vårdhygien och skyddsåtgärder',
+  },
+  {
+    id: 'medical_history',
+    name: 'Medicinsk Historia',
+    icon: '📚',
+    color: '#E8B84B',
+    description: 'Medicinska genombrott och historiska milstolpar',
+  },
+  {
+    id: 'medications_pharma',
+    name: 'Läkemedel & Farmakologi',
+    icon: '💊',
+    color: '#3A86FF',
+    description: 'Läkemedelsgrupper, verkningsmekanismer och biverkningar',
+  },
+  {
+    id: 'popculture_healthcare',
+    name: 'Populärkultur & Vård',
+    icon: '🌟',
+    color: '#F15BB5',
+    description: 'Kända läkare, TV-serier och vård i media',
+  },
+  {
+    id: 'psychiatry_psychology',
+    name: 'Psykiatri & Psykologi',
+    icon: '🧠',
+    color: '#8B2FC9',
+    description: 'Psykiska tillstånd, behandlingsmetoder och psykologi',
+  },
+];
+
+export function getCategoriesForArea(area: Area): Category[] {
+  return area === 'sjukvard' ? VOO_CATEGORIES : CATEGORIES;
+}
+
 export function getCategoryById(id: string): Category | undefined {
-  return CATEGORIES.find(c => c.id === id);
+  return [...CATEGORIES, ...VOO_CATEGORIES].find(c => c.id === id);
 }

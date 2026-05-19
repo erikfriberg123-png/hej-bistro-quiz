@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,11 +19,17 @@ import {
 } from '../lib/battles';
 import { FriendStatus, getFriendStatus, sendFriendRequest } from '../lib/friends';
 import { getUsername } from '../lib/scores';
-import { colors, fonts, radius } from '../theme/tokens';
+import { useGameStore } from '../store/gameStore';
+import { fonts, radius } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
+import { play } from '../services/SoundManager';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleResult'>;
 
 export default function BattleResultScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const {
     battleId,
     role,
@@ -35,6 +41,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
     totalRounds,
   } = route.params;
 
+  const currentArea = useGameStore(s => s.currentArea);
   const [stats, setStats] = useState<HeadToHeadStats | null>(null);
   const [opponentUserId, setOpponentUserId] = useState<string | null>(null);
   const [isRandomBattle, setIsRandomBattle] = useState(false);
@@ -43,13 +50,19 @@ export default function BattleResultScreen({ route, navigation }: Props) {
   const [rematchLoading, setRematchLoading] = useState(false);
 
   useEffect(() => {
-    getBattleById(battleId).then(b => {
+    if (isDraw) play('battle_draw');
+    else if (didWin) play('battle_win');
+    else play('battle_lose');
+  }, []);
+
+  useEffect(() => {
+    getBattleById(currentArea, battleId).then(b => {
       if (!b) return;
       const oppId = role === 'creator' ? b.opponent_id : b.creator_id;
       setOpponentUserId(oppId);
       setIsRandomBattle(b.match_type === 'random');
       if (oppId) {
-        getHeadToHeadStats(oppId).then(setStats);
+        getHeadToHeadStats(currentArea, oppId).then(setStats);
         getFriendStatus(oppId).then(setFriendStatus);
       }
     });
@@ -65,7 +78,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
     setRematchLoading(true);
     try {
       const name = (await getUsername()) ?? 'Anonym';
-      const battle = await createBattle(name, opponentUserId, isRandomBattle ? 'random' : 'friend');
+      const battle = await createBattle(currentArea, name, opponentUserId, isRandomBattle ? 'random' : 'friend');
       navigation.replace('BattlePickCategory', {
         battleId: battle.id,
         code: battle.code,
@@ -217,7 +230,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,

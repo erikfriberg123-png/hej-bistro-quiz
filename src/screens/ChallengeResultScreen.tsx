@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,15 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { getCategoryById } from '../data/categories';
-import { colors, fonts, radius, spacing } from '../theme/tokens';
+import { fonts, radius, spacing } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChallengeResult'>;
 
 export default function ChallengeResultScreen({ route, navigation }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { mode, categoryId, myScore, challengeCode, challengerName, challengerScore, targetFriendName } = route.params;
   const category = getCategoryById(categoryId);
   const accentColor = category?.color ?? colors.cyan;
@@ -119,7 +123,7 @@ export default function ChallengeResultScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg1 },
   container: {
     flex: 1,
@@ -264,3 +268,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display500,
   },
 });
+
+
+

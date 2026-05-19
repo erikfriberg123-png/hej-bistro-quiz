@@ -1,6 +1,8 @@
-﻿import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { fonts } from '../theme/tokens'
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -75,27 +77,34 @@ interface Props {
   duration: number;
   onExpire: () => void;
   isRunning: boolean;
+  onTick?: (secondsLeft: number) => void;
 }
 
-function colorForSeconds(s: number): string {
+function colorForSeconds(s: number, colors: Colors): string {
   if (s <= 3) return colors.wrong;
   if (s <= 7) return '#FF9F43';
   return colors.yellow;
 }
 
-export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
+export function SparklerTimer({ duration, onExpire, isRunning, onTick }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const progress = useSharedValue(1);
   const pulse = useSharedValue(1);
   const trackHeightSV = useSharedValue(400);
   const totalSeconds = Math.floor(duration / 1000);
 
   const [displaySeconds, setDisplaySeconds] = useState(totalSeconds);
-  const [color, setColor] = useState(colorForSeconds(totalSeconds));
+  const [color, setColor] = useState(colorForSeconds(totalSeconds, colors));
+
+  const onTickRef = useRef(onTick);
+  onTickRef.current = onTick;
 
   const updateDisplay = (raw: number) => {
     const s = Math.max(0, raw);
     setDisplaySeconds(s);
-    setColor(colorForSeconds(s));
+    setColor(colorForSeconds(s, colors));
+    if (s > 0) onTickRef.current?.(s);
   };
 
   useAnimatedReaction(
@@ -111,7 +120,7 @@ export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
       pulse.value = 1;
       progress.value = 1;
       setDisplaySeconds(totalSeconds);
-      setColor(colorForSeconds(totalSeconds));
+      setColor(colorForSeconds(totalSeconds, colors));
       progress.value = withTiming(0, { duration, easing: Easing.linear }, finished => {
         if (finished) runOnJS(onExpire)();
       });
@@ -204,7 +213,7 @@ export function SparklerTimer({ duration, onExpire, isRunning }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   outer: {
     width: TIMER_WIDTH,
     flex: 1,

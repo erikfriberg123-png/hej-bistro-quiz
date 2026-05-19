@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { fonts, radius } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { Colors } from '../theme/ThemeContext';
 
 interface Props {
   question: string;
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export function QuestionCard({ question, questionNumber, total, imageUrl }: Props) {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.card}>
       <Text style={styles.counter}>
@@ -23,7 +27,7 @@ export function QuestionCard({ question, questionNumber, total, imageUrl }: Prop
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Colors) => StyleSheet.create({
   card: {
     backgroundColor: colors.bg2,
     borderWidth: 1,

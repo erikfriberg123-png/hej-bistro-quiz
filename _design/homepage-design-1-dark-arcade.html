@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizine Daily — Design 1: Dark Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #030C1A;
+    --bg-card:      #0C1E35;
+    --bg-card-2:    #112540;
+    --border:       #1B3A5C;
+    --border-light: #254A72;
+    --blue:         #1D6FE8;
+    --blue-light:   #3B8AF5;
+    --orange:       #FF6B2B;
+    --orange-dark:  #E05520;
+    --orange-glow:  rgba(255,107,43,0.25);
+    --white:        #FFFFFF;
+    --text-muted:   #7B9EC4;
+    --text-dim:     #3E5F82;
+    --success:      #10D48E;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,30,53,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo-row { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--orange) 0%, #FF3E6C 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text { font-size: 17px; font-weight: 800; color: var(--white); line-height: 1; }
+  .logo-sub  { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .btn-login {
+    font-size: 13px; font-weight: 700; color: var(--blue-light);
+    background: rgba(29,111,232,0.12); padding: 8px 16px;
+    border: 1px solid rgba(29,111,232,0.35); border-radius: 10px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-login:hover { background: rgba(29,111,232,0.22); border-color: var(--blue-light); }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px 32px;
+    text-align: center;
+  }
+
+  /* Animated background grid */
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(29,111,232,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,111,232,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    from { transform: translateY(0); }
+    to   { transform: translateY(40px); }
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    filter: blur(60px);
+  }
+  .orb-1 { width: 300px; height: 300px; top: -100px; left: -80px; background: rgba(29,111,232,0.15); }
+  .orb-2 { width: 200px; height: 200px; top: 20px; right: -60px; background: rgba(255,107,43,0.12); }
+
+  .hero-content { position: relative; z-index: 1; }
+
+  .day-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(29,111,232,0.15); border: 1px solid rgba(29,111,232,0.3);
+    color: var(--blue-light); font-size: 11px; font-weight: 700;
+    padding: 5px 12px; border-radius: 20px; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 18px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+  .dot-live { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+
+  .hero-title {
+    font-size: clamp(36px, 8vw, 56px);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #FFFFFF 0%, #7B9EC4 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 16px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6;
+  }
+
+  /* ─── SPARKLER TIMER ─── */
+  .timer-preview {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 20px; margin-bottom: 28px;
+  }
+  .timer-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+  .sparkler-track {
+    width: 160px; height: 8px; background: var(--border); border-radius: 4px;
+    overflow: hidden; position: relative;
+  }
+  .sparkler-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--orange) 0%, #FFD700 100%);
+    animation: sparklerBurn 3s linear infinite;
+    position: relative;
+  }
+  .sparkler-fill::after {
+    content: '✦';
+    position: absolute; right: -2px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px; color: #FFD700;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px #FF6B2B;
+    animation: sparkleGlow 0.3s ease infinite alternate;
+  }
+  @keyframes sparklerBurn {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+  @keyframes sparkleGlow {
+    from { opacity: 1; text-shadow: 0 0 8px #FFD700; }
+    to   { opacity: 0.6; text-shadow: 0 0 16px #FF6B2B; }
+  }
+  .timer-count { font-size: 22px; font-weight: 900; color: var(--orange); min-width: 32px; }
+
+  /* ─── START BUTTON ─── */
+  .btn-start {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 18px 40px;
+    background: linear-gradient(135deg, var(--orange) 0%, #FF3E6C 100%);
+    color: #fff; border-radius: 18px;
+    font-size: 20px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 0 40px rgba(255,107,43,0.4), 0 4px 20px rgba(255,107,43,0.3);
+    border: none; transition: transform 0.15s, box-shadow 0.15s;
+    animation: btnBounce 3s ease-in-out infinite;
+  }
+  .btn-start:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 60px rgba(255,107,43,0.5), 0 8px 28px rgba(255,107,43,0.4);
+  }
+  @keyframes btnBounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .btn-start:hover { animation: none; }
+
+  .anon-hint { font-size: 12px; color: var(--text-dim); margin-top: 14px; }
+  .anon-hint a { color: var(--blue-light); font-weight: 600; cursor: pointer; }
+
+  /* ─── STATS STRIP ─── */
+  .stats-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; padding: 0 20px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 12px; text-align: center;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-light); }
+  .stat-icon { font-size: 24px; margin-bottom: 6px; }
+  .stat-val  { font-size: 20px; font-weight: 900; color: var(--white); }
+  .stat-sub  { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ─── CATEGORY PILLS ─── */
+  .section-title {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 0 20px; margin-bottom: 12px;
+  }
+
+  .categories {
+    display: flex; gap: 8px; padding: 0 20px; overflow-x: auto;
+    scrollbar-width: none; margin-bottom: 28px;
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  }
+  .cat-pill:hover, .cat-pill.active {
+    border-color: var(--orange); color: var(--orange);
+    background: rgba(255,107,43,0.08);
+  }
+  .cat-pill.active { background: rgba(255,107,43,0.12); }
+
+  /* ─── LEADERBOARD ─── */
+  .section { padding: 0 20px; margin-bottom: 28px; }
+
+  .leaderboard-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .lb-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+  }
+  .lb-title { font-size: 14px; font-weight: 800; color: var(--white); }
+  .lb-tab   { font-size: 12px; color: var(--text-muted); background: var(--bg-card-2);
+               padding: 4px 10px; border-radius: 8px; cursor: pointer; }
+
+  .lb-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px; border-bottom: 1px solid rgba(27,58,92,0.5);
+    transition: background 0.15s;
+  }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-row:hover { background: rgba(255,255,255,0.02); }
+  .lb-row.me { background: rgba(29,111,232,0.08); border-left: 3px solid var(--blue); }
+
+  .lb-rank {
+    font-size: 14px; font-weight: 800; color: var(--text-dim);
+    min-width: 24px; text-align: center;
+  }
+  .lb-rank.gold   { color: #FFD700; font-size: 18px; }
+  .lb-rank.silver { color: #C0C0C0; font-size: 18px; }
+  .lb-rank.bronze { color: #CD7F32; font-size: 18px; }
+
+  .lb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .lb-name  { flex: 1; font-size: 14px; font-weight: 600; color: var(--white); }
+  .lb-score { font-size: 14px; font-weight: 800; color: var(--orange); }
+  .lb-xp    { font-size: 10px; color: var(--text-muted); }
+
+  /* ─── ACTION BUTTONS ─── */
+  .action-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 0 20px; margin-bottom: 20px;
+  }
+  .action-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 16px;
+    font-size: 14px; font-weight: 700; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .action-btn:hover { border-color: var(--orange); color: var(--orange); background: rgba(255,107,43,0.06); }
+  .action-btn-icon { font-size: 22px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 20px; text-align: center;
+    border-top: 1px solid var(--border); margin-top: 12px;
+  }
+  .footer-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-muted);
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 20px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .footer-link:hover { color: var(--white); border-color: var(--border-light); }
+
+  /* ─── LABEL BADGE ─── */
+  .design-label {
+    position: fixed; bottom: 16px; right: 16px;
+    background: rgba(255,107,43,0.9); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 6px 12px;
+    border-radius: 20px; z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">🍽️</div>
+    <div>
+      <div class="logo-text">Quizine Daily</div>
+      <div class="logo-sub">Quiz om krogen</div>
+    </div>
+  </div>
+  <button class="btn-login">Logga in</button>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-content">
+    <div class="day-badge">
+      <span class="dot-live"></span>
+      Torsdag · 14 Maj 2026
+    </div>
+    <h1 class="hero-title">Dagens quiz<br>är redo! 🎯</h1>
+    <p class="hero-sub">3 frågor · Tänk snabbt · Klättra på listan</p>
+
+    <!-- Sparkler timer preview -->
+    <div class="timer-preview">
+      <span class="timer-label">⚡ 15 sek</span>
+      <div class="sparkler-track">
+        <div class="sparkler-fill"></div>
+      </div>
+      <span class="timer-count" id="timerCount">15</span>
+    </div>
+
+    <br>
+    <button class="btn-start" onclick="alert('Startar quiz...')">
+      <span>🎮</span> Starta nu
+    </button>
+    <div class="anon-hint">
+      Spela utan konto — eller <a>logga in</a> för topplistan
+    </div>
+  </div>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stat-card">
+    <div class="stat-icon">⏱️</div>
+    <div class="stat-val">15s</div>
+    <div class="stat-sub">per fråga</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-val">3</div>
+    <div class="stat-sub">frågor idag</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🏆</div>
+    <div class="stat-val">500</div>
+    <div class="stat-sub">max XP</div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section-title">Kategorier</div>
+<div class="categories">
+  <div class="cat-pill active">🍷 Vin & Dryck</div>
+  <div class="cat-pill">🍳 Tillagning</div>
+  <div class="cat-pill">🧼 Hygien</div>
+  <div class="cat-pill">🤵 Service</div>
+  <div class="cat-pill">⭐ Kändiskockar</div>
+  <div class="cat-pill">😅 På golvet</div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="section">
+  <div class="section-title" style="padding:0; margin-bottom:12px;">Topplista denna vecka</div>
+  <div class="leaderboard-card">
+    <div class="lb-header">
+      <span class="lb-title">🏆 Veckans ranking</span>
+      <span class="lb-tab">Alla tider</span>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank gold">🥇</div>
+      <div class="lb-avatar" style="background:rgba(255,215,0,0.15);">👨‍🍳</div>
+      <div class="lb-name">Marco_Cooks</div>
+      <div><div class="lb-score">4 850</div><div class="lb-xp">XP</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank silver">🥈</div>
+      <div class="lb-avatar" style="background:rgba(192,192,192,0.15);">🍸</div>
+      <div class="lb-name">BartendraBea</div>
+      <div><div class="lb-score">4 200</div><div class="lb-xp">XP</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank bronze">🥉</div>
+      <div class="lb-avatar" style="background:rgba(205,127,50,0.15);">👩‍🍳</div>
+      <div class="lb-name">Sofia_Bistro</div>
+      <div><div class="lb-score">3 900</div><div class="lb-xp">XP</div></div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank">4</div>
+      <div class="lb-avatar" style="background:rgba(29,111,232,0.12);">🍕</div>
+      <div class="lb-name">PizzaKung</div>
+      <div><div class="lb-score">3 450</div><div class="lb-xp">XP</div></div>
+    </div>
+    <div class="lb-row me">
+      <div class="lb-rank">12</div>
+      <div class="lb-avatar" style="background:rgba(29,111,232,0.2);">😎</div>
+      <div class="lb-name" style="color:var(--blue-light);">Du (logga in!)</div>
+      <div><div class="lb-score" style="color:var(--blue-light);">—</div><div class="lb-xp">XP</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="action-grid">
+  <button class="action-btn">
+    <span class="action-btn-icon">✏️</span>
+    <span>Skicka in fråga</span>
+  </button>
+  <button class="action-btn">
+    <span class="action-btn-icon">🍽️</span>
+    <span>Berätta historia</span>
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-link">⚔️ Spela mer på Quizine.se</div>
+</footer>
+
+<div class="design-label">Design 1 · Dark Arcade</div>
+
+<script>
+  // Animate timer countdown
+  let t = 15;
+  const el = document.getElementById('timerCount');
+  setInterval(() => {
+    t = t <= 0 ? 15 : t - 1;
+    el.textContent = t;
+    if (t <= 5) el.style.color = '#FF4757';
+    else el.style.color = 'var(--orange)';
+  }, 200);
+
+  // Category pills
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.cat-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
