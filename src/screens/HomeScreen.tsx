@@ -540,10 +540,25 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Hur funkar det?</Text>
             <ScrollView showsVerticalScrollIndicator={false} style={styles.helpScroll}>
+
+              <Text style={styles.helpSection}>📅 Daily Quiz</Text>
+              <Text style={styles.modalBody}>{'Daily Quiz öppnas i din webbläsare som en ny flik — utanför appen. Varje dag finns ett nytt frågesset att klara. Svara på alla frågor och slå ditt bästa resultat!'}</Text>
+
+              <Text style={styles.helpSection}>🎯 Quiz-läget</Text>
+              <Text style={styles.modalBody}>{'Välj en kategori och svara på 10 frågor. Du har 20 sekunder per fråga — ju snabbare du svarar rätt, desto mer poäng. Max 150 poäng per fråga (100 bas + 50 tidsbonus). Svarar du fel visas rätt svar med en förklaring.'}</Text>
+
+              <Text style={styles.helpSection}>❤️ Överlevnadsläge</Text>
+              <Text style={styles.modalBody}>{'Du startar med 3 liv. Varje fel kostar ett liv — svara rätt och håll din svit igång så länge som möjligt. Ditt rekord sparas per kategori.'}</Text>
+
+              <Text style={styles.helpSection}>✅ Sant eller Falskt</Text>
+              <Text style={styles.modalBody}>{'Läs påståendet och svep höger om det är sant, vänster om det är falskt. Du har 7 sekunder per påstående och spelar 3 rundor med ökande svårighet.'}</Text>
+
               <Text style={styles.helpSection}>⚔️ Battle-läget</Text>
-              <Text style={styles.modalBody}>{'Utmana en vän på ett ämne du väljer. Tryck på "Battle" på startsidan och välj en vän och kategori.\n\nNi spelar var för sig i er egen takt. När ni båda är klara räknas poängen ihop — den med flest poäng vinner.'}</Text>
+              <Text style={styles.modalBody}>{'Utmana en vän på ett ämne du väljer. Ni spelar var för sig i er egen takt — när ni båda är klara räknas poängen ihop och den med flest poäng vinner.\n\nHar du fått en utmaning? En banner visas på startsidan — tryck på den för att hoppa direkt in i din match.'}</Text>
+
               <Text style={styles.helpSection}>👥 Lägga till vänner</Text>
-              <Text style={styles.modalBody}>{'Tryck på vänner-ikonen 👥 i nedre menyn.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni se varandras resultat och utmana varandra i Battle-läget.'}</Text>
+              <Text style={styles.modalBody}>{'Tryck på vänner-ikonen 👥 uppe till höger på startsidan.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni utmana varandra i Battle-läget.\n\nGlöm inte att sätta ett smeknamn på din profil — annars kan ingen hitta dig!'}</Text>
+
             </ScrollView>
             <TouchableOpacity onPress={() => setHelpVisible(false)} style={styles.primaryBtn}>
               <Text style={styles.primaryBtnText}>Förstått!</Text>
