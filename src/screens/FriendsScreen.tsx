@@ -25,6 +25,10 @@ import {
   getPendingRequests,
   getFriendStatusBatch,
 } from '../lib/friends';
+import { createBattle, findActiveBattleBetween } from '../lib/battles';
+import { getUsername } from '../lib/scores';
+import { supabase } from '../lib/supabase';
+import { useGameStore } from '../store/gameStore';
 import { NeonTabBar } from '../components/NeonTabBar';
 import { fonts, radius } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext';
@@ -35,6 +39,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Friends'>;
 export default function FriendsScreen({ navigation }: Props) {
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const currentArea = useGameStore(s => s.currentArea);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<FriendProfile & { status: FriendStatus }>>([]);
@@ -43,6 +48,7 @@ export default function FriendsScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [confirmRemove, setConfirmRemove] = useState<FriendProfile | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [creatingFor, setCreatingFor] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -124,11 +130,40 @@ export default function FriendsScreen({ navigation }: Props) {
     return msAgo < 7 * 24 * 60 * 60 * 1000;
   };
 
-  const handleChallenge = (friend: FriendProfile) => {
-    navigation.navigate('ChallengeLobby', {
-      preselectedFriendId: friend.user_id,
-      preselectedFriendName: friend.username,
-    });
+  const handleChallenge = async (friend: FriendProfile) => {
+    setCreatingFor(friend.user_id);
+    try {
+      const name = (await getUsername()) ?? 'Anonym';
+      const existing = await findActiveBattleBetween(currentArea, friend.user_id);
+      if (existing) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
+        Alert.alert(
+          'Battle pågår redan',
+          `Du har redan en pågående battle med ${friend.username}. Vill du öppna den?`,
+          [
+            { text: 'Avbryt', style: 'cancel' },
+            { text: 'Öppna battle', onPress: () => navigation.navigate('BattleBoard', { battleId: existing.id, code: existing.code, role }) },
+          ],
+        );
+        return;
+      }
+      const battle = await createBattle(currentArea, name, friend.user_id, 'friend');
+      navigation.navigate('BattlePickCategory', {
+        battleId: battle.id,
+        code: battle.code,
+        role: 'creator',
+        roundNumber: 1,
+        creatorScore: 0,
+        opponentScore: 0,
+        creatorName: name,
+        opponentName: friend.username,
+      });
+    } catch {
+      Alert.alert('Fel', 'Kunde inte skapa battle. Kontrollera anslutningen och försök igen.');
+    } finally {
+      setCreatingFor(null);
+    }
   };
 
   return (
@@ -228,8 +263,14 @@ export default function FriendsScreen({ navigation }: Props) {
                   isNew={isNewFriend(f)}
                   right={
                     <View style={styles.friendActions}>
-                      <TouchableOpacity onPress={() => handleChallenge(f)} style={styles.btnChallenge}>
-                        <Text style={styles.btnChallengeText}>⚔️ Utmana</Text>
+                      <TouchableOpacity
+                        onPress={() => handleChallenge(f)}
+                        style={styles.btnChallenge}
+                        disabled={creatingFor === f.user_id}
+                      >
+                        <Text style={styles.btnChallengeText}>
+                          {creatingFor === f.user_id ? '...' : '⚔️ Utmana'}
+                        </Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => handleRemove(f)} style={styles.btnRemove}>
                         <Text style={styles.btnRemoveText}>✕</Text>
