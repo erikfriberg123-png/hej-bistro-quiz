@@ -29,6 +29,7 @@ import { trackAttempt } from '../lib/stats';
 import { sendPushToUser } from '../lib/pushNotifications';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
+import { fetchQuestionsByIds } from '../lib/remoteQuestions';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
@@ -52,7 +53,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
 
   const {
     questions, currentQuestionIndex, score,
-    startGame, startChallengeGame, submitAnswer, nextQuestion, endGame,
+    startGame, startChallengeGame, startChallengeGameWithQuestions, submitAnswer, nextQuestion, endGame,
   } = useGameStore();
   const currentArea = useGameStore(s => s.currentArea);
 
@@ -99,9 +100,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     const init = async () => {
       const { questionIds } = route.params;
       if (questionIds && questionIds.length > 0) {
-        startChallengeGame(categoryId, questionIds);
-        // Cross-segment: if the creator's question IDs don't exist in our pool, fall back to random
-        if (useGameStore.getState().questions.length === 0) {
+        const fetched = await fetchQuestionsByIds(questionIds);
+        if (fetched.length > 0) {
+          startChallengeGameWithQuestions(categoryId, fetched);
+        } else {
           startGame(categoryId, 3);
         }
       } else {

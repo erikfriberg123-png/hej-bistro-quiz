@@ -28,6 +28,7 @@ import { trackAttempt } from '../lib/stats';
 import { createChallenge, joinChallenge, getChallengeById } from '../lib/challenges';
 import { getCategoryById } from '../data/categories';
 import { shuffle } from '../utils/shuffle';
+import { fetchQuestionsByIds } from '../lib/remoteQuestions';
 import { SparklerTimer } from '../components/SparklerTimer';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerButton, AnswerState } from '../components/AnswerButton';
@@ -48,6 +49,7 @@ export default function GameScreen({ route, navigation }: Props) {
     score,
     startGame,
     startChallengeGame,
+    startChallengeGameWithQuestions,
     submitAnswer,
     nextQuestion,
     endGame,
@@ -87,15 +89,19 @@ export default function GameScreen({ route, navigation }: Props) {
   }, [isAnswered]);
 
   useEffect(() => {
-    if (challengeMode === 'join' && questionIds?.length) {
-      startChallengeGame(categoryId, questionIds);
-      // Cross-segment: if the creator's question IDs don't exist in our pool, fall back to random
-      if (useGameStore.getState().questions.length === 0) {
+    const init = async () => {
+      if (challengeMode === 'join' && questionIds?.length) {
+        const fetched = await fetchQuestionsByIds(questionIds);
+        if (fetched.length > 0) {
+          startChallengeGameWithQuestions(categoryId, fetched);
+        } else {
+          startGame(categoryId);
+        }
+      } else {
         startGame(categoryId);
       }
-    } else {
-      startGame(categoryId);
-    }
+    };
+    init();
   }, []);
 
   useEffect(() => {

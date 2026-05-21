@@ -62,6 +62,18 @@ export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Q
   }
 }
 
+export async function fetchQuestionsByIds(ids: string[]): Promise<Question[]> {
+  if (!ids.length) return [];
+  const [r1, r2] = await Promise.all([
+    supabase.from('remote_questions').select('*').in('id', ids),
+    supabase.from('voo_remote_questions').select('*').in('id', ids),
+  ]);
+  const all = [...(r1.data ?? []), ...(r2.data ?? [])].map(rowToQuestion);
+  return ids
+    .map(id => all.find(q => q.id === id))
+    .filter((q): q is Question => q !== undefined);
+}
+
 export async function invalidateQuestionCache(area?: Area): Promise<void> {
   if (area) {
     await AsyncStorage.removeItem(cacheKey(area));

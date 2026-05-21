@@ -22,6 +22,7 @@ interface GameState {
 
   startGame: (categoryId: CategoryId, count?: number) => void;
   startChallengeGame: (categoryId: CategoryId, questionIds: string[]) => void;
+  startChallengeGameWithQuestions: (categoryId: CategoryId, questions: Question[]) => void;
   loadRemoteQuestions: (area?: Area) => Promise<void>;
   setCurrentArea: (area: Area) => void;
   submitAnswer: (answerIndex: number, timeRemaining: number) => number;
@@ -120,6 +121,16 @@ export const useGameStore = create<GameState>()(
           currentQuestionIndex: 0,
           score: 0,
           answers: new Array(ordered.length).fill(null),
+        });
+      },
+
+      startChallengeGameWithQuestions: (categoryId, questions) => {
+        set({
+          selectedCategory: categoryId,
+          questions,
+          currentQuestionIndex: 0,
+          score: 0,
+          answers: new Array(questions.length).fill(null),
         });
       },
 
