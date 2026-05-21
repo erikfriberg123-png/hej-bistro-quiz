@@ -7,6 +7,7 @@ import {
   StatusBar,
   TouchableOpacity,
   FlatList,
+  LayoutChangeEvent,
   Dimensions,
 } from 'react-native';
 
@@ -16,8 +17,6 @@ import { AuthStackParamList } from '../types';
 import { fonts, radius, spacing } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext';
 import type { Colors } from '../theme/ThemeContext';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
@@ -56,9 +55,15 @@ const PAGE_DEFS = [
 
 export default function OnboardingScreen({ navigation }: Props) {
   const colors = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [listWidth, setListWidth] = useState(Dimensions.get('window').width);
+  const styles = useMemo(() => makeStyles(colors, listWidth), [colors, listWidth]);
   const [page, setPage] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+
+  const onListLayout = useCallback((e: LayoutChangeEvent) => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0) setListWidth(w);
+  }, []);
 
   const def = PAGE_DEFS[page];
   const accent = colors[def.accentKey];
@@ -126,6 +131,7 @@ export default function OnboardingScreen({ navigation }: Props) {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         style={styles.flatList}
+        onLayout={onListLayout}
       />
 
       {/* Progress dots */}
@@ -158,7 +164,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 }
 
-const makeStyles = (colors: Colors) => StyleSheet.create({
+const makeStyles = (colors: Colors, listWidth: number) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg0 },
 
   glowBlob: {
@@ -195,7 +201,7 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     flex: 1,
   },
   content: {
-    width: SCREEN_WIDTH,
+    width: listWidth,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
