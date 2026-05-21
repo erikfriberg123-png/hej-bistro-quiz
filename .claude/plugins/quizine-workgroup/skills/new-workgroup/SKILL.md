@@ -167,7 +167,7 @@ export function getCategoriesForArea(area: Area): Category[] {
 
 ---
 
-### 2.4 — Quiz App: Logo asset
+### 2.4 — Quiz App: Logo asset + HomeScreen updates
 
 File location: `hej-bistro-quiz/assets/[LOGO_FILE]`
 
@@ -190,6 +190,48 @@ Find the area logo rendering block (currently checks `area === 'krogen'` and `ar
   );
 }
 ```
+
+---
+
+### 2.4b — Quiz App: "Hur funkar det?" help modal
+
+**This modal is shared across all areas in the same app.** Every time a new workgroup is added you must verify the modal contains the full canonical set of game mode sections. The modal lives inside `HomeScreen.tsx` — find the `{/* Help modal */}` block.
+
+The content must include ALL of these sections in this order:
+
+```tsx
+<Text style={styles.helpSection}>📅 Daily Quiz</Text>
+<Text style={styles.modalBody}>
+  {'Daily Quiz öppnas i din webbläsare som en ny flik — utanför appen. Varje dag finns ett nytt frågesset att klara. Svara på alla frågor och slå ditt bästa resultat!'}
+</Text>
+
+<Text style={styles.helpSection}>🎯 Quiz-läget</Text>
+<Text style={styles.modalBody}>
+  {'Välj en kategori och svara på 10 frågor. Du har 20 sekunder per fråga — ju snabbare du svarar rätt, desto mer poäng. Max 150 poäng per fråga (100 bas + 50 tidsbonus). Svarar du fel visas rätt svar med en förklaring.'}
+</Text>
+
+<Text style={styles.helpSection}>❤️ Överlevnadsläge</Text>
+<Text style={styles.modalBody}>
+  {'Du startar med 3 liv. Varje fel kostar ett liv — svara rätt och håll din svit igång så länge som möjligt. Ditt rekord sparas per kategori.'}
+</Text>
+
+<Text style={styles.helpSection}>✅ Sant eller Falskt</Text>
+<Text style={styles.modalBody}>
+  {'Läs påståendet och svep höger om det är sant, vänster om det är falskt. Du har 7 sekunder per påstående och spelar 3 rundor med ökande svårighet.'}
+</Text>
+
+<Text style={styles.helpSection}>⚔️ Battle-läget</Text>
+<Text style={styles.modalBody}>
+  {'Utmana en vän på ett ämne du väljer. Ni spelar var för sig i er egen takt — när ni båda är klara räknas poängen ihop och den med flest poäng vinner.\n\nHar du fått en utmaning? En banner visas på startsidan — tryck på den för att hoppa direkt in i din match.'}
+</Text>
+
+<Text style={styles.helpSection}>👥 Lägga till vänner</Text>
+<Text style={styles.modalBody}>
+  {'Tryck på vänner-ikonen 👥 uppe till höger på startsidan.\n\nSök på en kollegas smeknamn och skicka en vänförfrågan. När de accepterar kan ni utmana varandra i Battle-läget.\n\nGlöm inte att sätta ett smeknamn på din profil — annars kan ingen hitta dig!'}
+</Text>
+```
+
+If the new workgroup lives in a **separate app repository** (like `voo.quizine.se` is separate from `hej-bistro-quiz`), the same modal content must be applied in that repo's `HomeScreen.tsx` as well — it is NOT shared across repos automatically.
 
 ---
 
@@ -285,6 +327,38 @@ After writing the SQL file, ask the user: "Should I apply this migration to Supa
 The `truth_or_false_questions` table uses a shared table with `area` column filtering. Ensure `[AREA_KEY]` is a valid value that can be stored in `profiles.area`.
 
 No SQL migration needed — just verify that wherever `profiles.area` is validated or type-checked, the new `[AREA_KEY]` value is accepted.
+
+---
+
+### 2.11 — Cross-segment battle/challenge support
+
+When a player from one segment challenges or battles a player from another segment, the joiner must be able to load the creator's questions even though they come from a different Supabase table. This is handled by `fetchQuestionsByIds` in `remoteQuestions.ts`, which queries **all known questions tables in parallel**.
+
+**Every time a new segment is added, add its questions table to this function in BOTH apps:**
+
+File: `hej-bistro-quiz/src/lib/remoteQuestions.ts`
+File: `voo.quizine.se/src/lib/remoteQuestions.ts` (if it exists as a separate repo)
+
+Find the `fetchQuestionsByIds` function and add a `Promise.all` entry for the new table:
+
+```typescript
+export async function fetchQuestionsByIds(ids: string[]): Promise<Question[]> {
+  if (!ids.length) return [];
+  const [r1, r2, r3] = await Promise.all([
+    supabase.from('remote_questions').select('*').in('id', ids),
+    supabase.from('voo_remote_questions').select('*').in('id', ids),
+    supabase.from('[TABLE_PREFIX]remote_questions').select('*').in('id', ids),  // ← ADD THIS
+  ]);
+  const all = [...(r1.data ?? []), ...(r2.data ?? []), ...(r3.data ?? [])].map(rowToQuestion);
+  return ids
+    .map(id => all.find(q => q.id === id))
+    .filter((q): q is Question => q !== undefined);
+}
+```
+
+**Why this matters:** `GameScreen` and `BattleRoundScreen` call `fetchQuestionsByIds` when joining a challenge/battle. If the new segment's table is not in the parallel query, cross-segment players will land on a "Laddar..." screen that never resolves — the questions are silently not found and the game never starts.
+
+**No changes needed** to `GameScreen.tsx` or `BattleRoundScreen.tsx` themselves — they already await `fetchQuestionsByIds` and call `startChallengeGameWithQuestions` with the result.
 
 ---
 
@@ -440,7 +514,7 @@ Verify by checking `daily-quizine/src/lib/dailyScores.ts` — every Supabase que
 
 ---
 
-### 2.B.8 — `vite.config.[WORKGROUP_ID].ts`
+### 2.B.7 — `vite.config.[WORKGROUP_ID].ts`
 
 File: `daily-quizine/vite.config.[WORKGROUP_ID].ts`
 
@@ -491,9 +565,11 @@ After all changes, print a checklist for the user (include the daily-quizine blo
 ✅ branding.ts — Area type and AREA_BRANDING updated
 ✅ categories.ts — [WORKGROUP]_CATEGORIES added, getCategoriesForArea updated
 ✅ HomeScreen.tsx — Logo rendering added
+✅ HomeScreen.tsx — "Hur funkar det?" modal verified/updated with all 6 sections
 ✅ product.ts — Product type and PRODUCTS array updated
 ✅ Sidebar.tsx — Admin sidebar color added
 ✅ tailwind.config.ts — Tailwind sidebar color added
+✅ remoteQuestions.ts — fetchQuestionsByIds updated with new segment's table (cross-segment battles)
 ⬜ Logo asset — Drop [LOGO_FILE] into hej-bistro-quiz/assets/ (manual step)
 ✅ [workgroup_id]_tables.sql — SQL migration generated
 ⬜ Supabase migration — Applied (or pending manual run)
@@ -524,6 +600,8 @@ These are the exact files modified for every new workgroup. Always read them bef
 | `hej-bistro-quiz/src/data/categories.ts` | Category constants, getCategoriesForArea |
 | `hej-bistro-quiz/src/screens/HomeScreen.tsx` | Logo rendering, area change handler |
 | `hej-bistro-quiz/src/lib/scores.ts` | getUserProfile, Area usage |
+| `hej-bistro-quiz/src/lib/remoteQuestions.ts` | fetchQuestionsByIds — add new table for cross-segment battles |
+| `voo.quizine.se/src/lib/remoteQuestions.ts` | Same — if separate repo |
 | `hej-bistro-admin/lib/product.ts` | Product type, PRODUCTS array |
 | `hej-bistro-admin/components/Sidebar.tsx` | Sidebar color, product display |
 | `hej-bistro-admin/tailwind.config.ts` | Tailwind colors |
