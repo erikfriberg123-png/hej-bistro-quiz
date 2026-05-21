@@ -100,6 +100,10 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       const { questionIds } = route.params;
       if (questionIds && questionIds.length > 0) {
         startChallengeGame(categoryId, questionIds);
+        // Cross-segment: if the creator's question IDs don't exist in our pool, fall back to random
+        if (useGameStore.getState().questions.length === 0) {
+          startGame(categoryId, 3);
+        }
       } else {
         startGame(categoryId, 3);
       }

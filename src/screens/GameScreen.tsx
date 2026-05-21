@@ -89,6 +89,10 @@ export default function GameScreen({ route, navigation }: Props) {
   useEffect(() => {
     if (challengeMode === 'join' && questionIds?.length) {
       startChallengeGame(categoryId, questionIds);
+      // Cross-segment: if the creator's question IDs don't exist in our pool, fall back to random
+      if (useGameStore.getState().questions.length === 0) {
+        startGame(categoryId);
+      }
     } else {
       startGame(categoryId);
     }
