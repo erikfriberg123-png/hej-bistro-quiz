@@ -29,6 +29,7 @@ import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
 import { submitFeedback } from '../lib/feedback';
+import { registerPushToken } from '../lib/pushNotifications';
 import { StoryModal } from '../components/StoryModal';
 import { fonts, radius, spacing } from '../theme/tokens';
 import { useTheme } from '../theme/ThemeContext';
@@ -83,6 +84,7 @@ export default function HomeScreen({ navigation }: Props) {
       setAreaState(userArea);
       setSelectedArea(userArea);
       loadRemoteQuestions(userArea);
+      registerPushToken();
     });
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) { userIdRef.current = user.id; setUserId(user.id); }

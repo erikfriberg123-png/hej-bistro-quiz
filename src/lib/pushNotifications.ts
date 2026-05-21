@@ -31,7 +31,9 @@ export async function registerPushToken(): Promise<void> {
       });
     }
 
-    const { data: tokenData } = await Notifications.getExpoPushTokenAsync();
+    const { data: tokenData } = await Notifications.getExpoPushTokenAsync({
+      projectId: '87de1099-7c19-4189-a11d-4ad66e30b7c4',
+    });
     if (!tokenData) return;
 
     const { data: { user } } = await supabase.auth.getUser();
