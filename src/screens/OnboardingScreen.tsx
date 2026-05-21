@@ -79,7 +79,9 @@ export default function OnboardingScreen({ navigation }: Props) {
     if (isLast) {
       finish();
     } else {
-      flatListRef.current?.scrollToIndex({ index: page + 1, animated: true });
+      const nextPage = page + 1;
+      setPage(nextPage);
+      flatListRef.current?.scrollToIndex({ index: nextPage, animated: true });
     }
   };
 
