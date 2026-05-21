@@ -380,9 +380,13 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           <Animated.View
             style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: isAnswered ? 'auto' : 'none' }]}
           >
-            {isAnswered && pointsAwarded === 0 && !!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas' && (
-              <View style={styles.explanationBox}>
-                <Text style={styles.explanationText}>{currentQuestion.forklaring.trim()}</Text>
+            {isAnswered && (
+              <View style={[styles.explanationBox, { borderColor: category?.color ?? colors.pink }]}>
+                <Text style={styles.explanationText}>
+                  {!!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas'
+                    ? currentQuestion.forklaring.trim()
+                    : 'Ingen förklaring'}
+                </Text>
               </View>
             )}
             <TouchableOpacity
@@ -504,8 +508,7 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   },
   explanationBox: {
     backgroundColor: colors.bg2,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.wrong,
+    borderWidth: 1.5,
     borderRadius: radius.md,
     padding: 14,
     marginBottom: 10,

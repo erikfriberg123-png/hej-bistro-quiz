@@ -287,9 +287,13 @@ export default function SurvivalScreen({ route, navigation }: Props) {
           </View>
 
           <Animated.View style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: answered ? 'auto' : 'none' }]}>
-            {lastWasWrong && !!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas' && (
-              <View style={styles.explanationBox}>
-                <Text style={styles.explanationText}>{currentQuestion.forklaring.trim()}</Text>
+            {answered && (
+              <View style={[styles.explanationBox, { borderColor: accentColor }]}>
+                <Text style={styles.explanationText}>
+                  {!!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas'
+                    ? currentQuestion.forklaring.trim()
+                    : 'Ingen förklaring'}
+                </Text>
               </View>
             )}
             <TouchableOpacity
@@ -353,8 +357,7 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   nextBtnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700, letterSpacing: 0.3 },
   explanationBox: {
     backgroundColor: colors.bg2,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.wrong,
+    borderWidth: 1.5,
     borderRadius: radius.md,
     padding: 14,
     marginBottom: 10,
