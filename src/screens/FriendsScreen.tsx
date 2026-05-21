@@ -137,7 +137,22 @@ export default function FriendsScreen({ navigation }: Props) {
       const existing = await findActiveBattleBetween(currentArea, friend.user_id);
       if (existing) {
         const { data: { user } } = await supabase.auth.getUser();
-        const role: 'creator' | 'opponent' = existing.creator_id === user?.id ? 'creator' : 'opponent';
+        const isCreator = existing.creator_id === user?.id;
+        // Stale invite: creator tapped Utmana before but never played — just start it
+        if (existing.status === 'waiting_opponent' && isCreator && existing.creator_turns.length === 0) {
+          navigation.navigate('BattlePickCategory', {
+            battleId: existing.id,
+            code: existing.code,
+            role: 'creator',
+            roundNumber: 1,
+            creatorScore: 0,
+            opponentScore: 0,
+            creatorName: name,
+            opponentName: friend.username,
+          });
+          return;
+        }
+        const role: 'creator' | 'opponent' = isCreator ? 'creator' : 'opponent';
         Alert.alert(
           'Battle pågår redan',
           `Du har redan en pågående battle med ${friend.username}. Vill du öppna den?`,
