@@ -42,6 +42,7 @@ export interface Question {
   difficulty: Difficulty;
   active?: boolean;
   imageUrl?: string;
+  forklaring?: string;
 }
 
 export interface Category {

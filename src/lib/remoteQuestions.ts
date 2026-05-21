@@ -25,6 +25,7 @@ function rowToQuestion(row: any): Question {
     difficulty: row.difficulty as Difficulty,
     active: row.active as boolean,
     ...(row.image_url ? { imageUrl: row.image_url as string } : {}),
+    ...(row.forklaring ? { forklaring: row.forklaring as string } : {}),
   };
 }
 

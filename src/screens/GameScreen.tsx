@@ -324,6 +324,13 @@ export default function GameScreen({ route, navigation }: Props) {
           <Animated.View
             style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: isAnswered ? 'auto' : 'none' }]}
           >
+            {isAnswered && pointsAwarded === 0 && (
+              <View style={styles.explanationBox}>
+                <Text style={styles.explanationText}>
+                  {currentQuestion.forklaring ?? 'Ingen förklaring ännu'}
+                </Text>
+              </View>
+            )}
             <TouchableOpacity
               onPress={advance}
               style={[styles.nextBtn, { backgroundColor: category?.color ?? '#9B5DE5' }, isFinishing && styles.nextBtnDisabled]}
@@ -367,4 +374,18 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   nextBtn: { borderRadius: radius.md, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
   nextBtnDisabled: { opacity: 0.5 },
   nextBtnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700, letterSpacing: -0.2 },
+  explanationBox: {
+    backgroundColor: colors.bg2,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.wrong,
+    borderRadius: radius.md,
+    padding: 14,
+    marginBottom: 10,
+  },
+  explanationText: {
+    color: colors.text2,
+    fontFamily: fonts.display400,
+    fontSize: 14,
+    lineHeight: 21,
+  },
 });
