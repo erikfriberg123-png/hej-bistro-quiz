@@ -62,6 +62,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
   const [shuffledIndices, setShuffledIndices] = useState<number[]>([0, 1, 2, 3]);
   const [celebrationEffects, setCelebrationEffects] = useState<EffectType[]>([]);
   const [showWow, setShowWow] = useState(false);
+  const [lastWasWrong, setLastWasWrong] = useState(false);
 
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
@@ -95,6 +96,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
     if (!currentQuestion) return;
     isAdvancingRef.current = false;
     setAnswered(false);
+    setLastWasWrong(false);
     setCelebrationEffects([]);
     setShowWow(false);
     setAnswerStates(['default', 'default', 'default', 'default']);
@@ -178,6 +180,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
       livesRef.current = newLives;
       setLives(newLives);
       setStreak(0);
+      setLastWasWrong(true);
       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   }, [answered, currentQuestion, shuffledIndices, streak, lives]);
@@ -192,6 +195,7 @@ export default function SurvivalScreen({ route, navigation }: Props) {
     livesRef.current = newLives;
     setLives(newLives);
     setStreak(0);
+    setLastWasWrong(true);
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   }, [answered, currentQuestion, shuffledIndices, lives]);
 
@@ -283,6 +287,11 @@ export default function SurvivalScreen({ route, navigation }: Props) {
           </View>
 
           <Animated.View style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: answered ? 'auto' : 'none' }]}>
+            {lastWasWrong && !!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas' && (
+              <View style={styles.explanationBox}>
+                <Text style={styles.explanationText}>{currentQuestion.forklaring.trim()}</Text>
+              </View>
+            )}
             <TouchableOpacity
               onPress={handleNext}
               style={[styles.nextBtn, { backgroundColor: accentColor }]}
@@ -342,4 +351,18 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   nextBtnWrapper: { marginTop: 'auto', paddingTop: 8 },
   nextBtn: { borderRadius: 16, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
   nextBtnText: { color: colors.text1, fontSize: 17, fontFamily: fonts.display700, letterSpacing: 0.3 },
+  explanationBox: {
+    backgroundColor: colors.bg2,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.wrong,
+    borderRadius: radius.md,
+    padding: 14,
+    marginBottom: 10,
+  },
+  explanationText: {
+    color: colors.text2,
+    fontFamily: fonts.display400,
+    fontSize: 14,
+    lineHeight: 21,
+  },
 });

@@ -380,11 +380,9 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           <Animated.View
             style={[styles.nextBtnWrapper, nextBtnStyle, { pointerEvents: isAnswered ? 'auto' : 'none' }]}
           >
-            {isAnswered && pointsAwarded === 0 && (
+            {isAnswered && pointsAwarded === 0 && !!currentQuestion.forklaring?.trim() && currentQuestion.forklaring.trim().toLowerCase() !== 'förklaring saknas' && (
               <View style={styles.explanationBox}>
-                <Text style={styles.explanationText}>
-                  {currentQuestion.forklaring ?? 'Ingen förklaring ännu'}
-                </Text>
+                <Text style={styles.explanationText}>{currentQuestion.forklaring.trim()}</Text>
               </View>
             )}
             <TouchableOpacity
