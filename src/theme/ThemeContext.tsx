@@ -9,7 +9,7 @@ const ThemeContext = createContext<Colors>(darkColors);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const isDarkMode = useGameStore(s => s.isDarkMode);
   return (
-    <ThemeContext.Provider value={isDarkMode ? darkColors : lightColors}>
+    <ThemeContext.Provider value={(isDarkMode ? darkColors : lightColors) as Colors}>
       {children}
     </ThemeContext.Provider>
   );

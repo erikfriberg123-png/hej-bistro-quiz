@@ -70,7 +70,7 @@ function Spark({
     ],
   }));
 
-  return <Animated.View style={[styles.spark, style]} />;
+  return <Animated.View style={[sparkStyle, style]} />;
 }
 
 interface Props {
@@ -213,6 +213,16 @@ export function SparklerTimer({ duration, onExpire, isRunning, onTick }: Props) 
   );
 }
 
+const sparkStyle = StyleSheet.create({
+  spark: {
+    position: 'absolute',
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#FFE878',
+  },
+}).spark;
+
 const makeStyles = (colors: Colors) => StyleSheet.create({
   outer: {
     width: TIMER_WIDTH,
@@ -263,12 +273,5 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     width: TIP_SIZE,
     height: TIP_SIZE,
     borderRadius: TIP_SIZE / 2,
-  },
-  spark: {
-    position: 'absolute',
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: '#FFE878',
   },
 });

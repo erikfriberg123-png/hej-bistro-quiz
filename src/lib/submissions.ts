@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { tablesForArea } from './appConfig';
+import { tablesForArea, TABLES } from './appConfig';
 import { type Area } from './branding';
 import type { CategoryId, Difficulty } from '../types';
 
