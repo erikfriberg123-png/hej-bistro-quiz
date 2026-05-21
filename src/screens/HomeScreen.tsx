@@ -330,11 +330,6 @@ export default function HomeScreen({ navigation }: Props) {
             <Text style={styles.userpillName} numberOfLines={1}>
               {username ?? 'Sätt namn'}
             </Text>
-            {pendingCount > 0 && (
-              <View style={styles.profileBadge}>
-                <Text style={styles.profileBadgeText}>{pendingCount}</Text>
-              </View>
-            )}
           </TouchableOpacity>
 
           <TouchableOpacity
