@@ -3,6 +3,7 @@ import { tablesForArea } from './appConfig';
 import { type TofQuestion, type TofDifficulty } from '../types';
 import { type Area } from './branding';
 
+
 export const TOF_ROUND_DIFFICULTIES: TofDifficulty[] = [
   'easy',
   'medium',
@@ -28,8 +29,8 @@ export async function fetchTofQuestions(area: Area, difficulty: TofDifficulty): 
     .select('id, statement, answer, difficulty')
     .eq('active', true)
     .eq('difficulty', difficulty)
-    .eq('area', area)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .limit(100);
 
   if (error) throw error;
   return (data ?? []) as TofQuestion[];

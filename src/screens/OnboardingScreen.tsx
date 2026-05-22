@@ -9,6 +9,7 @@ import {
   FlatList,
   LayoutChangeEvent,
   Dimensions,
+  Platform,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +21,7 @@ import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
-type AccentKey = 'pink' | 'yellow' | 'cyan';
+type AccentKey = 'pink' | 'yellow' | 'cyan' | 'wrong';
 
 const PAGE_DEFS = [
   {
@@ -49,7 +50,7 @@ const PAGE_DEFS = [
     neon: '~ vem är bäst? ~',
     title: 'Battle-läget',
     body: 'Utmana en vän på ett ämne du väljer. Ni spelar var för sig och svarar på samma frågor — vinnaren är den med flest poäng när båda är klara.',
-    accentKey: 'cyan' as AccentKey,
+    accentKey: 'wrong' as AccentKey,
   },
 ];
 
@@ -67,7 +68,8 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   const def = PAGE_DEFS[page];
   const accent = colors[def.accentKey];
-  const glow = colors[`${def.accentKey}Glow` as keyof Colors] as string;
+  const glowKey = def.accentKey === 'wrong' ? 'wrongGlow' : `${def.accentKey}Glow`;
+  const glow = colors[glowKey as keyof Colors] as string;
   const isLast = page === PAGE_DEFS.length - 1;
 
   const finish = async () => {
@@ -121,20 +123,26 @@ export default function OnboardingScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
 
-      {/* Swipeable pages */}
-      <FlatList
-        ref={flatListRef}
-        data={PAGE_DEFS}
-        renderItem={renderPage}
-        keyExtractor={(_, i) => String(i)}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
-        style={styles.flatList}
-        onLayout={onListLayout}
-      />
+      {/* Swipeable pages — native uses FlatList; web renders the active card directly */}
+      {Platform.OS === 'web' ? (
+        <View style={styles.flatList}>
+          {renderPage({ item: PAGE_DEFS[page] })}
+        </View>
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          data={PAGE_DEFS}
+          renderItem={renderPage}
+          keyExtractor={(_, i) => String(i)}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+          style={styles.flatList}
+          onLayout={onListLayout}
+        />
+      )}
 
       {/* Progress dots */}
       <View style={styles.dots}>

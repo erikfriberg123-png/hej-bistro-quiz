@@ -77,16 +77,27 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
 
   const advanceQuestion = useCallback((nextIndex: number, finalScore: number, finalCorrect: number) => {
     if (nextIndex >= Math.min(questionsRef.current.length, TOF_QUESTIONS_PER_ROUND)) {
-      updateTofHighscore(round, finalScore).then(({ isNewBest, previousBest }) => {
-        navigation.replace('SantEllerFalsktResult', {
-          round,
-          score: finalScore,
-          correctAnswers: finalCorrect,
-          isNewBest,
-          previousBest,
-          cumulativeScore: prevCumulative + finalScore,
+      updateTofHighscore(round, finalScore)
+        .then(({ isNewBest, previousBest }) => {
+          navigation.replace('SantEllerFalsktResult', {
+            round,
+            score: finalScore,
+            correctAnswers: finalCorrect,
+            isNewBest,
+            previousBest,
+            cumulativeScore: prevCumulative + finalScore,
+          });
+        })
+        .catch(() => {
+          navigation.replace('SantEllerFalsktResult', {
+            round,
+            score: finalScore,
+            correctAnswers: finalCorrect,
+            isNewBest: false,
+            previousBest: 0,
+            cumulativeScore: prevCumulative + finalScore,
+          });
         });
-      });
       return;
     }
     answeredRef.current = false;
@@ -264,7 +275,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
           <Text style={styles.exitText}>✕</Text>
         </TouchableOpacity>
         <View style={styles.topCenter}>
-          <Text style={styles.roundLabel}>Runda {round}/{TOF_TOTAL_ROUNDS}</Text>
+          <Text style={styles.roundLabel}>Nivå {round}/{TOF_TOTAL_ROUNDS}</Text>
           <Text style={styles.difficultyLabel}>{TOF_DIFFICULTY_LABEL[difficulty]}</Text>
         </View>
         <View style={styles.scoreBox}>

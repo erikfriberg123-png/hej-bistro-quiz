@@ -302,6 +302,7 @@ Generate a SQL file at `hej-bistro-admin/supabase/[workgroup_id]_tables.sql` wit
 
 Tables to create:
 - `[TABLE_PREFIX]remote_questions` — same columns as `remote_questions`
+- `[TABLE_PREFIX]truth_or_false_questions` — same columns as `truth_or_false_questions` (used by Sant eller Falskt; do NOT omit this)
 - `[TABLE_PREFIX]submitted_questions` — same as `submitted_questions`
 - `[TABLE_PREFIX]question_complaints` — same as `question_complaints`
 - `[TABLE_PREFIX]question_attempts` — same as `question_attempts`
@@ -322,11 +323,15 @@ After writing the SQL file, ask the user: "Should I apply this migration to Supa
 
 ---
 
-### 2.10 — Add `area` column filter support (Truth or False questions)
+### 2.10 — Sant eller Falskt table routing (automatic — verify only)
 
-The `truth_or_false_questions` table uses a shared table with `area` column filtering. Ensure `[AREA_KEY]` is a valid value that can be stored in `profiles.area`.
+`fetchTofQuestions` in `hej-bistro-quiz/src/lib/tofQuestions.ts` already calls `tablesForArea(area).tofQuestions`, which routes to `[TABLE_PREFIX]truth_or_false_questions` for the new segment automatically — as long as the `TABLE_MAPS` entry from step 2.1 is correct.
 
-No SQL migration needed — just verify that wherever `profiles.area` is validated or type-checked, the new `[AREA_KEY]` value is accepted.
+**No code change needed here.** Just verify:
+1. `TABLE_MAPS` in `appConfig.ts` contains `tofQuestions: '[TABLE_PREFIX]truth_or_false_questions'` for the new workgroup (step 2.1 covers this).
+2. The `[TABLE_PREFIX]truth_or_false_questions` table was created in the SQL migration (step 2.9).
+
+If either is missing, a voo/segment player will silently receive restaurant questions — the old bug this was introduced to fix.
 
 ---
 
@@ -474,9 +479,7 @@ const QUESTIONS_TABLE =
 
 File: `daily-quizine/src/components/SegmentLogo.tsx`
 
-Add a new branch before the default return for the new segment. The logo is a 38×38 container with an inline SVG (viewBox "0 0 52 52"). Use the accent color from question 9e as the stroke and glow filter color. Base the SVG path/shape on the description from question 9f.
-
-**The SVG shape MUST match the logo used on the `daily.quizine.se` landing page (`daily-quizine/landing-page.html`).** Read that file first and copy the exact paths for the matching segment card icon, updating only stroke-width to 2.5 (from 2) for the React version.
+Add a new branch before the default return for the new segment. The logo is a 38×38 container with an inline SVG (viewBox "0 0 52 52"). Use the accent color from question 9e as the stroke and glow filter color. Base the SVG path/shape on the description from question 9f:
 
 ```tsx
 if (SEGMENT === '[WORKGROUP_ID]') {
@@ -492,7 +495,7 @@ if (SEGMENT === '[WORKGROUP_ID]') {
     }}>
       <svg width="24" height="24" viewBox="0 0 52 52" fill="none"
         style={{ filter: 'drop-shadow(0 0 5px [BRAND_COLOR])' }}>
-        {/* SVG paths copied from the matching card in landing-page.html */}
+        {/* SVG paths from question 9f */}
       </svg>
     </div>
   )
@@ -501,20 +504,7 @@ if (SEGMENT === '[WORKGROUP_ID]') {
 
 ---
 
-### 2.B.6 — Score & Hall of Fame isolation
-
-**Critical:** Every segment must have its own isolated leaderboard and Hall of Fame. Scores from different segments must never appear in each other's lists.
-
-The `daily_scores` table has a `segment` column (added via `supabase/add_segment_to_daily_scores.sql`). The `dailyScores.ts` library already filters all reads and writes by `SEGMENT`. Since the new Vite config sets `__SEGMENT__` to `'[WORKGROUP_ID]'`, no extra code change is needed — the isolation is automatic as long as:
-
-1. The `segment` column exists in `daily_scores` (run the migration if not already done).
-2. The new segment's `localStoragePrefix` in `segments.ts` is unique (e.g. `'[WORKGROUP_ID]_'`) — this keeps local played-state and session data isolated too.
-
-Verify by checking `daily-quizine/src/lib/dailyScores.ts` — every Supabase query must include `.eq('segment', SEGMENT)`. If a new query is added in future, always include this filter.
-
----
-
-### 2.B.7 — `vite.config.[WORKGROUP_ID].ts`
+### 2.B.6 — `vite.config.[WORKGROUP_ID].ts`
 
 File: `daily-quizine/vite.config.[WORKGROUP_ID].ts`
 
@@ -569,19 +559,18 @@ After all changes, print a checklist for the user (include the daily-quizine blo
 ✅ product.ts — Product type and PRODUCTS array updated
 ✅ Sidebar.tsx — Admin sidebar color added
 ✅ tailwind.config.ts — Tailwind sidebar color added
-✅ remoteQuestions.ts — fetchQuestionsByIds updated with new segment's table (cross-segment battles)
 ⬜ Logo asset — Drop [LOGO_FILE] into hej-bistro-quiz/assets/ (manual step)
-✅ [workgroup_id]_tables.sql — SQL migration generated
+✅ remoteQuestions.ts — fetchQuestionsByIds updated with new segment's table (cross-segment battles)
+✅ [workgroup_id]_tables.sql — SQL migration generated (includes [TABLE_PREFIX]truth_or_false_questions)
 ⬜ Supabase migration — Applied (or pending manual run)
 ⬜ .env.local — Add any new env vars (if separate Supabase project)
 
 -- daily.quizine.se (only if opted in) --
-✅ segments.ts — CONFIGS entry added (unique localStoragePrefix)
+✅ segments.ts — CONFIGS entry added
 ✅ index.css — html[data-segment] theme block added
 ✅ categories.ts (daily) — CATEGORY_DISPLAY entries added
 ✅ questions.ts — QUESTIONS_TABLE extended
-✅ SegmentLogo.tsx — logo branch added (matching landing-page.html SVG)
-✅ Score isolation — dailyScores.ts filters by SEGMENT; migration run
+✅ SegmentLogo.tsx — new segment logo branch added
 ✅ vite.config.[WORKGROUP_ID].ts — new Vite config created
 ```
 
@@ -600,13 +589,13 @@ These are the exact files modified for every new workgroup. Always read them bef
 | `hej-bistro-quiz/src/data/categories.ts` | Category constants, getCategoriesForArea |
 | `hej-bistro-quiz/src/screens/HomeScreen.tsx` | Logo rendering, area change handler |
 | `hej-bistro-quiz/src/lib/scores.ts` | getUserProfile, Area usage |
-| `hej-bistro-quiz/src/lib/remoteQuestions.ts` | fetchQuestionsByIds — add new table for cross-segment battles |
-| `voo.quizine.se/src/lib/remoteQuestions.ts` | Same — if separate repo |
 | `hej-bistro-admin/lib/product.ts` | Product type, PRODUCTS array |
 | `hej-bistro-admin/components/Sidebar.tsx` | Sidebar color, product display |
 | `hej-bistro-admin/tailwind.config.ts` | Tailwind colors |
 | `hej-bistro-admin/lib/supabase/admin.ts` | Multi-project Supabase client |
 | `hej-bistro-admin/.env.local.example` | Env var documentation |
+| `hej-bistro-quiz/src/lib/remoteQuestions.ts` | fetchQuestionsByIds — add new table for cross-segment battles |
+| `voo.quizine.se/src/lib/remoteQuestions.ts` | Same — if separate repo |
 | `hej-bistro-admin/supabase/voo_tables.sql` | Template for new SQL migration |
 | `daily-quizine/src/config/segments.ts` | Segment config (hero text, card, flags) |
 | `daily-quizine/src/index.css` | Per-segment CSS color theme |
