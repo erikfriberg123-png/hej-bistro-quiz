@@ -11,8 +11,8 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
-import Svg, { Circle, Path, Line } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { supabase } from '../lib/supabase';
@@ -226,14 +226,11 @@ export default function AuthScreen({ navigation }: Props) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoBlock}>
-            <Svg width={100} height={100} viewBox="0 0 1024 1024" style={styles.logo}>
-              <Circle cx="512" cy="512" r="490" fill="#1A0520" />
-              <Circle cx="512" cy="512" r="490" fill="none" stroke="#9B5DE5" strokeWidth="6" opacity={0.35} />
-              <Path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
-              <Line x1="512" y1="582" x2="512" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
-              <Line x1="376" y1="764" x2="648" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
-              <Circle cx="512" cy="548" r="24" fill="#FFFFFF" opacity={0.9} />
-            </Svg>
+            <Image
+              source={require('../../assets/splash-icon.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
             <Text style={styles.tagline}>Quiz för restaurangfolk</Text>
           </View>
 
@@ -375,8 +372,8 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     marginBottom: 48,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 140,
+    height: 140,
     marginBottom: 8,
   },
   tagline: {
