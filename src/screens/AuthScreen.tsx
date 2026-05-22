@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,9 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
+import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
 import { setUsername } from '../lib/scores';
 import { fonts, radius } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext';
@@ -81,6 +83,12 @@ export default function AuthScreen({ navigation }: Props) {
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  useEffect(() => {
+    isAppleAuthAvailable().then(setAppleAvailable);
+  }, []);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -165,6 +173,23 @@ export default function AuthScreen({ navigation }: Props) {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    setError(null);
+    try {
+      const { username } = await signInWithApple();
+      if (username) {
+        try { await setUsername(username); } catch {}
+      }
+    } catch (e: any) {
+      if (e?.code !== 'ERR_REQUEST_CANCELED') {
+        setError('Apple-inloggning misslyckades. Försök igen.');
+      }
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
   const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
 
   if (awaitingConfirm) {
@@ -227,7 +252,7 @@ export default function AuthScreen({ navigation }: Props) {
         >
           <View style={styles.logoBlock}>
             <Image
-              source={require('../../assets/splash-icon.png')}
+              source={require('../../assets/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -342,6 +367,33 @@ export default function AuthScreen({ navigation }: Props) {
                 <TouchableOpacity onPress={() => switchMode('reset')} style={styles.forgotBtn}>
                   <Text style={styles.forgotText}>Glömt lösenordet?</Text>
                 </TouchableOpacity>
+              )}
+            </>
+          )}
+
+          {appleAvailable && mode !== 'reset' && (
+            <>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>eller</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              {appleLoading ? (
+                <View style={styles.appleBtnPlaceholder}>
+                  <ActivityIndicator color={colors.text1} />
+                </View>
+              ) : Platform.OS === 'web' ? (
+                <TouchableOpacity style={styles.webAppleBtn} onPress={handleAppleSignIn}>
+                  <Text style={styles.webAppleBtnText}>Logga in med Apple</Text>
+                </TouchableOpacity>
+              ) : (
+                <AppleAuthentication.AppleAuthenticationButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                  buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                  cornerRadius={14}
+                  style={styles.appleBtn}
+                  onPress={handleAppleSignIn}
+                />
               )}
             </>
           )}
@@ -476,6 +528,44 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     color: colors.pink,
     fontSize: 14,
     fontFamily: fonts.display500,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.lineStrong,
+  },
+  dividerText: {
+    color: colors.text2,
+    fontSize: 13,
+    fontFamily: fonts.display400,
+  },
+  appleBtn: {
+    width: '100%',
+    height: 52,
+  },
+  appleBtnPlaceholder: {
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  webAppleBtn: {
+    width: '100%',
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  webAppleBtnText: {
+    color: '#000000',
+    fontSize: 16,
+    fontFamily: fonts.display600,
   },
   introBtn: {
     alignItems: 'center',

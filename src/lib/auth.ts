@@ -3,11 +3,20 @@ import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
 export async function isAppleAuthAvailable(): Promise<boolean> {
+  if (Platform.OS === 'web') return true;
   if (Platform.OS !== 'ios') return false;
   return AppleAuthentication.isAvailableAsync();
 }
 
 export async function signInWithApple(): Promise<{ username: string | null }> {
+  if (Platform.OS === 'web') {
+    await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: window.location.origin },
+    });
+    return { username: null };
+  }
+
   const credential = await AppleAuthentication.signInAsync({
     requestedScopes: [
       AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
