@@ -134,7 +134,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
       {/* Swipeable pages — native uses FlatList; web renders the active card directly */}
       {Platform.OS === 'web' ? (
-        <View style={styles.flatList}>
+        <View style={styles.flatList} onLayout={onListLayout}>
           {renderPage({ item: PAGE_DEFS[page] })}
         </View>
       ) : (
