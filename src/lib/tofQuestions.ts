@@ -24,7 +24,7 @@ export const TOF_DIFFICULTY_LABEL: Record<TofDifficulty, string> = {
 
 export async function fetchTofQuestions(area: Area, difficulty: TofDifficulty): Promise<TofQuestion[]> {
   const { data, error } = await supabase
-    .from('truth_or_false_questions')
+    .from(tablesForArea(area).tofQuestions)
     .select('id, statement, answer, difficulty')
     .eq('active', true)
     .eq('difficulty', difficulty)

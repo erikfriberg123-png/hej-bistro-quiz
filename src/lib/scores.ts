@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { type Area, DEFAULT_AREA } from './branding';
-import { TABLES, tablesForArea } from './appConfig';
+import { tablesForArea } from './appConfig';
 
 export interface LeaderboardEntry {
   user_id: string;
@@ -66,7 +66,7 @@ export async function submitTofScore(totalScore: number, area: Area): Promise<vo
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from(TABLES.scores).insert({ user_id: user.id, category_id: `tof_total_${area}`, score: totalScore });
+    await supabase.from(tablesForArea(area).scores).insert({ user_id: user.id, category_id: `tof_total_${area}`, score: totalScore });
   } catch {
     // silent fail — local gameplay is unaffected
   }
@@ -74,7 +74,7 @@ export async function submitTofScore(totalScore: number, area: Area): Promise<vo
 
 export async function fetchTofLeaderboard(area: Area): Promise<TofLeaderboardEntry[]> {
   const { data, error } = await supabase
-    .from(TABLES.leaderboard)
+    .from(tablesForArea(area).leaderboard)
     .select('user_id, username, best_score')
     .eq('category_id', `tof_total_${area}`)
     .order('best_score', { ascending: false })

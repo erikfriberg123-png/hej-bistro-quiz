@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,15 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path, Line } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as AppleAuthentication from 'expo-apple-authentication';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { supabase } from '../lib/supabase';
-import { isAppleAuthAvailable, signInWithApple } from '../lib/auth';
 import { setUsername } from '../lib/scores';
 import { fonts, radius } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext';
 import type { Colors } from '../theme/ThemeContext';
+import type { AuthStackParamList } from '../types';
+
+type Props = NativeStackScreenProps<AuthStackParamList, 'Auth'>;
 
 const RL_KEY = 'auth_rate_limit';
 const MAX_ATTEMPTS = 5;
@@ -68,7 +70,7 @@ function mapError(msg: string): string {
   return ERROR_MAP[msg] ?? 'Något gick fel. Försök igen.';
 }
 
-export default function AuthScreen() {
+export default function AuthScreen({ navigation }: Props) {
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [mode, setMode] = useState<Mode>('signin');
@@ -78,13 +80,7 @@ export default function AuthScreen() {
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const [appleAvailable, setAppleAvailable] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
-
-  useEffect(() => {
-    isAppleAuthAvailable().then(setAppleAvailable);
-  }, []);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -166,24 +162,6 @@ export default function AuthScreen() {
       setError('Något gick fel. Försök igen.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAppleSignIn = async () => {
-    setAppleLoading(true);
-    setError(null);
-    try {
-      const { username } = await signInWithApple();
-      if (username) {
-        try { await setUsername(username); } catch {}
-      }
-      // App.tsx switches to main stack via onAuthStateChange
-    } catch (e: any) {
-      if (e?.code !== 'ERR_REQUEST_CANCELED') {
-        setError('Apple-inloggning misslyckades. Försök igen.');
-      }
-    } finally {
-      setAppleLoading(false);
     }
   };
 
@@ -371,31 +349,12 @@ export default function AuthScreen() {
             </>
           )}
 
-          {appleAvailable && mode !== 'reset' && (
-            <>
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>eller</Text>
-                <View style={styles.dividerLine} />
-              </View>
-              {appleLoading
-                ? (
-                  <View style={styles.appleBtnPlaceholder}>
-                    <ActivityIndicator color="#1a0010" />
-                  </View>
-                )
-                : (
-                  <AppleAuthentication.AppleAuthenticationButton
-                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                    buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-                    cornerRadius={14}
-                    style={styles.appleBtn}
-                    onPress={handleAppleSignIn}
-                  />
-                )
-              }
-            </>
-          )}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Onboarding')}
+            style={styles.introBtn}
+          >
+            <Text style={styles.introText}>Se om introduktionen</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -480,31 +439,6 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     fontSize: 17,
     fontFamily: fonts.display700,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.lineStrong,
-  },
-  dividerText: {
-    color: colors.text2,
-    fontSize: 13,
-    fontFamily: fonts.display400,
-  },
-  appleBtn: {
-    width: '100%',
-    height: 52,
-  },
-  appleBtnPlaceholder: {
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -545,6 +479,15 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     color: colors.pink,
     fontSize: 14,
     fontFamily: fonts.display500,
+  },
+  introBtn: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  introText: {
+    color: colors.text3,
+    fontSize: 13,
+    fontFamily: fonts.display400,
   },
   resetBackRow: {
     marginBottom: 20,
