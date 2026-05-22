@@ -10,6 +10,7 @@ import {
   LayoutChangeEvent,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,13 +26,15 @@ type AccentKey = 'pink' | 'yellow' | 'cyan' | 'wrong';
 
 const PAGE_DEFS = [
   {
-    emoji: '🍽️',
+    image: require('../../assets/splash-icon.png') as number,
+    emoji: null,
     neon: '~ välkommen ~',
     title: 'Välkommen till\nQuizine!',
     body: 'Det roligaste sättet att lära sig mer om mat, dryck och restaurangbranschen.',
     accentKey: 'pink' as AccentKey,
   },
   {
+    image: null,
     emoji: '🏆',
     neon: '~ samla XP ~',
     title: 'Tävla med\ndina kollegor',
@@ -39,6 +42,7 @@ const PAGE_DEFS = [
     accentKey: 'yellow' as AccentKey,
   },
   {
+    image: null,
     emoji: '👥',
     neon: '~ hitta varandra ~',
     title: 'Lägg till\nvänner',
@@ -46,6 +50,7 @@ const PAGE_DEFS = [
     accentKey: 'cyan' as AccentKey,
   },
   {
+    image: null,
     emoji: '⚔️',
     neon: '~ vem är bäst? ~',
     title: 'Battle-läget',
@@ -99,7 +104,11 @@ export default function OnboardingScreen({ navigation }: Props) {
       <View style={styles.content}>
         <Text style={[styles.neonLabel, { color: pageAccent }]}>{item.neon}</Text>
         <View style={[styles.emojiRing, { borderColor: pageAccent, shadowColor: pageAccent }]}>
-          <Text style={styles.emoji}>{item.emoji}</Text>
+          {item.image ? (
+            <Image source={item.image} style={styles.ringImage} resizeMode="contain" />
+          ) : (
+            <Text style={styles.emoji}>{item.emoji}</Text>
+          )}
         </View>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.body}>{item.body}</Text>
@@ -238,7 +247,11 @@ const makeStyles = (colors: Colors, listWidth: number) => StyleSheet.create({
     elevation: 8,
   },
   emoji: {
-    fontSize: 46,
+    fontSize: 54,
+  },
+  ringImage: {
+    width: 72,
+    height: 72,
   },
   title: {
     color: colors.text1,
