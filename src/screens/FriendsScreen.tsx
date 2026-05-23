@@ -258,6 +258,82 @@ export default function FriendsScreen({ navigation }: Props) {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
+        {/* Pending battles — my turn */}
+        {!loading && (() => {
+          const myTurnBattles = Object.entries(activeBattles).filter(([, b]) => {
+            const state = computeBattleState(b);
+            return (b.creator_id === myUserId && state.nextTurn === 'creator') ||
+                   (b.opponent_id === myUserId && state.nextTurn === 'opponent');
+          });
+          if (myTurnBattles.length === 0) return null;
+          return (
+            <View style={styles.myTurnSection}>
+              <Text style={styles.myTurnLabel}>DIN TUR ⚔️</Text>
+              {myTurnBattles.map(([friendId, battle]) => {
+                const friend = friends.find(f => f.user_id === friendId);
+                const friendName = friend?.username
+                  ?? (battle.creator_id === myUserId ? battle.opponent_name : battle.creator_name)
+                  ?? 'Okänd';
+                const role: 'creator' | 'opponent' = battle.creator_id === myUserId ? 'creator' : 'opponent';
+                const isNewChallenge = role === 'opponent' && battle.opponent_turns.length === 0;
+                return (
+                  <View key={battle.id} style={styles.myTurnCard}>
+                    <View style={styles.myTurnCardInfo}>
+                      <Text style={styles.myTurnCardEmoji}>{isNewChallenge ? '⚔️' : '⚡'}</Text>
+                      <View>
+                        <Text style={styles.myTurnCardTitle}>
+                          {isNewChallenge ? `${friendName} utmanar dig!` : `Din tur mot ${friendName}`}
+                        </Text>
+                        <Text style={styles.myTurnCardSub}>
+                          {isNewChallenge ? 'Acceptera och spela din omgång' : 'Välj kategori och utmana tillbaka'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.myTurnCardActions}>
+                      <TouchableOpacity
+                        onPress={() => navigation.navigate('BattleBoard', { battleId: battle.id, code: battle.code, role })}
+                        style={styles.myTurnPlayBtn}
+                      >
+                        <Text style={styles.myTurnPlayBtnText}>Spela nu</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => Alert.alert(
+                          isNewChallenge ? 'Avböj utmaning?' : 'Ge upp battle?',
+                          isNewChallenge
+                            ? `Vill du avböja ${friendName}s utmaning?`
+                            : `Vill du ge upp battlen mot ${friendName}?`,
+                          [
+                            { text: 'Avbryt', style: 'cancel' },
+                            {
+                              text: isNewChallenge ? 'Avböj' : 'Ge upp',
+                              style: 'destructive',
+                              onPress: async () => {
+                                setForfeiting(friendId);
+                                try {
+                                  await forfeitBattle(currentArea, battle.id, role);
+                                  setActiveBattles(prev => { const n = { ...prev }; delete n[friendId]; return n; });
+                                } catch {
+                                  Alert.alert('Fel', 'Kunde inte avböja. Försök igen.');
+                                } finally { setForfeiting(null); }
+                              },
+                            },
+                          ],
+                        )}
+                        style={styles.myTurnDeclineBtn}
+                        disabled={forfeiting === friendId}
+                      >
+                        <Text style={styles.myTurnDeclineBtnText}>
+                          {forfeiting === friendId ? '...' : isNewChallenge ? 'Avböj' : 'Ge upp'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })()}
+
         {/* Search */}
         <View style={styles.searchRow}>
           <TextInput
@@ -503,6 +579,37 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center',
   },
   btnRemoveText: { color: colors.text2, fontSize: 14 },
+  myTurnSection: { marginBottom: 20 },
+  myTurnLabel: {
+    color: colors.yellow, fontSize: 10.5, fontFamily: fonts.mono700,
+    letterSpacing: 0.2 * 10.5, textTransform: 'uppercase', marginBottom: 8,
+  },
+  myTurnCard: {
+    backgroundColor: `${colors.yellow}10`,
+    borderWidth: 1.5,
+    borderColor: colors.yellow,
+    borderRadius: radius.md,
+    padding: 14,
+    marginBottom: 8,
+    gap: 12,
+  },
+  myTurnCardInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  myTurnCardEmoji: { fontSize: 26 },
+  myTurnCardTitle: { color: colors.text1, fontSize: 15, fontFamily: fonts.display700 },
+  myTurnCardSub: { color: colors.text3, fontSize: 12, fontFamily: fonts.display400, marginTop: 1 },
+  myTurnCardActions: { flexDirection: 'row', gap: 10 },
+  myTurnPlayBtn: {
+    flex: 1, backgroundColor: colors.yellow, borderRadius: radius.sm,
+    paddingVertical: 10, alignItems: 'center',
+  },
+  myTurnPlayBtnText: { color: '#1a1200', fontSize: 14, fontFamily: fonts.display700 },
+  myTurnDeclineBtn: {
+    paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
+    borderRadius: radius.sm, borderWidth: 1, borderColor: colors.lineStrong,
+    backgroundColor: colors.bg2,
+  },
+  myTurnDeclineBtnText: { color: colors.text2, fontSize: 14, fontFamily: fonts.display600 },
+
   tagAccepted: { color: colors.correct, fontSize: 13, fontFamily: fonts.display500 },
   tagPending: { color: colors.text2, fontSize: 13, fontFamily: fonts.display400 },
   confirmOverlay: {
