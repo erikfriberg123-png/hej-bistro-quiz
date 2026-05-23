@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -25,7 +26,7 @@ import {
   getPendingRequests,
   getFriendStatusBatch,
 } from '../lib/friends';
-import { createBattle, findActiveBattleBetween } from '../lib/battles';
+import { Battle, createBattle, findActiveBattleBetween, forfeitBattle, getMyBattles, computeBattleState } from '../lib/battles';
 import { getUsername } from '../lib/scores';
 import { supabase } from '../lib/supabase';
 import { useGameStore } from '../store/gameStore';
@@ -49,20 +50,41 @@ export default function FriendsScreen({ navigation }: Props) {
   const [confirmRemove, setConfirmRemove] = useState<FriendProfile | null>(null);
   const [removing, setRemoving] = useState(false);
   const [creatingFor, setCreatingFor] = useState<string | null>(null);
+  const [activeBattles, setActiveBattles] = useState<Record<string, Battle>>({});
+  const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [forfeiting, setForfeiting] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
-      const [f, p] = await Promise.all([getFriends(), getPendingRequests()]);
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = user?.id ?? null;
+      setMyUserId(uid);
+
+      const [f, p, battles] = await Promise.all([
+        getFriends(),
+        getPendingRequests(),
+        getMyBattles(currentArea).catch((): Battle[] => []),
+      ]);
       setFriends(f);
       setPending(p);
+
+      const battleMap: Record<string, Battle> = {};
+      for (const b of battles) {
+        if (b.status === 'finished') continue;
+        const friendId = b.creator_id === uid ? b.opponent_id : b.creator_id;
+        if (friendId) battleMap[friendId] = b;
+      }
+      setActiveBattles(battleMap);
     } catch {
       // silent
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentArea]);
 
   useEffect(() => { loadData(); }, []);
+
+  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -128,6 +150,47 @@ export default function FriendsScreen({ navigation }: Props) {
     if (!f.createdAt) return false;
     const msAgo = Date.now() - new Date(f.createdAt).getTime();
     return msAgo < 7 * 24 * 60 * 60 * 1000;
+  };
+
+  const handleOngoingPress = (friend: FriendProfile, battle: Battle) => {
+    const state = computeBattleState(battle);
+    const isMyTurn =
+      (battle.creator_id === myUserId && state.nextTurn === 'creator') ||
+      (battle.opponent_id === myUserId && state.nextTurn === 'opponent');
+
+    if (isMyTurn) {
+      const role: 'creator' | 'opponent' = battle.creator_id === myUserId ? 'creator' : 'opponent';
+      navigation.navigate('BattleBoard', { battleId: battle.id, code: battle.code, role });
+      return;
+    }
+
+    Alert.alert(
+      'Battle pågår',
+      `Det är ${friend.username}s tur. Vill du ge upp?`,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Ge upp',
+          style: 'destructive',
+          onPress: async () => {
+            setForfeiting(friend.user_id);
+            try {
+              const role: 'creator' | 'opponent' = battle.creator_id === myUserId ? 'creator' : 'opponent';
+              await forfeitBattle(currentArea, battle.id, role);
+              setActiveBattles(prev => {
+                const next = { ...prev };
+                delete next[friend.user_id];
+                return next;
+              });
+            } catch {
+              Alert.alert('Fel', 'Kunde inte ge upp. Försök igen.');
+            } finally {
+              setForfeiting(null);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleChallenge = async (friend: FriendProfile) => {
@@ -271,29 +334,42 @@ export default function FriendsScreen({ navigation }: Props) {
                 Inga vänner ännu. Sök efter ett smeknamn för att lägga till!
               </Text>
             ) : (
-              friends.map(f => (
-                <UserRow
-                  key={f.user_id}
-                  username={f.username}
-                  isNew={isNewFriend(f)}
-                  right={
-                    <View style={styles.friendActions}>
-                      <TouchableOpacity
-                        onPress={() => handleChallenge(f)}
-                        style={styles.btnChallenge}
-                        disabled={creatingFor === f.user_id}
-                      >
-                        <Text style={styles.btnChallengeText}>
-                          {creatingFor === f.user_id ? '...' : '⚔️ Utmana'}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleRemove(f)} style={styles.btnRemove}>
-                        <Text style={styles.btnRemoveText}>✕</Text>
-                      </TouchableOpacity>
-                    </View>
-                  }
-                />
-              ))
+              friends.map(f => {
+                const activeBattle = activeBattles[f.user_id];
+                const isOngoing = !!activeBattle;
+                const isMyTurnNow = isOngoing && (() => {
+                  const state = computeBattleState(activeBattle);
+                  return (activeBattle.creator_id === myUserId && state.nextTurn === 'creator') ||
+                         (activeBattle.opponent_id === myUserId && state.nextTurn === 'opponent');
+                })();
+                return (
+                  <UserRow
+                    key={f.user_id}
+                    username={f.username}
+                    isNew={isNewFriend(f)}
+                    right={
+                      <View style={styles.friendActions}>
+                        <TouchableOpacity
+                          onPress={() => isOngoing ? handleOngoingPress(f, activeBattle) : handleChallenge(f)}
+                          style={[styles.btnChallenge, isOngoing && (isMyTurnNow ? styles.btnMyTurn : styles.btnOngoing)]}
+                          disabled={creatingFor === f.user_id || forfeiting === f.user_id}
+                        >
+                          <Text style={[styles.btnChallengeText, isOngoing && styles.btnOngoingText]}>
+                            {creatingFor === f.user_id || forfeiting === f.user_id
+                              ? '...'
+                              : isOngoing
+                                ? isMyTurnNow ? '⚡ Din tur' : '⏳ Pågår'
+                                : '⚔️ Utmana'}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleRemove(f)} style={styles.btnRemove}>
+                          <Text style={styles.btnRemoveText}>✕</Text>
+                        </TouchableOpacity>
+                      </View>
+                    }
+                  />
+                );
+              })
             )}
           </View>
         )}
@@ -415,6 +491,13 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     borderWidth: 1, borderColor: colors.cyan, backgroundColor: 'rgba(54, 224, 224, 0.08)',
   },
   btnChallengeText: { color: colors.cyan, fontSize: 13, fontFamily: fonts.display600 },
+  btnOngoing: {
+    borderColor: '#F5C542', backgroundColor: 'rgba(245, 197, 66, 0.12)',
+  },
+  btnMyTurn: {
+    borderColor: '#F5C542', backgroundColor: 'rgba(245, 197, 66, 0.25)',
+  },
+  btnOngoingText: { color: '#F5C542' },
   btnRemove: {
     width: 32, height: 32, borderRadius: radius.sm,
     backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center',

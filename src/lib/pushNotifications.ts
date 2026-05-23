@@ -51,21 +51,9 @@ export async function sendPushToUser(
   body: string,
   data?: Record<string, unknown>,
 ): Promise<void> {
-  if (Platform.OS === 'web') return;
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('push_token')
-    .eq('id', userId)
-    .single();
-
-  const token = (profile as any)?.push_token;
-  if (!token) return;
-
   try {
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: token, title, body, data, sound: 'default' }),
+    await supabase.functions.invoke('send-push', {
+      body: { userId, title, body, data },
     });
   } catch {
     // non-fatal — game still works without push

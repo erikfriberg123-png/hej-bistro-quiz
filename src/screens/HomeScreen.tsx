@@ -35,7 +35,6 @@ import { StoryModal } from '../components/StoryModal';
 import { fonts, radius, spacing } from '../theme/tokens';
 import { useTheme } from '../theme/ThemeContext';
 import type { Colors } from '../theme/ThemeContext';
-import Svg, { Circle, Path, Line } from 'react-native-svg';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -347,14 +346,7 @@ export default function HomeScreen({ navigation }: Props) {
             {AREA_BRANDING[area].neonLine}
           </Text>
           {area === 'krogen' ? (
-            <Svg width={56} height={56} viewBox="0 0 1024 1024" style={styles.logo}>
-              <Circle cx="512" cy="512" r="490" fill="#1A0520" />
-              <Circle cx="512" cy="512" r="490" fill="none" stroke="#9B5DE5" strokeWidth="6" opacity={0.35} />
-              <Path d="M 188 168 L 512 582 L 836 168" fill="none" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
-              <Line x1="512" y1="582" x2="512" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
-              <Line x1="376" y1="764" x2="648" y2="764" stroke="#9B5DE5" strokeWidth="28" strokeLinecap="round" />
-              <Circle cx="512" cy="548" r="24" fill="#FFFFFF" opacity={0.9} />
-            </Svg>
+            <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
           ) : (
             <Image source={require('../../assets/health-icon-1-stethoscope.png')} style={styles.logo} />
           )}

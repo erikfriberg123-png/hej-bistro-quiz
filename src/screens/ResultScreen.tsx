@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -43,16 +43,17 @@ export default function ResultScreen({ route, navigation }: Props) {
     setCelebrationEffects([...all].sort(() => Math.random() - 0.5).slice(0, 3));
   }, []);
 
+  const animRef = useRef(0);
   useEffect(() => {
-    const target = totalScore;
     const duration = 1400;
     const steps = 50;
-    const increment = target / steps;
-    let current = 0;
+    const increment = totalScore / steps;
+    let step = 0;
     const interval = setInterval(() => {
-      current = Math.min(current + increment, target);
-      setDisplayScore(Math.round(current));
-      if (current >= target) clearInterval(interval);
+      step++;
+      animRef.current = Math.min(step * increment, totalScore);
+      setDisplayScore(Math.round(animRef.current));
+      if (step >= steps) clearInterval(interval);
     }, duration / steps);
     return () => clearInterval(interval);
   }, [totalScore]);

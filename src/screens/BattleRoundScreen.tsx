@@ -157,15 +157,18 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       );
 
       const phase = computeBattlePhase(updatedBattle);
-      const targetId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
-      const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
-      if (targetId) {
+      if (phase !== 'finished' && phase !== 'waiting_opponent') {
+        const notifyOpponent = phase === 'opponent_respond' || phase === 'opponent_challenge';
+        const targetId = notifyOpponent ? updatedBattle.opponent_id : updatedBattle.creator_id;
+        const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
         const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
-        const title = 'Quizine ⚔️';
-        const body = isChallenge
-          ? `${myDisplayName} utmanade dig! Dags att svara.`
-          : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
-        sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
+        if (targetId) {
+          const title = 'Quizine ⚔️';
+          const body = isChallenge
+            ? `${myDisplayName} utmanade dig! Dags att svara.`
+            : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
+          sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
+        }
       }
     } catch {
       Alert.alert('Nätverksfel', 'Omgången sparades inte. Kontrollera anslutningen och försök igen.');

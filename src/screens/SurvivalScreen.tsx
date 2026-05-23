@@ -67,6 +67,9 @@ export default function SurvivalScreen({ route, navigation }: Props) {
   const questionStartRef = useRef<number>(Date.now());
   const isAdvancingRef = useRef(false);
   const livesRef = useRef(MAX_LIVES);
+  const scoreRef = useRef(0);
+  const correctAnswersRef = useRef(0);
+  const maxStreakRef = useRef(0);
 
   const nextBtnProgress = useSharedValue(0);
   const nextBtnStyle = useAnimatedStyle(() => ({ opacity: nextBtnProgress.value }));
@@ -110,25 +113,18 @@ export default function SurvivalScreen({ route, navigation }: Props) {
     isAdvancingRef.current = true;
 
     if (livesLeft <= 0) {
-      // Use functional setters to get accurate final values
-      setScore(s => {
-        setCorrectAnswers(c => {
-          setMaxStreak(ms => {
-            const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
-            submitSurvivalScore(s, currentArea);
-            navigation.replace('SurvivalResult', {
-              score: s,
-              correctAnswers: c,
-              maxStreak: ms,
-              categoryId,
-              isNewHighscore,
-              previousHighscore,
-            });
-            return ms;
-          });
-          return c;
-        });
-        return s;
+      const s = scoreRef.current;
+      const c = correctAnswersRef.current;
+      const ms = maxStreakRef.current;
+      const { isNewHighscore, previousHighscore } = checkSurvivalHighscore(categoryId, s);
+      submitSurvivalScore(s, currentArea);
+      navigation.replace('SurvivalResult', {
+        score: s,
+        correctAnswers: c,
+        maxStreak: ms,
+        categoryId,
+        isNewHighscore,
+        previousHighscore,
       });
       return;
     }
@@ -167,10 +163,13 @@ export default function SurvivalScreen({ route, navigation }: Props) {
       const newStreak = streak + 1;
       const mult = streakMultiplier(newStreak);
       const points = Math.round((100 + timeBonus(timeRemaining)) * mult);
+      scoreRef.current += points;
+      correctAnswersRef.current += 1;
+      maxStreakRef.current = Math.max(maxStreakRef.current, newStreak);
       setStreak(newStreak);
-      setMaxStreak(ms => Math.max(ms, newStreak));
-      setScore(s => s + points);
-      setCorrectAnswers(c => c + 1);
+      setMaxStreak(maxStreakRef.current);
+      setScore(scoreRef.current);
+      setCorrectAnswers(correctAnswersRef.current);
       const all: EffectType[] = ['slowStars', 'bigBalloons', 'fireworks', 'champagne'];
       setCelebrationEffects([...all].sort(() => Math.random() - 0.5).slice(0, 1));
       setShowWow(currentQuestion.difficulty === 'hard' && newStreak >= 5);

@@ -77,9 +77,11 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
   useEffect(() => {
     if (lastRoundCorrect === undefined) return;
     const n = lastRoundCorrect;
-    if (n >= 1) setTimeout(() => play('battle_star_1'), 300);
-    if (n >= 2) setTimeout(() => play('battle_star_2'), 800);
-    if (n >= 3) setTimeout(() => play('battle_star_3'), 1300);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    if (n >= 1) timers.push(setTimeout(() => play('battle_star_1'), 300));
+    if (n >= 2) timers.push(setTimeout(() => play('battle_star_2'), 800));
+    if (n >= 3) timers.push(setTimeout(() => play('battle_star_3'), 1300));
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   const loadBattle = useCallback(async () => {
