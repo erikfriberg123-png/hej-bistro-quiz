@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -11,18 +11,18 @@ import {
 } from '../lib/tofQuestions';
 import { submitTofScore } from '../lib/scores';
 import { useGameStore } from '../store/gameStore';
+import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay';
+import { play } from '../services/SoundManager';
 import { fonts, radius } from '../theme/tokens';
 import { useTheme } from '../theme/ThemeContext';
 import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SantEllerFalsktResult'>;
 
-function resultTitle(correct: number, allCorrect: boolean, isLastRound: boolean): string {
-  if (allCorrect && isLastRound) return '🏆 Du klarade allt!';
-  if (allCorrect) return '🎉 Perfekt! Nästa nivå väntar!';
+function imperfectTitle(correct: number): string {
   const max = TOF_QUESTIONS_PER_ROUND;
   if (correct >= max * 0.8) return '🎯 Riktigt bra!';
-  if (correct >= max * 0.6) return '👏 Godkänt!';
+  if (correct >= max * 0.6) return '👏 Nästan!';
   if (correct >= max * 0.4) return '💪 Fortsätt öva!';
   return '🤔 Tufft det här!';
 }
@@ -30,32 +30,83 @@ function resultTitle(correct: number, allCorrect: boolean, isLastRound: boolean)
 export default function SantEllerFalsktResultScreen({ route, navigation }: Props) {
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const { round, score, correctAnswers, cumulativeScore } = route.params;
+  const { round, score, correctAnswers, isNewBest, cumulativeScore } = route.params;
   const isLastRound = round >= TOF_TOTAL_ROUNDS;
   const allCorrect = correctAnswers === TOF_QUESTIONS_PER_ROUND;
-  const canAdvance = allCorrect && !isLastRound;
   const currentArea = useGameStore(s => s.currentArea);
 
-  React.useEffect(() => {
-    if (isLastRound) submitTofScore(cumulativeScore, currentArea);
+  const [celebrationEffects, setCelebrationEffects] = useState<EffectType[]>([]);
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    if (isLastRound && allCorrect) submitTofScore(cumulativeScore, currentArea);
   }, []);
 
+  useEffect(() => {
+    if (allCorrect) {
+      play(isLastRound ? 'game_end_win' : 'level_up');
+      setCelebrationEffects(
+        isLastRound
+          ? ['slowStars', 'bigBalloons', 'fireworks', 'champagne']
+          : ['slowStars', 'bigBalloons'],
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const steps = 40;
+    const duration = 900;
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      setDisplayScore(Math.round(Math.min(step / steps, 1) * score));
+      if (step >= steps) clearInterval(interval);
+    }, duration / steps);
+    return () => clearInterval(interval);
+  }, [score]);
+
   const maxScore = TOF_QUESTIONS_PER_ROUND * TOF_POINTS_PER_CORRECT;
-  const percentage = Math.round((score / maxScore) * 100);
+  const percentage = Math.round((correctAnswers / TOF_QUESTIONS_PER_ROUND) * 100);
   const difficultyLabel = TOF_DIFFICULTY_LABEL[TOF_ROUND_DIFFICULTIES[round - 1]];
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg1} />
 
+      {allCorrect && <CelebrationOverlay effects={celebrationEffects} showWow />}
+
       <View style={styles.container}>
         <Text style={styles.modeLabel}>Sant eller Falskt</Text>
         <Text style={styles.levelLabel}>Nivå {round} — {difficultyLabel}</Text>
 
+        {/* Celebration headline */}
+        {allCorrect && (
+          <View style={styles.perfectBanner}>
+            <Text style={styles.perfectEmoji}>{isLastRound ? '🏆' : '🎉'}</Text>
+            <Text style={styles.perfectTitle}>
+              {isLastRound ? 'Du klarade allt!' : 'Perfekt! Alla rätt!'}
+            </Text>
+            <Text style={styles.perfectSub}>
+              {isLastRound
+                ? 'Tre nivåer. Inget fel. Imponerande!'
+                : 'Nästa nivå är upplåst!'}
+            </Text>
+          </View>
+        )}
+
         {/* Score card */}
-        <View style={styles.scoreCard}>
-          <Text style={styles.resultTitle}>{resultTitle(correctAnswers, allCorrect, isLastRound)}</Text>
-          <Text style={styles.scoreValue}>{score}</Text>
+        <View style={[styles.scoreCard, allCorrect && styles.scoreCardPerfect]}>
+          {!allCorrect && (
+            <Text style={styles.imperfectTitle}>{imperfectTitle(correctAnswers)}</Text>
+          )}
+          {isNewBest && (
+            <View style={styles.newBestBadge}>
+              <Text style={styles.newBestText}>🏅 NYTT REKORD</Text>
+            </View>
+          )}
+          <Text style={[styles.scoreValue, allCorrect && styles.scoreValuePerfect]}>
+            {displayScore}
+          </Text>
           <Text style={styles.scoreUnit}>poäng</Text>
 
           <View style={styles.statRow}>
@@ -76,13 +127,13 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
           </View>
         </View>
 
-        {/* Level progress bar */}
+        {/* Level progress pips */}
         <View style={styles.levelRow}>
           {Array.from({ length: TOF_TOTAL_ROUNDS }).map((_, i) => {
             const lvl = i + 1;
-            const isDone = lvl < round;
-            const isCurrent = lvl === round;
-            const isLocked = lvl > round;
+            const isDone = lvl < round || (allCorrect && lvl === round);
+            const isCurrent = lvl === round && !allCorrect;
+            const isLocked = !isDone && !isCurrent;
             return (
               <View
                 key={lvl}
@@ -104,17 +155,18 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
           })}
         </View>
 
+        {/* Hint when not perfect */}
         {!allCorrect && !isLastRound && (
           <View style={styles.hintBanner}>
             <Text style={styles.hintText}>
-              Svara rätt på alla {TOF_QUESTIONS_PER_ROUND} frågor för att låsa upp nästa nivå
+              Svara rätt på alla {TOF_QUESTIONS_PER_ROUND} för att låsa upp nästa nivå
             </Text>
           </View>
         )}
 
         {/* Actions */}
         <View style={styles.actionGroup}>
-          {canAdvance && (
+          {allCorrect && !isLastRound && (
             <TouchableOpacity
               onPress={() => navigation.replace('SantEllerFalskt', { round: round + 1, cumulativeScore })}
               style={styles.btnPrimary}
@@ -124,17 +176,7 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
             </TouchableOpacity>
           )}
 
-          {!canAdvance && !isLastRound && (
-            <TouchableOpacity
-              onPress={() => navigation.replace('SantEllerFalskt', { round, cumulativeScore: cumulativeScore - score })}
-              style={styles.btnPrimary}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.btnPrimaryText}>Försök igen  ↺</Text>
-            </TouchableOpacity>
-          )}
-
-          {isLastRound && (
+          {allCorrect && isLastRound && (
             <TouchableOpacity
               onPress={() => navigation.replace('SantEllerFalskt', { round: 1 })}
               style={styles.btnPrimary}
@@ -144,13 +186,16 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
             </TouchableOpacity>
           )}
 
-          {!isLastRound && (
+          {!allCorrect && (
             <TouchableOpacity
-              onPress={() => navigation.replace('SantEllerFalskt', { round: 1 })}
-              style={styles.btnSecondary}
+              onPress={() => navigation.replace('SantEllerFalskt', {
+                round,
+                cumulativeScore: cumulativeScore - score,
+              })}
+              style={styles.btnPrimary}
               activeOpacity={0.85}
             >
-              <Text style={styles.btnSecondaryText}>Börja om från nivå 1</Text>
+              <Text style={styles.btnPrimaryText}>Försök igen  ↺</Text>
             </TouchableOpacity>
           )}
 
@@ -190,6 +235,27 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     marginTop: -6,
   },
 
+  perfectBanner: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  perfectEmoji: {
+    fontSize: 52,
+    marginBottom: 4,
+  },
+  perfectTitle: {
+    color: colors.text1,
+    fontSize: 26,
+    fontFamily: fonts.display700,
+    textAlign: 'center',
+  },
+  perfectSub: {
+    color: colors.text2,
+    fontSize: 14,
+    fontFamily: fonts.display400,
+    textAlign: 'center',
+  },
+
   scoreCard: {
     width: '100%',
     backgroundColor: colors.bg2,
@@ -200,9 +266,47 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     borderColor: colors.lineStrong,
     gap: 2,
   },
-  resultTitle: { color: colors.text2, fontSize: 14, fontFamily: fonts.display600, marginBottom: 6, textAlign: 'center' },
-  scoreValue: { color: colors.pink, fontSize: 64, fontFamily: fonts.display700, lineHeight: 70 },
-  scoreUnit: { color: colors.text2, fontSize: 13, fontFamily: fonts.display600, marginBottom: 16 },
+  scoreCardPerfect: {
+    borderColor: colors.correct,
+    borderWidth: 1.5,
+  },
+  imperfectTitle: {
+    color: colors.text2,
+    fontSize: 14,
+    fontFamily: fonts.display600,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  newBestBadge: {
+    backgroundColor: `${colors.yellow}22`,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.yellow,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginBottom: 6,
+  },
+  newBestText: {
+    color: colors.yellow,
+    fontSize: 11,
+    fontFamily: fonts.display700,
+    letterSpacing: 1,
+  },
+  scoreValue: {
+    color: colors.pink,
+    fontSize: 64,
+    fontFamily: fonts.display700,
+    lineHeight: 70,
+  },
+  scoreValuePerfect: {
+    color: colors.correct,
+  },
+  scoreUnit: {
+    color: colors.text2,
+    fontSize: 13,
+    fontFamily: fonts.display600,
+    marginBottom: 16,
+  },
   statRow: { flexDirection: 'row', width: '100%', marginTop: 4 },
   stat: { flex: 1, alignItems: 'center', gap: 3 },
   statValue: { color: colors.text1, fontSize: 20, fontFamily: fonts.display700 },
