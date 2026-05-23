@@ -327,6 +327,46 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Pending challenges — top priority */}
+        {pendingBattles.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.yellow }]}>
+              UTMANINGAR ({pendingBattles.length}) ⚔️
+            </Text>
+            {pendingBattles.map(b => (
+              <View key={b.id} style={styles.challengeCard}>
+                <View style={styles.challengeCardLeft}>
+                  <Text style={styles.challengeCardName}>{b.creator_name} utmanar dig!</Text>
+                  <Text style={styles.challengeCardCode}>Kod: {b.code}</Text>
+                </View>
+                <View style={styles.challengeCardBtns}>
+                  <TouchableOpacity onPress={() => handleDeclineChallenge(b)} style={styles.declineBtn}>
+                    <Text style={styles.declineBtnText}>Avböj</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleAcceptChallenge(b)} style={styles.acceptBtn}>
+                    <Text style={styles.acceptBtnText}>Acceptera</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Ongoing battles — before the create/join panel */}
+        {myBattles.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Pågående battles</Text>
+            {myBattles.map(b => (
+              <ActiveBattleCard
+                key={b.id}
+                battle={b}
+                userId={userId}
+                onPress={() => resumeBattle(b)}
+              />
+            ))}
+          </View>
+        )}
+
         {tab === 'create' && (
           <View style={styles.panel}>
             <Text style={styles.panelTitle}>Ny battle</Text>
@@ -412,37 +452,6 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
             </TouchableOpacity>
           </View>
         )}
-
-        {myBattles.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Pågående battles</Text>
-            {myBattles.map(b => (
-              <ActiveBattleCard key={b.id} battle={b} onPress={() => resumeBattle(b)} />
-            ))}
-          </View>
-        )}
-
-        {pendingBattles.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Utmaningar ({pendingBattles.length})</Text>
-            {pendingBattles.map(b => (
-              <View key={b.id} style={styles.challengeCard}>
-                <View style={styles.challengeCardLeft}>
-                  <Text style={styles.challengeCardName}>{b.creator_name} utmanar dig!</Text>
-                  <Text style={styles.challengeCardCode}>Kod: {b.code}</Text>
-                </View>
-                <View style={styles.challengeCardBtns}>
-                  <TouchableOpacity onPress={() => handleDeclineChallenge(b)} style={styles.declineBtn}>
-                    <Text style={styles.declineBtnText}>Avböj</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleAcceptChallenge(b)} style={styles.acceptBtn}>
-                    <Text style={styles.acceptBtnText}>Acceptera</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
       </ScrollView>
       <NeonTabBar
         activeRoute="ChallengeLobby"
@@ -452,14 +461,22 @@ export default function ChallengeLobbyScreen({ route, navigation }: Props) {
   );
 }
 
-function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => void }) {
+function ActiveBattleCard({ battle, userId, onPress }: { battle: Battle; userId: string | null; onPress: () => void }) {
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const state = computeBattleState(battle);
   const opponent = battle.opponent_name ?? 'Väntar på motståndare...';
   const rounds = Math.max(battle.creator_turns.length, battle.opponent_turns.length);
+  const isMyTurn = userId && (
+    (battle.creator_id === userId && state.nextTurn === 'creator') ||
+    (battle.opponent_id === userId && state.nextTurn === 'opponent')
+  );
   return (
-    <TouchableOpacity style={styles.battleCard} onPress={onPress} activeOpacity={0.75}>
+    <TouchableOpacity
+      style={[styles.battleCard, isMyTurn && styles.battleCardMyTurn]}
+      onPress={onPress}
+      activeOpacity={0.75}
+    >
       <View style={styles.battleCardLeft}>
         <Text style={styles.battleCardOpponent} numberOfLines={1}>vs {opponent}</Text>
         <Text style={styles.battleCardMeta}>
@@ -467,8 +484,12 @@ function ActiveBattleCard({ battle, onPress }: { battle: Battle; onPress: () => 
         </Text>
       </View>
       <View style={styles.battleCardRight}>
-        <Text style={styles.battleCardCode}>{battle.code}</Text>
-        <Text style={styles.battleCardArrow}>→</Text>
+        {isMyTurn ? (
+          <Text style={styles.battleCardMyTurnLabel}>Din tur ⚡</Text>
+        ) : (
+          <Text style={styles.battleCardCode}>{battle.code}</Text>
+        )}
+        <Text style={[styles.battleCardArrow, isMyTurn && { color: colors.yellow }]}>→</Text>
       </View>
     </TouchableOpacity>
   );
@@ -645,6 +666,11 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   battleCardRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   battleCardCode: { color: colors.text4, fontSize: 12, fontFamily: fonts.mono700, letterSpacing: 2 },
   battleCardArrow: { color: colors.cyan, fontSize: 18, fontFamily: fonts.display600 },
+  battleCardMyTurn: {
+    borderColor: colors.yellow,
+    backgroundColor: `${colors.yellow}0D`,
+  },
+  battleCardMyTurnLabel: { color: colors.yellow, fontSize: 12, fontFamily: fonts.display700 },
 
   challengeCard: {
     backgroundColor: 'rgba(54, 224, 224, 0.05)',
