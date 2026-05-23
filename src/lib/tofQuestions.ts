@@ -29,6 +29,7 @@ export async function fetchTofQuestions(area: Area, difficulty: TofDifficulty): 
     .select('id, statement, answer, difficulty')
     .eq('active', true)
     .eq('difficulty', difficulty)
+    .eq('area', area)
     .is('deleted_at', null)
     .limit(100);
 

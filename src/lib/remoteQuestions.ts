@@ -7,7 +7,7 @@ import { type Area, DEFAULT_AREA } from './branding';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function cacheKey(area: Area) {
-  return `remote-questions-v2-${area}`;
+  return `remote-questions-v3-${area}`;
 }
 
 interface Cache {
@@ -44,7 +44,7 @@ export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Q
   try {
     const { data, error } = await supabase
       .from(tablesForArea(area).questions)
-      .select('*')
+      .select('id, category_id, question, answers, correct_index, difficulty, active, image_url, forklaring')
       .eq('active', true)
       .order('created_at', { ascending: true });
 

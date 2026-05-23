@@ -160,13 +160,16 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       if (phase !== 'finished' && phase !== 'waiting_opponent') {
         const notifyOpponent = phase === 'opponent_respond' || phase === 'opponent_challenge';
         const targetId = notifyOpponent ? updatedBattle.opponent_id : updatedBattle.creator_id;
-        const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
+        // Name shown in the message = the OTHER player from the receiver
+        const otherName = notifyOpponent
+          ? updatedBattle.creator_name
+          : (updatedBattle.opponent_name ?? 'Motståndare');
         const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
         if (targetId) {
           const title = 'Quizine ⚔️';
           const body = isChallenge
-            ? `${myDisplayName} utmanade dig! Dags att svara.`
-            : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
+            ? `${otherName} utmanade dig! Dags att svara.`
+            : `${otherName} svarade! Nu är det din tur att utmana.`;
           sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
         }
       }

@@ -26,7 +26,7 @@ type AccentKey = 'pink' | 'yellow' | 'cyan' | 'wrong';
 
 const PAGE_DEFS = [
   {
-    image: require('../../assets/splash-icon.png') as number,
+    image: require('../../assets/logo.png') as number,
     emoji: null,
     neon: '~ välkommen ~',
     title: 'Välkommen till\nQuizine!',

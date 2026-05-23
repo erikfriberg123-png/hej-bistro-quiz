@@ -73,7 +73,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
         setLoading(false);
       })
       .catch(() => { setNoQuestions(true); setLoading(false); });
-  }, []);
+  }, [currentArea, difficulty]);
 
   const advanceQuestion = useCallback((nextIndex: number, finalScore: number, finalCorrect: number) => {
     if (nextIndex >= Math.min(questionsRef.current.length, TOF_QUESTIONS_PER_ROUND)) {
