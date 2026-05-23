@@ -62,6 +62,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
   const scoreRef = useRef(0);
   const correctRef = useRef(0);
   const questionsRef = useRef<TofQuestion[]>([]);
+  const handleAnswerRef = useRef<(goesRight: boolean) => void>(() => {});
 
   useEffect(() => {
     fetchTofQuestions(currentArea, difficulty)
@@ -149,6 +150,7 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       showFeedbackThen(isCorrect ? 'correct' : 'wrong', currentIndex + 1, newScore, newCorrect);
     });
   }, [currentIndex, pan, showFeedbackThen]);
+  handleAnswerRef.current = handleAnswer;
 
   const handleTimerExpire = useCallback(() => {
     if (answeredRef.current) return;
@@ -191,8 +193,8 @@ export default function SantEllerFalsktScreen({ route, navigation }: Props) {
       onPanResponderMove: Animated.event([null, { dx: pan.x }], { useNativeDriver: false }),
       onPanResponderRelease: (_, g) => {
         if (answeredRef.current) return;
-        if (g.dx > SWIPE_THRESHOLD) handleAnswer(true);
-        else if (g.dx < -SWIPE_THRESHOLD) handleAnswer(false);
+        if (g.dx > SWIPE_THRESHOLD) handleAnswerRef.current(true);
+        else if (g.dx < -SWIPE_THRESHOLD) handleAnswerRef.current(false);
         else Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       },
     })

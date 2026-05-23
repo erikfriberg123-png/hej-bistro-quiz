@@ -124,15 +124,35 @@ export default function SantEllerFalsktResultScreen({ route, navigation }: Props
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            onPress={() => navigation.replace('SantEllerFalskt', { round: 1 })}
-            style={canAdvance ? styles.btnSecondary : styles.btnPrimary}
-            activeOpacity={0.85}
-          >
-            <Text style={canAdvance ? styles.btnSecondaryText : styles.btnPrimaryText}>
-              Börja om  ↺
-            </Text>
-          </TouchableOpacity>
+          {!canAdvance && !isLastRound && (
+            <TouchableOpacity
+              onPress={() => navigation.replace('SantEllerFalskt', { round, cumulativeScore: cumulativeScore - score })}
+              style={styles.btnPrimary}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.btnPrimaryText}>Försök igen  ↺</Text>
+            </TouchableOpacity>
+          )}
+
+          {isLastRound && (
+            <TouchableOpacity
+              onPress={() => navigation.replace('SantEllerFalskt', { round: 1 })}
+              style={styles.btnPrimary}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.btnPrimaryText}>Börja om  ↺</Text>
+            </TouchableOpacity>
+          )}
+
+          {!isLastRound && (
+            <TouchableOpacity
+              onPress={() => navigation.replace('SantEllerFalskt', { round: 1 })}
+              style={styles.btnSecondary}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.btnSecondaryText}>Börja om från nivå 1</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Home')}
