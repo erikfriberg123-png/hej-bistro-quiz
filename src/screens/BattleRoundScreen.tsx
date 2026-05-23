@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { submitTurn, computeBattlePhase } from '../lib/battles';
+import { submitTurn, computeBattlePhase, computeBattleState } from '../lib/battles';
 import { getUsername } from '../lib/scores';
 import { trackAttempt } from '../lib/stats';
 import { sendPushToUser } from '../lib/pushNotifications';
@@ -170,6 +170,23 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
             ? `${myDisplayName} utmanade dig! Dags att svara.`
             : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
           sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
+        }
+      } else if (phase === 'finished') {
+        // Notify the OTHER player about the final result
+        const state = computeBattleState(updatedBattle);
+        const otherPlayerId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
+        const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
+        const otherRole = role === 'creator' ? 'opponent' : 'creator';
+        if (otherPlayerId) {
+          const otherWon =
+            (state.winner === 'creator' && otherRole === 'creator') ||
+            (state.winner === 'opponent' && otherRole === 'opponent');
+          const body = state.winner === 'draw'
+            ? `🤝 Oavgjort mot ${myDisplayName}! Se resultatet.`
+            : otherWon
+              ? `🏆 Du vann mot ${myDisplayName}! Se resultatet.`
+              : `😔 ${myDisplayName} vann den här gången. Se resultatet.`;
+          sendPushToUser(otherPlayerId, 'Quizine ⚔️', body, { battleId, type: 'battle_finished' }).catch(() => {});
         }
       }
     } catch {
