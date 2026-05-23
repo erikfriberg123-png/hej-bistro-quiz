@@ -14,6 +14,7 @@ import {
   Image,
   Platform,
   Linking,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -566,7 +567,7 @@ export default function HomeScreen({ navigation }: Props) {
 
       {/* Feedback modal */}
       <Modal visible={feedbackVisible} transparent animationType="slide" onRequestClose={() => setFeedbackVisible(false)}>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={styles.modalCard}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Feedback</Text>
@@ -603,7 +604,7 @@ export default function HomeScreen({ navigation }: Props) {
               </>
             )}
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Delete account confirmation modal */}

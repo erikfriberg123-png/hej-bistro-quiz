@@ -133,7 +133,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {submitted ? (
           <View style={styles.thankYouContainer}>
@@ -160,6 +160,7 @@ export default function CreateQuestionScreen({ navigation }: Props) {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets
         >
           {/* Question input */}
           <Text style={styles.label}>Fråga</Text>

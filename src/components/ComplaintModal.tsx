@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -49,39 +50,45 @@ export function ComplaintModal({ visible, questionText, onClose, onSubmit }: Pro
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose} />
         <View style={styles.sheet}>
-          <Text style={styles.title}>⚠️  Klaga på fråga</Text>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.sheetScroll}
+          >
+            <Text style={styles.title}>⚠️  Klaga på fråga</Text>
 
-          <View style={styles.questionBox}>
-            <Text style={styles.questionText}>{questionText}</Text>
-          </View>
+            <View style={styles.questionBox}>
+              <Text style={styles.questionText}>{questionText}</Text>
+            </View>
 
-          <Text style={styles.label}>Beskriv felet</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="T.ex. Fel svar, felaktig stavning..."
-            placeholderTextColor="#6050A0"
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            autoFocus
-          />
+            <Text style={styles.label}>Beskriv felet</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="T.ex. Fel svar, felaktig stavning..."
+              placeholderTextColor="#6050A0"
+              value={message}
+              onChangeText={setMessage}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              autoFocus
+            />
 
-          <View style={styles.btnRow}>
-            <TouchableOpacity onPress={handleClose} style={styles.cancelBtn} disabled={loading}>
-              <Text style={styles.cancelText}>Avbryt</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSubmit}
-              style={[styles.submitBtn, (!message.trim() || loading) && styles.submitDisabled]}
-              disabled={!message.trim() || loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#FFFFFF" size="small" />
-                : <Text style={styles.submitText}>Skicka</Text>}
-            </TouchableOpacity>
-          </View>
+            <View style={styles.btnRow}>
+              <TouchableOpacity onPress={handleClose} style={styles.cancelBtn} disabled={loading}>
+                <Text style={styles.cancelText}>Avbryt</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmit}
+                style={[styles.submitBtn, (!message.trim() || loading) && styles.submitDisabled]}
+                disabled={!message.trim() || loading}
+              >
+                {loading
+                  ? <ActivityIndicator color="#FFFFFF" size="small" />
+                  : <Text style={styles.submitText}>Skicka</Text>}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -101,6 +108,9 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     backgroundColor: colors.bg2,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    maxHeight: '85%',
+  },
+  sheetScroll: {
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 36,
