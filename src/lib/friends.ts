@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { sendPushToUser } from './pushNotifications';
 
 export interface FriendProfile {
   user_id: string;
@@ -31,6 +32,10 @@ export async function sendFriendRequest(friendId: string): Promise<void> {
     status: 'pending',
   });
   if (error) throw error;
+
+  const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+  const myName = profile?.username ?? 'Någon';
+  sendPushToUser(friendId, 'Quizine 👋', `${myName} vill vara din vän!`, { type: 'friend_request' }).catch(() => {});
 }
 
 export async function acceptFriendRequest(requesterId: string): Promise<void> {
@@ -47,6 +52,10 @@ export async function acceptFriendRequest(requesterId: string): Promise<void> {
     { user_id: user.id, friend_id: requesterId, status: 'accepted' },
     { onConflict: 'user_id,friend_id' },
   );
+
+  const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+  const myName = profile?.username ?? 'Någon';
+  sendPushToUser(requesterId, 'Quizine 🤝', `${myName} accepterade din vänförfrågan!`, { type: 'friend_accepted' }).catch(() => {});
 }
 
 export async function removeFriend(friendId: string): Promise<void> {
