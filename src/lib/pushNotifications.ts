@@ -34,14 +34,16 @@ export async function registerPushToken(): Promise<void> {
     const { data: tokenData } = await Notifications.getExpoPushTokenAsync({
       projectId: '87de1099-7c19-4189-a11d-4ad66e30b7c4',
     });
-    if (!tokenData) return;
+    if (!tokenData) { console.warn('[push] getExpoPushTokenAsync returned no token'); return; }
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { console.warn('[push] no authenticated user when registering token'); return; }
 
-    await supabase.from('profiles').update({ push_token: tokenData }).eq('id', user.id);
-  } catch {
-    // non-fatal
+    const { error } = await supabase.from('profiles').update({ push_token: tokenData }).eq('id', user.id);
+    if (error) console.warn('[push] failed to save token:', error.message);
+    else console.log('[push] token registered for', user.id, tokenData);
+  } catch (err) {
+    console.warn('[push] registerPushToken error:', err);
   }
 }
 

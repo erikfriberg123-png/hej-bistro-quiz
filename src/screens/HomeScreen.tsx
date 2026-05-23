@@ -30,7 +30,7 @@ import { getPendingRequests } from '../lib/friends';
 import { Battle, getMyActiveTurns, getPendingBattlesForMe } from '../lib/battles';
 import { supabase } from '../lib/supabase';
 import { submitFeedback } from '../lib/feedback';
-import { registerPushToken, clearPushToken } from '../lib/pushNotifications';
+import { registerPushToken } from '../lib/pushNotifications';
 import { StoryModal } from '../components/StoryModal';
 import { fonts, radius, spacing } from '../theme/tokens';
 import { useTheme } from '../theme/ThemeContext';
@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }: Props) {
       registerPushToken();
     });
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) { userIdRef.current = user.id; setUserId(user.id); }
+      if (user) { userIdRef.current = user.id; setUserId(user.id); registerPushToken(); }
     });
   }, []);
 
@@ -289,14 +289,13 @@ export default function HomeScreen({ navigation }: Props) {
     if (Platform.OS === 'web') {
       if (window.confirm('Är du säker på att du vill logga ut?')) {
         setProfileVisible(false);
-        await clearPushToken();
         supabase.auth.signOut();
       }
       return;
     }
     Alert.alert('Logga ut', 'Är du säker på att du vill logga ut?', [
       { text: 'Avbryt', style: 'cancel' },
-      { text: 'Logga ut', style: 'destructive', onPress: async () => { setProfileVisible(false); await clearPushToken(); await supabase.auth.signOut(); } },
+      { text: 'Logga ut', style: 'destructive', onPress: async () => { setProfileVisible(false); await supabase.auth.signOut(); } },
     ]);
   };
 
