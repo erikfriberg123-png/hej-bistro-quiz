@@ -45,6 +45,16 @@ export async function registerPushToken(): Promise<void> {
   }
 }
 
+export async function clearPushToken(): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('profiles').update({ push_token: null }).eq('id', user.id);
+  } catch {
+    // non-fatal
+  }
+}
+
 export async function sendPushToUser(
   userId: string,
   title: string,

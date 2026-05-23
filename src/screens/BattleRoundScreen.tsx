@@ -24,6 +24,7 @@ import Animated, {
 import { RootStackParamList } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { submitTurn, computeBattlePhase, computeBattleState } from '../lib/battles';
+import { supabase } from '../lib/supabase';
 import { getUsername } from '../lib/scores';
 import { trackAttempt } from '../lib/stats';
 import { sendPushToUser } from '../lib/pushNotifications';
@@ -147,24 +148,28 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     // Round complete — clear saved progress
     AsyncStorage.removeItem(progressKey).catch(() => {});
     try {
-      const myName = role === 'opponent' ? (await getUsername() ?? 'Anonym') : undefined;
+      const [myName, { data: { user: me } }] = await Promise.all([
+        role === 'opponent' ? getUsername() : Promise.resolve(undefined),
+        supabase.auth.getUser(),
+      ]);
+      const myUserId = me?.id ?? null;
+
       const updatedBattle = await submitTurn(
         currentArea,
         battleId,
         role,
         { round: roundNumber, category: categoryId, score: result.totalScore, questionIds: playedQuestionIds },
-        myName,
+        myName ?? undefined,
       );
 
       const phase = computeBattlePhase(updatedBattle);
       if (phase !== 'finished' && phase !== 'waiting_opponent') {
         const notifyOpponent = phase === 'opponent_respond' || phase === 'opponent_challenge';
         const targetId = notifyOpponent ? updatedBattle.opponent_id : updatedBattle.creator_id;
-        const justPlayedId = role === 'creator' ? updatedBattle.creator_id : updatedBattle.opponent_id;
         const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
         const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
-        // Only notify if the target is the OTHER player — never notify someone about their own action
-        if (targetId && targetId !== justPlayedId) {
+        // Guard against self-notification using the real authenticated user ID
+        if (targetId && targetId !== myUserId) {
           const title = 'Quizine ⚔️';
           const body = isChallenge
             ? `${myDisplayName} utmanade dig! Dags att svara.`
@@ -172,12 +177,12 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
           sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
         }
       } else if (phase === 'finished') {
-        // Notify the OTHER player about the final result
         const state = computeBattleState(updatedBattle);
         const otherPlayerId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
         const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
         const otherRole = role === 'creator' ? 'opponent' : 'creator';
-        if (otherPlayerId) {
+        // Guard against self-notification using the real authenticated user ID
+        if (otherPlayerId && otherPlayerId !== myUserId) {
           const otherWon =
             (state.winner === 'creator' && otherRole === 'creator') ||
             (state.winner === 'opponent' && otherRole === 'opponent');
