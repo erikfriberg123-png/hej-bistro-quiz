@@ -277,68 +277,12 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Round result */}
+        {/* Round result summary */}
         {lastRoundCorrect !== undefined && lastRoundTotal !== undefined && (
-          <>
-            <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
-
-            {lastRoundQuestions.length > 0 && (
-              <View style={resultCards.container}>
-                {lastRoundQuestions.map((q, i) => {
-                  const correct = lastRoundResults ? lastRoundResults[i] : undefined;
-                  const isCorrect = correct === true;
-                  const isExpanded = expandedCard === q.id;
-
-                  return (
-                    <TouchableOpacity
-                      key={q.id}
-                      activeOpacity={0.85}
-                      onPress={() => setExpandedCard(isExpanded ? null : q.id)}
-                      style={[
-                        resultCards.card,
-                        isCorrect ? resultCards.cardCorrect : resultCards.cardWrong,
-                      ]}
-                    >
-                      {/* Header row */}
-                      <View style={resultCards.cardHeader}>
-                        <Text style={resultCards.cardIcon}>{isCorrect ? '✓' : '✗'}</Text>
-                        <Text
-                          style={[resultCards.cardQuestion, isCorrect ? resultCards.textCorrect : resultCards.textWrong]}
-                          numberOfLines={isExpanded ? undefined : 2}
-                        >
-                          {q.question}
-                        </Text>
-                        <Text style={resultCards.chevron}>{isExpanded ? '▲' : '▼'}</Text>
-                      </View>
-
-                      {/* Expanded content */}
-                      {isExpanded && (
-                        <View style={resultCards.expanded}>
-                          <Text style={resultCards.correctLabel}>Rätt svar:</Text>
-                          <Text style={resultCards.correctAnswer}>
-                            {q.answers[q.correctIndex]}
-                          </Text>
-                          {complainedIds.has(q.id) ? (
-                            <Text style={resultCards.sentText}>Klagomål skickat ✓</Text>
-                          ) : (
-                            <TouchableOpacity
-                              onPress={() => setComplaintTarget({ id: q.id, question: q.question, category: q.category })}
-                              style={resultCards.complainBtn}
-                            >
-                              <Text style={resultCards.complainBtnText}>⚠️  Klaga på frågan</Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
-          </>
+          <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
         )}
 
-        {/* CTA */}
+        {/* CTA — shown between the result summary and the question review */}
         {(() => {
           if (!battle) return null;
           const phase = computeBattlePhase(battle);
@@ -461,6 +405,59 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
 
           return null;
         })()}
+
+        {/* Question review cards — below the CTA */}
+        {lastRoundQuestions.length > 0 && (
+          <View style={[resultCards.container, { marginTop: 16 }]}>
+            {lastRoundQuestions.map((q, i) => {
+              const correct = lastRoundResults ? lastRoundResults[i] : undefined;
+              const isCorrect = correct === true;
+              const isExpanded = expandedCard === q.id;
+
+              return (
+                <TouchableOpacity
+                  key={q.id}
+                  activeOpacity={0.85}
+                  onPress={() => setExpandedCard(isExpanded ? null : q.id)}
+                  style={[
+                    resultCards.card,
+                    isCorrect ? resultCards.cardCorrect : resultCards.cardWrong,
+                  ]}
+                >
+                  <View style={resultCards.cardHeader}>
+                    <Text style={resultCards.cardIcon}>{isCorrect ? '✓' : '✗'}</Text>
+                    <Text
+                      style={[resultCards.cardQuestion, isCorrect ? resultCards.textCorrect : resultCards.textWrong]}
+                      numberOfLines={isExpanded ? undefined : 2}
+                    >
+                      {q.question}
+                    </Text>
+                    <Text style={resultCards.chevron}>{isExpanded ? '▲' : '▼'}</Text>
+                  </View>
+
+                  {isExpanded && (
+                    <View style={resultCards.expanded}>
+                      <Text style={resultCards.correctLabel}>Rätt svar:</Text>
+                      <Text style={resultCards.correctAnswer}>
+                        {q.answers[q.correctIndex]}
+                      </Text>
+                      {complainedIds.has(q.id) ? (
+                        <Text style={resultCards.sentText}>Klagomål skickat ✓</Text>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => setComplaintTarget({ id: q.id, question: q.question, category: q.category })}
+                          style={resultCards.complainBtn}
+                        >
+                          <Text style={resultCards.complainBtnText}>⚠️  Klaga på frågan</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
       </ScrollView>
 
