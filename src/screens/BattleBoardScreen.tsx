@@ -296,6 +296,19 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
           }
 
           if (phase === 'waiting_opponent') {
+            // Creator backed out before playing their first round — prompt them to start
+            if (role === 'creator' && battle.creator_turns.length === 0) {
+              return (
+                <View style={[styles.ctaBox, styles.ctaBoxCompact]}>
+                  <Text style={styles.ctaEmojiSmall}>⚔️</Text>
+                  <Text style={styles.ctaTitle}>Din tur att utmana!</Text>
+                  <Text style={styles.ctaSub}>Välj en kategori och starta battle – omgång 1 av 4.</Text>
+                  <TouchableOpacity onPress={handleChallenge} style={styles.primaryBtn}>
+                    <Text style={styles.primaryBtnText}>Välj kategori  →</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }
             return (
               <View style={styles.ctaBox}>
                 <Text style={styles.ctaTitle}>Väntar på motståndare ⏳</Text>
