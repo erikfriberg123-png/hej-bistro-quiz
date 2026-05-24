@@ -162,36 +162,37 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
         myName ?? undefined,
       );
 
-      const phase = computeBattlePhase(updatedBattle);
-      if (phase !== 'finished' && phase !== 'waiting_opponent') {
-        const notifyOpponent = phase === 'opponent_respond' || phase === 'opponent_challenge';
-        const targetId = notifyOpponent ? updatedBattle.opponent_id : updatedBattle.creator_id;
-        const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
-        const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
-        // Guard against self-notification using the real authenticated user ID
-        if (targetId && targetId !== myUserId) {
-          const title = 'Quizine ⚔️';
-          const body = isChallenge
-            ? `${myDisplayName} utmanade dig! Dags att svara.`
-            : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
-          sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
-        }
-      } else if (phase === 'finished') {
-        const state = computeBattleState(updatedBattle);
-        const otherPlayerId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
-        const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
-        const otherRole = role === 'creator' ? 'opponent' : 'creator';
-        // Guard against self-notification using the real authenticated user ID
-        if (otherPlayerId && otherPlayerId !== myUserId) {
-          const otherWon =
-            (state.winner === 'creator' && otherRole === 'creator') ||
-            (state.winner === 'opponent' && otherRole === 'opponent');
-          const body = state.winner === 'draw'
-            ? `🤝 Oavgjort mot ${myDisplayName}! Se resultatet.`
-            : otherWon
-              ? `🏆 Du vann mot ${myDisplayName}! Se resultatet.`
-              : `😔 ${myDisplayName} vann den här gången. Se resultatet.`;
-          sendPushToUser(otherPlayerId, 'Quizine ⚔️', body, { battleId, type: 'battle_finished' }).catch(() => {});
+      // Skip all push if we can't confirm who the current user is — avoids self-notification
+      if (myUserId) {
+        const phase = computeBattlePhase(updatedBattle);
+        if (phase !== 'finished' && phase !== 'waiting_opponent') {
+          const notifyOpponent = phase === 'opponent_respond' || phase === 'opponent_challenge';
+          const targetId = notifyOpponent ? updatedBattle.opponent_id : updatedBattle.creator_id;
+          const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
+          const isChallenge = phase === 'opponent_respond' || phase === 'creator_respond';
+          if (targetId && targetId !== myUserId) {
+            const title = 'Quizine ⚔️';
+            const body = isChallenge
+              ? `${myDisplayName} utmanade dig! Dags att svara.`
+              : `${myDisplayName} svarade! Nu är det din tur att utmana.`;
+            sendPushToUser(targetId, title, body, { battleId }).catch(() => {});
+          }
+        } else if (phase === 'finished') {
+          const state = computeBattleState(updatedBattle);
+          const otherPlayerId = role === 'creator' ? updatedBattle.opponent_id : updatedBattle.creator_id;
+          const myDisplayName = role === 'creator' ? updatedBattle.creator_name : (updatedBattle.opponent_name ?? 'Motståndare');
+          const otherRole = role === 'creator' ? 'opponent' : 'creator';
+          if (otherPlayerId && otherPlayerId !== myUserId) {
+            const otherWon =
+              (state.winner === 'creator' && otherRole === 'creator') ||
+              (state.winner === 'opponent' && otherRole === 'opponent');
+            const body = state.winner === 'draw'
+              ? `🤝 Oavgjort mot ${myDisplayName}! Se resultatet.`
+              : otherWon
+                ? `🏆 Du vann mot ${myDisplayName}! Se resultatet.`
+                : `😔 ${myDisplayName} vann den här gången. Se resultatet.`;
+            sendPushToUser(otherPlayerId, 'Quizine ⚔️', body, { battleId, type: 'battle_finished' }).catch(() => {});
+          }
         }
       }
     } catch {
