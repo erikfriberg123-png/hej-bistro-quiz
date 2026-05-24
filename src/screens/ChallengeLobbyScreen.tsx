@@ -465,7 +465,10 @@ function ActiveBattleCard({ battle, userId, onPress }: { battle: Battle; userId:
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const state = computeBattleState(battle);
-  const opponent = battle.opponent_name ?? 'Väntar på motståndare...';
+  const isCreator = userId && battle.creator_id === userId;
+  const opponent = isCreator
+    ? (battle.opponent_name ?? 'Väntar på motståndare...')
+    : battle.creator_name;
   const rounds = Math.max(battle.creator_turns.length, battle.opponent_turns.length);
   const isMyTurn = userId && (
     (battle.creator_id === userId && state.nextTurn === 'creator') ||
