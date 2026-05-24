@@ -100,15 +100,17 @@ export default function WelcomeScreen({ navigation }: Props) {
           {AREAS.map(area => {
             const b = AREA_BRANDING[area];
             const selected = selectedArea === area;
+            const disabled = !!b.disabled;
             return (
               <TouchableOpacity
                 key={area}
                 style={[
                   styles.areaCard,
                   selected && { borderColor: b.brandColor, backgroundColor: `${b.brandColor}12` },
+                  disabled && { opacity: 0.45 },
                 ]}
-                onPress={() => setSelectedArea(area)}
-                activeOpacity={0.8}
+                onPress={() => !disabled && setSelectedArea(area)}
+                activeOpacity={disabled ? 1 : 0.8}
               >
                 <View style={styles.areaLogoWrap}>
                   {area === 'krogen' ? <KrogenLogo /> : <VooLogo />}
@@ -120,11 +122,15 @@ export default function WelcomeScreen({ navigation }: Props) {
                   <Text style={styles.areaLabel}>{b.label}</Text>
                   <Text style={styles.areaTagline}>{b.tagline}</Text>
                 </View>
-                {selected && (
+                {disabled ? (
+                  <View style={styles.comingSoonBadge}>
+                    <Text style={styles.comingSoonText}>Snart</Text>
+                  </View>
+                ) : selected ? (
                   <View style={[styles.selectedDot, { backgroundColor: b.brandColor }]}>
                     <Text style={styles.selectedDotTick}>✓</Text>
                   </View>
-                )}
+                ) : null}
               </TouchableOpacity>
             );
           })}
@@ -255,6 +261,19 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
     color: colors.text1,
     fontSize: 14,
     fontFamily: fonts.display700,
+  },
+  comingSoonBadge: {
+    backgroundColor: colors.lineStrong,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    flexShrink: 0,
+  },
+  comingSoonText: {
+    color: colors.text3,
+    fontSize: 11,
+    fontFamily: fonts.display600,
+    letterSpacing: 0.5,
   },
 
   aliasHint: {

@@ -154,10 +154,85 @@ export const VOO_CATEGORIES: Category[] = [
   },
 ];
 
+export const IT_CATEGORIES: Category[] = [
+  {
+    id: 'programming',
+    name: 'Programmering',
+    icon: '💻',
+    color: '#00FF64',
+    description: 'Kod, algoritmer & tekniker',
+  },
+  {
+    id: 'cloud_infra',
+    name: 'Cloud & Infrastruktur',
+    icon: '☁️',
+    color: '#3A86FF',
+    description: 'DevOps, drift & nätverk',
+  },
+  {
+    id: 'cybersecurity',
+    name: 'Cybersäkerhet',
+    icon: '🔒',
+    color: '#FF5555',
+    description: 'Skydd, hot & sårbarheter',
+  },
+  {
+    id: 'databases',
+    name: 'Databaser',
+    icon: '🗄️',
+    color: '#E8B84B',
+    description: 'SQL, NoSQL & datamodellering',
+  },
+  {
+    id: 'ai_ml',
+    name: 'AI & Maskininlärning',
+    icon: '🧠',
+    color: '#9B5DE5',
+    description: 'Modeller, träning & tillämpningar',
+  },
+  {
+    id: 'operating_systems',
+    name: 'Operativsystem',
+    icon: '🖥️',
+    color: '#2EC4B6',
+    description: 'Linux, Windows & systemarkitektur',
+  },
+  {
+    id: 'web_apis',
+    name: 'Webb & API:er',
+    icon: '🌐',
+    color: '#06D6A0',
+    description: 'HTTP, REST, frontend & backend',
+  },
+  {
+    id: 'app_development',
+    name: 'Applikationsutveckling',
+    icon: '📱',
+    color: '#F15BB5',
+    description: 'Appar, frameworks & livscykel',
+  },
+];
+
+export const BLALJUS_CATEGORIES: Category[] = [
+  { id: 'filmer_serier',        name: 'Filmer & serier',      icon: '🎬', color: '#1A5BFF', description: 'Blåljus på film och TV' },
+  { id: 'spannande_fakta',      name: 'Spännande fakta',      icon: '⚡', color: '#FFD700', description: 'Häpnadsväckande fakta om blåljusyrken' },
+  { id: 'lagar_regler',         name: 'Lagar & regler',       icon: '⚖️', color: '#5599FF', description: 'Lagar, förordningar och rätt' },
+  { id: 'forsta_hjalpen',       name: 'Första hjälpen',       icon: '🩺', color: '#FF4D66', description: 'Akutvård och livräddning' },
+  { id: 'brandbekampning',      name: 'Brandbekämpning',      icon: '🔥', color: '#FF6B35', description: 'Brand, teknik och säkerhet' },
+  { id: 'polisarbete',          name: 'Polisarbete',          icon: '👮', color: '#3A86FF', description: 'Taktik, lag och ordning' },
+  { id: 'akutvard_ambulans',    name: 'Akutvård & ambulans',  icon: '🚑', color: '#00E676', description: 'Medicin, ABC-protokoll och ambulanssjukvård' },
+  { id: 'krisberedskap',        name: 'Krisberedskap',        icon: '🚨', color: '#FF1A3C', description: 'Larm, samverkan och krishantering' },
+  { id: 'raddningsoperationer', name: 'Räddningsoperationer', icon: '🚒', color: '#FF8C00', description: 'Räddning och insatstaktik' },
+  { id: 'trafiksakerhet',       name: 'Trafiksäkerhet',       icon: '🚦', color: '#FFB300', description: 'Trafik, regler och olyckor' },
+];
+
 export function getCategoriesForArea(area: Area): Category[] {
-  return area === 'sjukvard' ? VOO_CATEGORIES : CATEGORIES;
+  if (area === 'sjukvard') return VOO_CATEGORIES;
+  if (area === 'it') return IT_CATEGORIES;
+  if (area === 'blaljus') return BLALJUS_CATEGORIES;
+  return CATEGORIES;
 }
 
 export function getCategoryById(id: string): Category | undefined {
-  return [...CATEGORIES, ...VOO_CATEGORIES].find(c => c.id === id);
+  return [...CATEGORIES, ...VOO_CATEGORIES, ...IT_CATEGORIES, ...BLALJUS_CATEGORIES].find(c => c.id === id);
 }

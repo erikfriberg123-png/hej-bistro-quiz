@@ -348,6 +348,10 @@ export default function HomeScreen({ navigation }: Props) {
           </Text>
           {area === 'krogen' ? (
             <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+          ) : area === 'it' ? (
+            <Image source={require('../../assets/logo_it_question.png')} style={{ width: 56, height: 56 }} resizeMode="contain" />
+          ) : area === 'blaljus' ? (
+            <Text style={{ fontSize: 48 }}>🚨</Text>
           ) : (
             <Image source={require('../../assets/health-icon-1-stethoscope.png')} style={styles.logo} />
           )}
@@ -671,14 +675,21 @@ export default function HomeScreen({ navigation }: Props) {
                 {AREAS.map(a => {
                   const b = AREA_BRANDING[a];
                   const active = area === a;
+                  const disabled = !!b.disabled;
                   return (
                     <TouchableOpacity
                       key={a}
-                      style={[styles.areaToggleBtn, active && { borderColor: b.brandColor, backgroundColor: `${b.brandColor}18` }]}
-                      onPress={() => handleChangeArea(a)}
-                      activeOpacity={0.8}
+                      style={[
+                        styles.areaToggleBtn,
+                        active && { borderColor: b.brandColor, backgroundColor: `${b.brandColor}18` },
+                        disabled && { opacity: 0.4 },
+                      ]}
+                      onPress={() => !disabled && handleChangeArea(a)}
+                      activeOpacity={disabled ? 1 : 0.8}
                     >
-                      <Text style={[styles.areaToggleName, active && { color: b.brandColor }]}>{b.label}</Text>
+                      <Text style={[styles.areaToggleName, active && { color: b.brandColor }]}>
+                        {b.label}{disabled ? ' (snart)' : ''}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
