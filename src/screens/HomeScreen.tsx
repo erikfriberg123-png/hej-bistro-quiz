@@ -349,7 +349,7 @@ export default function HomeScreen({ navigation }: Props) {
           {area === 'krogen' ? (
             <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
           ) : area === 'it' ? (
-            <Image source={require('../../assets/logo_it_question.png')} style={{ width: 56, height: 56 }} resizeMode="contain" />
+            <Text style={{ fontSize: 48 }}>💻</Text>
           ) : area === 'blaljus' ? (
             <Text style={{ fontSize: 48 }}>🚨</Text>
           ) : (
