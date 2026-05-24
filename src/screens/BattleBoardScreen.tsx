@@ -257,32 +257,9 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <View style={styles.scoreCard}>
-        <View style={styles.scoreCol}>
-          <Text style={styles.scoreName} numberOfLines={1}>{myName}</Text>
-          <Text style={[styles.scoreNum, styles.scoreNumMe]}>
-            {role === 'creator' ? state.creatorScore : state.opponentScore}
-          </Text>
-          <Text style={styles.scoreXP}>XP</Text>
-        </View>
-        <Text style={styles.scoreDash}>–</Text>
-        <View style={styles.scoreCol}>
-          <Text style={styles.scoreName} numberOfLines={1}>{theirName}</Text>
-          <Text style={styles.scoreNum}>
-            {role === 'creator' ? state.opponentScore : state.creatorScore}
-          </Text>
-          <Text style={styles.scoreXP}>XP</Text>
-        </View>
-      </View>
-
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Round result summary */}
-        {lastRoundCorrect !== undefined && lastRoundTotal !== undefined && (
-          <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
-        )}
-
-        {/* CTA — shown between the result summary and the question review */}
+        {/* CTA — top of screen after finishing a round */}
         {(() => {
           if (!battle) return null;
           const phase = computeBattlePhase(battle);
@@ -406,7 +383,12 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
           return null;
         })()}
 
-        {/* Question review cards — below the CTA */}
+        {/* Round result summary — below CTA */}
+        {lastRoundCorrect !== undefined && lastRoundTotal !== undefined && (
+          <RoundResultCard correct={lastRoundCorrect} total={lastRoundTotal} />
+        )}
+
+        {/* Question review cards */}
         {lastRoundQuestions.length > 0 && (
           <View style={[resultCards.container, { marginTop: 16 }]}>
             {lastRoundQuestions.map((q, i) => {
@@ -458,6 +440,25 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
             })}
           </View>
         )}
+
+        {/* Score card — bottom of scroll */}
+        <View style={styles.scoreCard}>
+          <View style={styles.scoreCol}>
+            <Text style={styles.scoreName} numberOfLines={1}>{myName}</Text>
+            <Text style={[styles.scoreNum, styles.scoreNumMe]}>
+              {role === 'creator' ? state.creatorScore : state.opponentScore}
+            </Text>
+            <Text style={styles.scoreXP}>XP</Text>
+          </View>
+          <Text style={styles.scoreDash}>–</Text>
+          <View style={styles.scoreCol}>
+            <Text style={styles.scoreName} numberOfLines={1}>{theirName}</Text>
+            <Text style={styles.scoreNum}>
+              {role === 'creator' ? state.opponentScore : state.creatorScore}
+            </Text>
+            <Text style={styles.scoreXP}>XP</Text>
+          </View>
+        </View>
 
       </ScrollView>
 
@@ -535,7 +536,7 @@ const makeStyles = (colors: Colors) => StyleSheet.create({
   scoreCard: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: colors.bg2,
     borderWidth: 1, borderColor: colors.lineStrong,
-    borderRadius: radius.xl, paddingVertical: 20, paddingHorizontal: 16, marginBottom: 24, gap: 16,
+    borderRadius: radius.xl, paddingVertical: 20, paddingHorizontal: 16, marginTop: 24, gap: 16,
   },
   scoreCol: { flex: 1, alignItems: 'center', gap: 2 },
   scoreName: { color: colors.text3, fontSize: 12, fontFamily: fonts.display500 },
