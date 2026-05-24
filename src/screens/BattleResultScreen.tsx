@@ -90,7 +90,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
         opponentName: theirName,
       });
     } catch {
-      Alert.alert('Fel', 'Kunde inte starta revanche. Försök igen.');
+      Alert.alert('Fel', 'Kunde inte starta revanch. Försök igen.');
     } finally {
       setRematchLoading(false);
     }
@@ -119,10 +119,10 @@ export default function BattleResultScreen({ route, navigation }: Props) {
     ? 'Du vann!'
     : 'Bättre lycka nästa gång!';
   const sub = isDraw
-    ? 'Ni var precis lika bra — en revanche kanske?'
+    ? 'Ni var precis lika bra — en revanch kanske?'
     : didWin
     ? `Du slog ${theirName} med ${myScore - theirScore} XP!`
-    : `${theirName} vann den här gången. Dags för en revanche!`;
+    : `${theirName} vann den här gången. Dags för en revanch!`;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -185,7 +185,7 @@ export default function BattleResultScreen({ route, navigation }: Props) {
             {rematchLoading ? (
               <ActivityIndicator color={colors.bg0} />
             ) : (
-              <Text style={styles.primaryBtnText}>Revanche  ⚔️</Text>
+              <Text style={styles.primaryBtnText}>Revanch  ⚔️</Text>
             )}
           </TouchableOpacity>
         )}

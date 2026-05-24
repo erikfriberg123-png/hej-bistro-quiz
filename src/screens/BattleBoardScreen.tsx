@@ -282,7 +282,7 @@ export default function BattleBoardScreen({ route, navigation }: Props) {
                         : 'Motståndaren vann!'}
                     </Text>
                     <Text style={styles.ctaSub}>
-                      {iWon ? 'Grattis — du är den bästa!' : 'Dags för en revanche?'}
+                      {iWon ? 'Grattis — du är den bästa!' : 'Dags för en revanch?'}
                     </Text>
                   </>
                 ) : (
