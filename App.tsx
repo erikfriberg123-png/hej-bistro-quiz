@@ -182,7 +182,7 @@ export default function App() {
         <AppStack.Screen name="BattleResult" component={BattleResultScreen} />
         <AppStack.Screen name="Survival" component={SurvivalScreen} />
         <AppStack.Screen name="SurvivalResult" component={SurvivalResultScreen} />
-        <AppStack.Screen name="SantEllerFalskt" component={SantEllerFalsktScreen} />
+        <AppStack.Screen name="SantEllerFalskt" component={SantEllerFalsktScreen} options={{ gestureEnabled: false }} />
         <AppStack.Screen name="SantEllerFalsktResult" component={SantEllerFalsktResultScreen} />
         <AppStack.Screen name="Friends" component={FriendsScreen} />
       </AppStack.Navigator>

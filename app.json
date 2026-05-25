@@ -37,7 +37,8 @@
       "description": "Quiz för restaurangfolk"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
