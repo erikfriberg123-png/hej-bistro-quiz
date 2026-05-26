@@ -42,7 +42,7 @@ import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BattleRound'>;
 
-const TIMER_DURATION = 20000;
+const TIMER_DURATION = 25000;
 
 export default function BattleRoundScreen({ route, navigation }: Props) {
   const colors = useTheme();

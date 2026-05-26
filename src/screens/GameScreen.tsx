@@ -37,7 +37,7 @@ import { CelebrationOverlay, EffectType } from '../components/CelebrationOverlay
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 
-const TIMER_DURATION = 20000;
+const TIMER_DURATION = 25000;
 
 export default function GameScreen({ route, navigation }: Props) {
   const colors = useTheme();
@@ -213,7 +213,7 @@ export default function GameScreen({ route, navigation }: Props) {
       setIsAnswered(true);
 
       const elapsed = (Date.now() - questionStartRef.current) / 1000;
-      const timeRemaining = Math.max(0, 20 - elapsed);
+      const timeRemaining = Math.max(0, 25 - elapsed);
       const actualIndex = shuffledIndices[displayIndex];
       const correct = currentQuestion.correctIndex;
       const points = submitAnswer(actualIndex, timeRemaining);

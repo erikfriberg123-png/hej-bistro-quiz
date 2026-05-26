@@ -79,6 +79,7 @@ export default function AuthScreen({ navigation }: Props) {
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
@@ -95,6 +96,7 @@ export default function AuthScreen({ navigation }: Props) {
     setMode(next);
     setError(null);
     setResetSent(false);
+    setConfirmPassword('');
   };
 
   const handleResetPassword = async () => {
@@ -130,6 +132,11 @@ export default function AuthScreen({ navigation }: Props) {
     const secondsLocked = await getLockedSeconds();
     if (secondsLocked > 0) {
       setError(`För många misslyckade försök. Vänta ${secondsLocked} sekunder.`);
+      return;
+    }
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError('Lösenorden matchar inte.');
       return;
     }
 
@@ -191,7 +198,8 @@ export default function AuthScreen({ navigation }: Props) {
     }
   };
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
+  const canSubmit = email.trim().length > 0 && password.length > 0 &&
+    (mode !== 'signup' || confirmPassword.length > 0) && !loading;
 
   if (awaitingConfirm) {
     return (
@@ -332,9 +340,21 @@ export default function AuthScreen({ navigation }: Props) {
                 placeholder="Lösenord"
                 placeholderTextColor={colors.text3}
                 secureTextEntry
-                returnKeyType="done"
-                onSubmitEditing={canSubmit ? handleSubmit : undefined}
+                returnKeyType={mode === 'signup' ? 'next' : 'done'}
+                onSubmitEditing={mode === 'signup' ? undefined : (canSubmit ? handleSubmit : undefined)}
               />
+              {mode === 'signup' && (
+                <TextInput
+                  style={styles.input}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Bekräfta lösenord"
+                  placeholderTextColor={colors.text3}
+                  secureTextEntry
+                  returnKeyType="done"
+                  onSubmitEditing={canSubmit ? handleSubmit : undefined}
+                />
+              )}
 
               {mode === 'signin' && (
                 <TouchableOpacity

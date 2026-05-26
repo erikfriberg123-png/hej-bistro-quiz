@@ -25,7 +25,7 @@ import type { Colors } from '../theme/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Survival'>;
 
-const TIMER_DURATION = 15000;
+const TIMER_DURATION = 25000;
 const MAX_LIVES = 3;
 
 function streakMultiplier(streak: number): number {
