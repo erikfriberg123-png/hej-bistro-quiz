@@ -83,8 +83,8 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
   handel: {
     label: 'Handel & Butik',
     brandName: 'Handel',
-    brandColor: '#F7921E',
-    neonLine: '~ alltid i disk ~',
+    brandColor: '#FF6B2B',
+    neonLine: '~ öppet för affärer ~',
     icon: '🛒',
     tagline: 'Quiz för dig som jobbar i butik',
     authTagline: 'Quiz för butikspersonal',
