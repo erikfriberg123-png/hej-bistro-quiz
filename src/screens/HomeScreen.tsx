@@ -353,7 +353,7 @@ export default function HomeScreen({ navigation }: Props) {
           ) : area === 'blaljus' ? (
             <Text style={{ fontSize: 48 }}>🚨</Text>
           ) : area === 'handel' ? (
-            <Text style={{ fontSize: 48 }}>🛒</Text>
+            <Image source={require('../../assets/logo_generic_work.png')} style={styles.logo} resizeMode="contain" />
           ) : (
             <Image source={require('../../assets/health-icon-1-stethoscope.png')} style={styles.logo} />
           )}
