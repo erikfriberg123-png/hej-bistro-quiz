@@ -1,6 +1,6 @@
 const BASE_SCORE = 100;
 const MAX_TIME_BONUS = 50;
-const TIMER_DURATION = 20;
+const TIMER_DURATION = 25;
 
 export function calculateScore(isCorrect: boolean, timeRemainingSeconds: number): number {
   if (!isCorrect) return 0;
