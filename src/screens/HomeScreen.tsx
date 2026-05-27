@@ -352,6 +352,8 @@ export default function HomeScreen({ navigation }: Props) {
             <Text style={{ fontSize: 48 }}>💻</Text>
           ) : area === 'blaljus' ? (
             <Text style={{ fontSize: 48 }}>🚨</Text>
+          ) : area === 'handel' ? (
+            <Text style={{ fontSize: 48 }}>🛒</Text>
           ) : (
             <Image source={require('../../assets/health-icon-1-stethoscope.png')} style={styles.logo} />
           )}
@@ -540,7 +542,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.modalBody}>{'Daily Quiz öppnas i din webbläsare som en ny flik — utanför appen. Varje dag finns ett nytt frågesset att klara. Svara på alla frågor och slå ditt bästa resultat!'}</Text>
 
               <Text style={styles.helpSection}>🎯 Quiz-läget</Text>
-              <Text style={styles.modalBody}>{'Välj en kategori och svara på 10 frågor. Du har 20 sekunder per fråga — ju snabbare du svarar rätt, desto mer poäng. Max 150 poäng per fråga (100 bas + 50 tidsbonus). Svarar du fel visas rätt svar med en förklaring.'}</Text>
+              <Text style={styles.modalBody}>{'Välj en kategori och svara på 10 frågor. Du har 25 sekunder per fråga — ju snabbare du svarar rätt, desto mer poäng. Max 150 poäng per fråga (100 bas + 50 tidsbonus). Svarar du fel visas rätt svar med en förklaring.'}</Text>
 
               <Text style={styles.helpSection}>❤️ Överlevnadsläge</Text>
               <Text style={styles.modalBody}>{'Du startar med 3 liv. Varje fel kostar ett liv — svara rätt och håll din svit igång så länge som möjligt. Ditt rekord sparas per kategori.'}</Text>

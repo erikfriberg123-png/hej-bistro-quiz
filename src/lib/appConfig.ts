@@ -1,4 +1,4 @@
-export type AppId = 'quizine' | 'voo' | 'it' | 'blaljus'
+export type AppId = 'quizine' | 'voo' | 'it' | 'blaljus' | 'handel'
 
 const appId = (process.env.EXPO_PUBLIC_APP_ID ?? 'quizine') as AppId
 
@@ -55,6 +55,19 @@ const TABLE_MAPS = {
     attempts:     'blaljus_question_attempts',
     leaderboard:  'blaljus_leaderboard',
   },
+  handel: {
+    questions:    'handel_remote_questions',
+    tofQuestions: 'handel_truth_or_false_questions',
+    battles:      'handel_battles',
+    challenges:   'handel_challenges',
+    feedback:     'handel_feedback',
+    stories:      'handel_restaurant_stories',
+    submissions:  'handel_submitted_questions',
+    complaints:   'handel_question_complaints',
+    scores:       'handel_scores',
+    attempts:     'handel_question_attempts',
+    leaderboard:  'handel_leaderboard',
+  },
 } as const
 
 const RPC_MAPS = {
@@ -74,6 +87,10 @@ const RPC_MAPS = {
     questionStats: 'blaljus_get_question_stats',
     battlesPerDay: 'blaljus_get_battles_per_day',
   },
+  handel: {
+    questionStats: 'handel_get_question_stats',
+    battlesPerDay: 'handel_get_battles_per_day',
+  },
 } as const
 
 export const APP_ID: AppId = appId
@@ -84,5 +101,6 @@ export function tablesForArea(area: string) {
   if (area === 'sjukvard') return TABLE_MAPS.voo;
   if (area === 'it') return TABLE_MAPS.it;
   if (area === 'blaljus') return TABLE_MAPS.blaljus;
+  if (area === 'handel') return TABLE_MAPS.handel;
   return TABLE_MAPS.quizine;
 }
