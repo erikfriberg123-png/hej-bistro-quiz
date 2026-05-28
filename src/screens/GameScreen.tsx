@@ -236,7 +236,7 @@ export default function GameScreen({ route, navigation }: Props) {
         streakRef.current = 0;
       }
 
-      trackAttempt(currentQuestion.id, points > 0, 'game');
+      trackAttempt(currentQuestion.id, points > 0, 'game', currentArea);
 
       const newStates: AnswerState[] = shuffledIndices.map((origIdx, dispIdx) => {
         if (origIdx === correct) return 'show-correct';
@@ -261,7 +261,7 @@ export default function GameScreen({ route, navigation }: Props) {
     play('answer_timeout');
     streakRef.current = 0;
 
-    trackAttempt(currentQuestion.id, false, 'game');
+    trackAttempt(currentQuestion.id, false, 'game', currentArea);
 
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>

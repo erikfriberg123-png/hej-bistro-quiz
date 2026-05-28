@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { TABLES, RPCS } from './appConfig';
+import { TABLES, RPCS, tablesForArea } from './appConfig';
 
 export interface QuestionStat {
   question_id: string;
@@ -18,9 +18,11 @@ export function trackAttempt(
   questionId: string,
   correct: boolean,
   source: 'game' | 'battle' | 'daily' = 'game',
+  area?: string,
 ): void {
+  const attemptsTable = area ? tablesForArea(area).attempts : TABLES.attempts;
   supabase.auth.getUser().then(({ data: { user } }) => {
-    supabase.from(TABLES.attempts).insert({
+    supabase.from(attemptsTable).insert({
       question_id: questionId,
       user_id: user?.id ?? null,
       correct,

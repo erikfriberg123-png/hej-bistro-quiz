@@ -230,7 +230,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
     play('answer_timeout');
     streakRef.current = 0;
 
-    trackAttempt(currentQuestion.id, false, 'battle');
+    trackAttempt(currentQuestion.id, false, 'battle', currentArea);
 
     const correct = currentQuestion.correctIndex;
     const newStates: AnswerState[] = shuffledIndices.map((origIdx) =>
@@ -297,7 +297,7 @@ export default function BattleRoundScreen({ route, navigation }: Props) {
       const points = submitAnswer(actualIndex, timeRemaining);
       setPointsAwarded(points);
 
-      trackAttempt(currentQuestion.id, points > 0, 'battle');
+      trackAttempt(currentQuestion.id, points > 0, 'battle', currentArea);
 
       if (points > 0) {
         play('answer_correct');

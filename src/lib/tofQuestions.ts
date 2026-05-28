@@ -24,14 +24,20 @@ export const TOF_DIFFICULTY_LABEL: Record<TofDifficulty, string> = {
 };
 
 export async function fetchTofQuestions(area: Area, difficulty: TofDifficulty): Promise<TofQuestion[]> {
-  const { data, error } = await supabase
-    .from(tablesForArea(area).tofQuestions)
+  // VOO uses a prefixed table on its own Supabase instance (no area column).
+  // All other segments use the shared truth_or_false_questions table, tagged by area.
+  const isSharedTable = area !== 'sjukvard';
+  const tableName = isSharedTable ? 'truth_or_false_questions' : tablesForArea(area).tofQuestions;
+
+  const baseQuery = supabase
+    .from(tableName)
     .select('id, statement, answer, difficulty')
     .eq('active', true)
     .eq('difficulty', difficulty)
-    .eq('area', area)
     .is('deleted_at', null)
     .limit(100);
+
+  const { data, error } = await (isSharedTable ? baseQuery.eq('area', area) : baseQuery);
 
   if (error) throw error;
   return (data ?? []) as TofQuestion[];
