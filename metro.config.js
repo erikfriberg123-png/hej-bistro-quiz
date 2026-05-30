@@ -1,7 +1,17 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
-const config = getDefaultConfig(__dirname);
+const projectRoot  = __dirname;
+const monorepoRoot = path.resolve(projectRoot, '..');
+
+const config = getDefaultConfig(projectRoot);
+
+// Allow Metro to resolve files in the shared packages/ directory
+config.watchFolders = [monorepoRoot];
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(monorepoRoot, 'node_modules'),
+];
 
 // Forces Metro to use CommonJS builds of packages, fixing the
 // "Cannot use import.meta outside a module" error from @supabase/supabase-js on web
