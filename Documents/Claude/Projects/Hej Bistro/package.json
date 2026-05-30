@@ -1,0 +1,16 @@
+{
+  "name": "quizine-platform",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "daily-quizine",
+    "hej-bistro-admin"
+  ],
+  "scripts": {
+    "dev:daily":   "npm run dev   --workspace=daily-quizine",
+    "build:daily": "npm run build --workspace=daily-quizine",
+    "dev:quiz":    "npm run start --workspace=hej-bistro-quiz",
+    "dev:admin":   "npm run dev   --workspace=hej-bistro-admin",
+    "build:admin": "npm run build --workspace=hej-bistro-admin"
+  }
+}
