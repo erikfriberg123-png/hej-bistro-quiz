@@ -90,6 +90,20 @@ export const SEGMENTS: SegmentDefinition[] = [
     },
   },
   {
+    id: 'bygg',
+    tablePrefix: 'bygg_',
+    areaKey: 'bygg',
+    label: 'Bygg',
+    icon: '🏗️',
+    brandColor: '#F5E0B0',
+    adminSidebarColor: '#100E08',
+    disabled: true,
+    daily: {
+      title: 'Quizine Daily – Bygg & Konstruktion',
+      description: 'Visa vad du kan om bygg och konstruktion. Tävla mot kollegor på plats.',
+    },
+  },
+  {
     id: 'hr_lon',
     tablePrefix: 'hr_lon_',
     areaKey: 'hr_lon',

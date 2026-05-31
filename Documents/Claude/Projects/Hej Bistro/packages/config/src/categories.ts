@@ -103,6 +103,22 @@ export const HANDEL_CATEGORIES: CategoryDefinition[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// Bygg (bygg & konstruktion)
+// ---------------------------------------------------------------------------
+export const BYGG_CATEGORIES: CategoryDefinition[] = [
+  { id: 'vvs_rordragning_varme_avlopp_och_ventilation',                    name: 'VVS',                      icon: '🔧', color: '#F5E0B0', description: 'Rördragning, värme, avlopp och ventilation.' },
+  { id: 'arbetsmiljo_sakerhet',                                            name: 'Arbetsmiljö & Säkerhet',   icon: '⚠️', color: '#F5E0B0', description: 'Skyddsregler, AFS och riskbedömning på byggarbetsplatsen.' },
+  { id: 'lyftteknik_maskiner_kranar_truckar_och_sakra_lyft',               name: 'Lyftteknik & Maskiner',    icon: '🏗️', color: '#F5E0B0', description: 'Kranar, truckar och säkra lyft.' },
+  { id: 'mark_grundlaggning_schakt_sprangning_och_grundkonstruktion',      name: 'Mark & Grundläggning',     icon: '⛏️', color: '#F5E0B0', description: 'Schakt, sprängning och grundkonstruktion.' },
+  { id: 'film_serier',                                                     name: 'Film & Serier',            icon: '🎬', color: '#F5E0B0', description: 'Filmer och serier om bygg och konstruktion.' },
+  { id: 'el_och_watt_elektriker',                                          name: 'El & Watt',                icon: '🔌', color: '#F5E0B0', description: 'Elinstallationer och elektriker på byggarbetsplatsen.' },
+  { id: 'betong_cement',                                                   name: 'Betong & Cement',          icon: '🧱', color: '#F5E0B0', description: 'Betongarbeten, gjutning och cementteknik.' },
+  { id: 'snickare',                                                        name: 'Snickare',                 icon: '🪚', color: '#F5E0B0', description: 'Träarbeten, snickerier och träkonstruktioner.' },
+  { id: 'malare',                                                          name: 'Målare',                   icon: '🎨', color: '#F5E0B0', description: 'Målningsarbeten, ytbehandling och färglära.' },
+  { id: 'roligt_och_intressant',                                           name: 'Roligt och Intressant',   icon: '🤓', color: '#F5E0B0', description: 'Roliga fakta och klassiska historier från bygget.' },
+]
+
+// ---------------------------------------------------------------------------
 // HR Lön (HR & löneadministration)
 // ---------------------------------------------------------------------------
 export const HR_LON_CATEGORIES: CategoryDefinition[] = [
@@ -130,6 +146,7 @@ const SEGMENT_CATEGORIES: Record<string, CategoryDefinition[]> = {
   blaljus: BLALJUS_CATEGORIES,
   handel:  HANDEL_CATEGORIES,
   hr_lon:  HR_LON_CATEGORIES,
+  bygg:    BYGG_CATEGORIES,
 }
 
 export const ALL_CATEGORIES: CategoryDefinition[] = [
@@ -139,6 +156,7 @@ export const ALL_CATEGORIES: CategoryDefinition[] = [
   ...BLALJUS_CATEGORIES,
   ...HANDEL_CATEGORIES,
   ...HR_LON_CATEGORIES,
+  ...BYGG_CATEGORIES,
 ]
 
 export function getCategoriesForSegment(segmentId: string): CategoryDefinition[] {
