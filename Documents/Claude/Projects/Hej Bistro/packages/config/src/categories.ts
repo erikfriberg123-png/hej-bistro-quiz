@@ -103,6 +103,23 @@ export const HANDEL_CATEGORIES: CategoryDefinition[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// HR Lön (HR & löneadministration)
+// ---------------------------------------------------------------------------
+export const HR_LON_CATEGORIES: CategoryDefinition[] = [
+  { id: 'anstallning_och_personalregister',                        name: 'Anställning och personalregister',                    icon: '👤', color: '#d85118', description: 'Anställningsformer, personalregister och grundläggande HR-administration.' },
+  { id: 'arbetstid_schema_och_narvaro',                            name: 'Arbetstid, schema och närvaro',                       icon: '🕒', color: '#d85118', description: 'Arbetstidsregler, schemaläggning och hantering av närvaro och frånvaro.' },
+  { id: 'loneberakning_och_lonekorning',                           name: 'Löneberäkning och lönekörning',                       icon: '💰', color: '#d85118', description: 'Löneberäkning, lönekörning och utbetalningsprocesser.' },
+  { id: 'semester_och_ledighet',                                   name: 'Semester och ledighet',                              icon: '🌴', color: '#d85118', description: 'Semesterregler, ledighetsansökningar och föräldraledighet.' },
+  { id: 'kollektivavtal_och_arbetsratt',                           name: 'Kollektivavtal och arbetsrätt',                       icon: '⚖️', color: '#d85118', description: 'Kollektivavtal, LAS, MBL och grundläggande arbetsrätt.' },
+  { id: 'skatt_arbetsgivaravgifter_och_myndighetsrapporterin',     name: 'Skatt, arbetsgivaravgifter och myndighetsrapportering', icon: '🏛️', color: '#d85118', description: 'Skatteavdrag, arbetsgivaravgifter och rapportering till Skatteverket.' },
+  { id: 'ersattningar_och_formaner',                               name: 'Ersättningar och förmåner',                          icon: '🎁', color: '#d85118', description: 'Traktamente, förmåner, ersättningar och personalförmåner.' },
+  { id: 'bemanning_och_personalplanering',                         name: 'Bemanning och personalplanering',                    icon: '📊', color: '#d85118', description: 'Bemanningsplanering, rekrytering och personalförsörjning.' },
+  { id: 'rapporter_analys_och_uppfoljning',                        name: 'Rapporter, analys och uppföljning',                  icon: '📈', color: '#d85118', description: 'HR-rapporter, nyckeltal och uppföljning av personaldata.' },
+  { id: 'system_integrationer_och_administration',                 name: 'System, integrationer och administration',           icon: '⚙️', color: '#d85118', description: 'HR-system, lönesystem, integrationer och systemadministration.' },
+  { id: 'spannande_fakta_och_roligt',                              name: 'Spännande fakta och roligt',                         icon: '🤓', color: '#d85118', description: 'Roliga fakta, klassiska HR-situationer och branschhumor.' },
+]
+
+// ---------------------------------------------------------------------------
 // Lookup helpers
 // ---------------------------------------------------------------------------
 
@@ -112,6 +129,7 @@ const SEGMENT_CATEGORIES: Record<string, CategoryDefinition[]> = {
   it:      IT_CATEGORIES,
   blaljus: BLALJUS_CATEGORIES,
   handel:  HANDEL_CATEGORIES,
+  hr_lon:  HR_LON_CATEGORIES,
 }
 
 export const ALL_CATEGORIES: CategoryDefinition[] = [
@@ -120,6 +138,7 @@ export const ALL_CATEGORIES: CategoryDefinition[] = [
   ...IT_CATEGORIES,
   ...BLALJUS_CATEGORIES,
   ...HANDEL_CATEGORIES,
+  ...HR_LON_CATEGORIES,
 ]
 
 export function getCategoriesForSegment(segmentId: string): CategoryDefinition[] {

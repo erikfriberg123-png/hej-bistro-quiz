@@ -89,6 +89,20 @@ export const SEGMENTS: SegmentDefinition[] = [
       description: 'Dagens quiz för polis, brand och ambulans. Nytt quiz varje vardag.',
     },
   },
+  {
+    id: 'hr_lon',
+    tablePrefix: 'hr_lon_',
+    areaKey: 'hr_lon',
+    label: 'HR Lön',
+    icon: '👩‍💼',
+    brandColor: '#d85118',
+    adminSidebarColor: '#dfb82a',
+    disabled: true,
+    daily: {
+      title: 'Quizine Daily – HR Lön',
+      description: 'Visa vad du kan om HR och lön. Tävla mot kollegor.',
+    },
+  },
 ]
 
 export function getSegment(id: string): SegmentDefinition | undefined {
