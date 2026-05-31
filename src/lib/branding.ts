@@ -125,7 +125,6 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
     storySubtitle: 'Intressanta historier kan publiceras på sajten.',
     storyPlaceholder: 'Berätta en intressant händelse som du varit med om på bygget.',
     dailyPath: 'bygg',
-    disabled: true,
   },
 };
 
