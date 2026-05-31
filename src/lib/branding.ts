@@ -1,4 +1,4 @@
-export type Area = 'krogen' | 'sjukvard' | 'it' | 'blaljus' | 'handel';
+export type Area = 'krogen' | 'sjukvard' | 'it' | 'blaljus' | 'handel' | 'hr_lon';
 
 export interface AreaBranding {
   label: string;
@@ -96,8 +96,24 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
     dailyPath: 'handel',
     disabled: true,
   },
+  hr_lon: {
+    label: 'HR & Lön',
+    brandName: 'HR Lön',
+    brandColor: '#d85118',
+    neonLine: '~ lön & arbetsrätt ~',
+    icon: '👩‍💼',
+    tagline: 'Quiz för HR-proffs och löneadministratörer',
+    authTagline: 'Quiz för HR-proffs och löneadministratörer',
+    storyButtonText: 'Berätta en HR-historia',
+    storyButtonIcon: '👩‍💼',
+    storyTitle: '👩‍💼 Berätta en HR-historia',
+    storySubtitle: 'Intressanta historier kan publiceras på sajten.',
+    storyPlaceholder: 'Berätta en intressant händelse som du varit med om på jobbet.',
+    dailyPath: 'hr_lon',
+    disabled: true,
+  },
 };
 
 export const DEFAULT_AREA: Area = 'krogen';
 
-export const AREAS: Area[] = ['krogen', 'sjukvard', 'it', 'blaljus', 'handel'];
+export const AREAS: Area[] = ['krogen', 'sjukvard', 'it', 'blaljus', 'handel', 'hr_lon'];
