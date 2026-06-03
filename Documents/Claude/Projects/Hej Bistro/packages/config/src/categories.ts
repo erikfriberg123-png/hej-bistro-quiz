@@ -19,6 +19,14 @@ export interface CategoryDefinition {
   description: string
 }
 
+export const BILDSPEL_CATEGORY: CategoryDefinition = {
+  id: 'bildspel',
+  name: 'Bildspel',
+  icon: '🖼️',
+  color: '#64748B',
+  description: 'Bildbaserade frågor – gissa vad som är på bilden.',
+}
+
 // ---------------------------------------------------------------------------
 // Quizine (krogen / hotell & restaurang)
 // ---------------------------------------------------------------------------
@@ -35,6 +43,7 @@ export const QUIZINE_CATEGORIES: CategoryDefinition[] = [
   { id: 'scheduling_labor', name: 'Schema & Personal',   icon: '⏱️', color: '#FFB347', description: 'Schemaläggning, bemanningsplanering och personalfrågor' },
   { id: 'guest_psychology', name: 'Gästpsykologi',       icon: '🧍', color: '#FF6B9D', description: 'Gästbeteende, upplevelse och psykologin bakom kundmötet' },
   { id: 'service_pressure', name: 'Service Under Tryck', icon: '⚡', color: '#FF4757', description: 'Att hålla servicenivån uppe när trycket är högt' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -51,6 +60,7 @@ export const VOO_CATEGORIES: CategoryDefinition[] = [
   { id: 'infections_hygiene',    name: 'Infektioner, Virus & Hygien',           icon: '🦠', color: '#FB5607', description: 'Smittspridning, bakterier, hygienrutiner och pandemier.' },
   { id: 'ethics_communication',  name: 'Etik, Kommunikation & Bemötande',      icon: '🤝', color: '#FFB347', description: 'Patientmöten, svåra samtal, sekretess och etiska dilemman.' },
   { id: 'popculture_healthcare', name: 'TV-serier, Film & Popkultur inom vård', icon: '🎬', color: '#FF6B9D', description: "Grey's Anatomy, Scrubs, House, medicinska myter i film och TV." },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -68,6 +78,7 @@ export const IT_CATEGORIES: CategoryDefinition[] = [
   { id: 'tools_workflow',    name: 'Verktyg & Arbetsflöde',   icon: '🛠️', color: '#00FF64', description: 'Git, versionshantering, IDE:er, agile/scrum och felsökning.' },
   { id: 'tech_history',      name: 'Teknikhistoria & Kultur', icon: '🏛️', color: '#00CC50', description: 'Kända företag, uppfinnare, banbrytande produkter och branschmilstolpar.' },
   { id: 'fun_culture',       name: 'Roligt & Kultur',         icon: '😄', color: '#00FF64', description: 'Techhumor, memes, kända citat från programmerare och roliga IT-katastrofer.' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -84,6 +95,7 @@ export const BLALJUS_CATEGORIES: CategoryDefinition[] = [
   { id: 'krisberedskap',        name: 'Krisberedskap',         icon: '🚨', color: '#FF1A3C', description: 'Samordning, krishantering och samverkan vid stora insatser.' },
   { id: 'raddningsoperationer', name: 'Räddningsoperationer',  icon: '🚒', color: '#FF8C00', description: 'Räddningsteknik, fritagning och insatsledning.' },
   { id: 'trafiksakerhet',       name: 'Trafiksäkerhet',        icon: '🚦', color: '#FFB300', description: 'Trafikregler, olycksutredning och trafiksäkerhetsarbete.' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -100,6 +112,7 @@ export const HANDEL_CATEGORIES: CategoryDefinition[] = [
   { id: 'halsa_sakerhet',       name: 'Hälsa & Säkerhet',     icon: '🦺', color: '#FF6B2B', description: 'Ergonomi, arbetsmiljö, brand och säkerhet i butiksmiljö.' },
   { id: 'produktkunskap',       name: 'Produktkunskap',       icon: '🏷️', color: '#FFB830', description: 'Sortiment, varuegenskaper och produktrelaterad rådgivning.' },
   { id: 'roligt',               name: 'Roligt',               icon: '😄', color: '#FF9A5E', description: 'Roliga situationer och klassiska stunder från butiksgolvet.' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -116,6 +129,7 @@ export const BYGG_CATEGORIES: CategoryDefinition[] = [
   { id: 'snickare',                                                        name: 'Snickare',                 icon: '🪚', color: '#F5E0B0', description: 'Träarbeten, snickerier och träkonstruktioner.' },
   { id: 'malare',                                                          name: 'Målare',                   icon: '🎨', color: '#F5E0B0', description: 'Målningsarbeten, ytbehandling och färglära.' },
   { id: 'roligt_och_intressant',                                           name: 'Roligt och Intressant',   icon: '🤓', color: '#F5E0B0', description: 'Roliga fakta och klassiska historier från bygget.' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -133,6 +147,7 @@ export const HR_LON_CATEGORIES: CategoryDefinition[] = [
   { id: 'rapporter_analys_och_uppfoljning',                        name: 'Rapporter, analys och uppföljning',                  icon: '📈', color: '#d85118', description: 'HR-rapporter, nyckeltal och uppföljning av personaldata.' },
   { id: 'system_integrationer_och_administration',                 name: 'System, integrationer och administration',           icon: '⚙️', color: '#d85118', description: 'HR-system, lönesystem, integrationer och systemadministration.' },
   { id: 'spannande_fakta_och_roligt',                              name: 'Spännande fakta och roligt',                         icon: '🤓', color: '#d85118', description: 'Roliga fakta, klassiska HR-situationer och branschhumor.' },
+  BILDSPEL_CATEGORY,
 ]
 
 // ---------------------------------------------------------------------------
@@ -149,7 +164,7 @@ const SEGMENT_CATEGORIES: Record<string, CategoryDefinition[]> = {
   bygg:    BYGG_CATEGORIES,
 }
 
-export const ALL_CATEGORIES: CategoryDefinition[] = [
+const _allWithDupes: CategoryDefinition[] = [
   ...QUIZINE_CATEGORIES,
   ...VOO_CATEGORIES,
   ...IT_CATEGORIES,
@@ -158,6 +173,9 @@ export const ALL_CATEGORIES: CategoryDefinition[] = [
   ...HR_LON_CATEGORIES,
   ...BYGG_CATEGORIES,
 ]
+export const ALL_CATEGORIES: CategoryDefinition[] = _allWithDupes.filter(
+  (c, i, arr) => arr.findIndex(x => x.id === c.id) === i,
+)
 
 export function getCategoriesForSegment(segmentId: string): CategoryDefinition[] {
   return SEGMENT_CATEGORIES[segmentId] ?? QUIZINE_CATEGORIES
