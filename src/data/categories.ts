@@ -86,6 +86,13 @@ export const CATEGORIES: Category[] = [
     color: '#FF5555',
     description: 'Hantera stress, rush-situationer och kriser under service',
   },
+  {
+    id: 'bildspel',
+    name: 'Bildspel',
+    icon: '🖼️',
+    color: '#64748B',
+    description: 'Bildbaserade frågor – gissa vad som är på bilden',
+  },
 ];
 
 export const VOO_CATEGORIES: Category[] = [

@@ -65,6 +65,7 @@ export const useGameStore = create<GameState>()(
         scheduling_labor: 0,
         guest_psychology: 0,
         service_pressure: 0,
+        bildspel: 0,
         anatomy_body: 0,
         diagnoses_symptoms: 0,
         emergency_firstaid: 0,

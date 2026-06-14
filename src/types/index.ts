@@ -11,6 +11,7 @@ export type CategoryId =
   | 'scheduling_labor'
   | 'guest_psychology'
   | 'service_pressure'
+  | 'bildspel'
   | 'anatomy_body'
   | 'diagnoses_symptoms'
   | 'emergency_firstaid'
