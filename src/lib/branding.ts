@@ -1,4 +1,4 @@
-export type Area = 'krogen' | 'sjukvard' | 'it' | 'blaljus' | 'handel' | 'hr_lon' | 'bygg';
+export type Area = 'krogen' | 'sjukvard' | 'it' | 'blaljus' | 'handel' | 'hr_lon' | 'bygg' | 'fotboll';
 
 export interface AreaBranding {
   label: string;
@@ -126,8 +126,24 @@ export const AREA_BRANDING: Record<Area, AreaBranding> = {
     storyPlaceholder: 'Berätta en intressant händelse som du varit med om på bygget.',
     dailyPath: 'bygg',
   },
+  fotboll: {
+    label: 'Fotboll',
+    brandName: 'Fotboll',
+    brandColor: '#0EA5E9',
+    neonLine: '~ alltid på plan ~',
+    icon: '⚽',
+    tagline: 'Quiz för fotbollsproffs',
+    authTagline: 'Quiz för fotbollsproffs',
+    storyButtonText: 'Berätta en fotbollshistoria',
+    storyButtonIcon: '⚽',
+    storyTitle: '⚽ Berätta en fotbollshistoria',
+    storySubtitle: 'Intressanta historier kan publiceras på sajten.',
+    storyPlaceholder: 'Berätta en intressant fotbollshistoria som du varit med om.',
+    dailyPath: 'fotboll',
+    disabled: true,
+  },
 };
 
 export const DEFAULT_AREA: Area = 'krogen';
 
-export const AREAS: Area[] = ['krogen', 'sjukvard', 'it', 'blaljus', 'handel', 'hr_lon', 'bygg'];
+export const AREAS: Area[] = ['krogen', 'sjukvard', 'it', 'blaljus', 'handel', 'hr_lon', 'bygg', 'fotboll'];

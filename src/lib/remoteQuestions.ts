@@ -64,7 +64,7 @@ export async function fetchRemoteQuestions(area: Area = DEFAULT_AREA): Promise<Q
 
 export async function fetchQuestionsByIds(ids: string[]): Promise<Question[]> {
   if (!ids.length) return [];
-  const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([
+  const [r1, r2, r3, r4, r5, r6, r7, r8] = await Promise.all([
     supabase.from('remote_questions').select('*').in('id', ids),
     supabase.from('voo_remote_questions').select('*').in('id', ids),
     supabase.from('it_remote_questions').select('*').in('id', ids),
@@ -72,8 +72,9 @@ export async function fetchQuestionsByIds(ids: string[]): Promise<Question[]> {
     supabase.from('handel_remote_questions').select('*').in('id', ids),
     supabase.from('hr_lon_remote_questions').select('*').in('id', ids),
     supabase.from('bygg_remote_questions').select('*').in('id', ids),
+    supabase.from('fotboll_remote_questions').select('*').in('id', ids),
   ]);
-  const all = [...(r1.data ?? []), ...(r2.data ?? []), ...(r3.data ?? []), ...(r4.data ?? []), ...(r5.data ?? []), ...(r6.data ?? []), ...(r7.data ?? [])].map(rowToQuestion);
+  const all = [...(r1.data ?? []), ...(r2.data ?? []), ...(r3.data ?? []), ...(r4.data ?? []), ...(r5.data ?? []), ...(r6.data ?? []), ...(r7.data ?? []), ...(r8.data ?? [])].map(rowToQuestion);
   return ids
     .map(id => all.find(q => q.id === id))
     .filter((q): q is Question => q !== undefined);
