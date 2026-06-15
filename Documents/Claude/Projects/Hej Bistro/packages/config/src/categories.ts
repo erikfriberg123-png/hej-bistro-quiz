@@ -151,6 +151,24 @@ export const HR_LON_CATEGORIES: CategoryDefinition[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// Fotboll
+// ---------------------------------------------------------------------------
+export const FOTBOLL_CATEGORIES: CategoryDefinition[] = [
+  { id: 'vm_historia',               name: 'VM‑historia',                 icon: '🏆', color: '#0EA5E9', description: 'Frågor om VM-turneringar och fotbollshistoria.' },
+  { id: 'champions_league',          name: 'Champions League',            icon: '⭐', color: '#0EA5E9', description: 'Europas finaste klubbturnering — matcher, mål och myter.' },
+  { id: 'svensk_fotboll',            name: 'Svensk fotboll',              icon: '📌', color: '#0EA5E9', description: 'Allsvenskan, landslaget och svenska fotbollsklubbar.' },
+  { id: 'fotbollslegender',          name: 'Fotbollslegender',            icon: '👑', color: '#0EA5E9', description: 'De stora namnen som format fotbollens historia.' },
+  { id: 'taktik_formationer',        name: 'Taktik & formationer',        icon: '📋', color: '#0EA5E9', description: 'Spelsystem, formationer och fotbollstaktik.' },
+  { id: 'domarregler_regelkunskap',  name: 'Domarregler & regelkunskap',  icon: '🟥', color: '#0EA5E9', description: 'Offside, straff, regler och domarrollen.' },
+  { id: 'klubbmarken_arenor',        name: 'Klubbmärken & arenor',        icon: '🛡️', color: '#0EA5E9', description: 'Klubbfärger, arenor och fotbollsmärken världen över.' },
+  { id: 'transfers_fotbollsekonomi', name: 'Transfers & fotbollsekonomi', icon: '💰', color: '#0EA5E9', description: 'Transferrekord, agenter och ekonomi i professionell fotboll.' },
+  { id: 'statistik_rekord',          name: 'Statistik & rekord',          icon: '📊', color: '#0EA5E9', description: 'Målrekord, flest matcher och andra fotbollsstatistiker.' },
+  { id: 'fotbollskultur',            name: 'Fotbollskultur',              icon: '🧣', color: '#0EA5E9', description: 'Supporterkulturen, sånger och fotbollens sociala sida.' },
+  { id: 'roligt_spannande',          name: 'Roligt & Spännande',          icon: '🤣', color: '#0EA5E9', description: 'Roliga fakta, klassiska ögonblick och spännande historier från fotbollen.' },
+  BILDSPEL_CATEGORY,
+]
+
+// ---------------------------------------------------------------------------
 // Lookup helpers
 // ---------------------------------------------------------------------------
 
@@ -162,6 +180,7 @@ const SEGMENT_CATEGORIES: Record<string, CategoryDefinition[]> = {
   handel:  HANDEL_CATEGORIES,
   hr_lon:  HR_LON_CATEGORIES,
   bygg:    BYGG_CATEGORIES,
+  fotboll: FOTBOLL_CATEGORIES,
 }
 
 const _allWithDupes: CategoryDefinition[] = [
@@ -172,6 +191,7 @@ const _allWithDupes: CategoryDefinition[] = [
   ...HANDEL_CATEGORIES,
   ...HR_LON_CATEGORIES,
   ...BYGG_CATEGORIES,
+  ...FOTBOLL_CATEGORIES,
 ]
 export const ALL_CATEGORIES: CategoryDefinition[] = _allWithDupes.filter(
   (c, i, arr) => arr.findIndex(x => x.id === c.id) === i,

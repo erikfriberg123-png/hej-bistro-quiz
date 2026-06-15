@@ -117,6 +117,20 @@ export const SEGMENTS: SegmentDefinition[] = [
       description: 'Visa vad du kan om HR och lön. Tävla mot kollegor.',
     },
   },
+  {
+    id: 'fotboll',
+    tablePrefix: 'fotboll_',
+    areaKey: 'fotboll',
+    label: 'Fotboll',
+    icon: '⚽',
+    brandColor: '#0EA5E9',
+    adminSidebarColor: '#0369A1',
+    disabled: true,
+    daily: {
+      title: 'Quizine Daily – Fotboll',
+      description: 'Visa vad du kan om fotboll. Tävla mot kollegor.',
+    },
+  },
 ]
 
 export function getSegment(id: string): SegmentDefinition | undefined {
