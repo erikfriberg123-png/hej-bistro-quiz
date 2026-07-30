@@ -85,3 +85,5 @@ yarn-error.*
 # Standalone sub-projects with their own git repos
 /Documents/Claude/Projects/number drop/
 /Documents/Claude/Projects/Thess/
+/Documents/Claude/Projects/Hej Bistro/Frågeduellen/
+/Documents/Claude/Projects/Hej Bistro/hej-bistro-admin/
