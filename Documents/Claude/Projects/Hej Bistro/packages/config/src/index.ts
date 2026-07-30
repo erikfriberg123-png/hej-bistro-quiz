@@ -24,6 +24,17 @@ export interface SegmentDefinition {
   adminSidebarColor: string
   /** Hidden from UIs until explicitly enabled. */
   disabled?: boolean
+  /**
+   * Exclusive to the Frågeduellen party app: questions are read aloud and carry a
+   * single answer instead of four options, so they are unusable in daily/mobile.
+   *
+   * The primary mechanism is simply NOT listing such a segment in SEGMENTS below —
+   * daily and mobile only ever see what is hardcoded here, while Frågeduellen and
+   * the admin read the `segments` DB table directly. This flag mirrors the DB column
+   * for the rare case a Frågeduellen-only segment does need an entry here (tooling,
+   * category definitions); use CONSUMER_SEGMENTS to stay safe either way.
+   */
+  fragduellenOnly?: boolean
   /** Uses its own Supabase project instead of the shared one. */
   separateSupabase?: boolean
   /** Metadata for the daily.quizine.se build. */
@@ -132,6 +143,12 @@ export const SEGMENTS: SegmentDefinition[] = [
     },
   },
 ]
+
+/**
+ * Segments the multiple-choice consumers (daily-quizine, hej-bistro-quiz) may show.
+ * Excludes Frågeduellen-only segments, whose questions have no answer options.
+ */
+export const CONSUMER_SEGMENTS: SegmentDefinition[] = SEGMENTS.filter(s => !s.fragduellenOnly)
 
 export function getSegment(id: string): SegmentDefinition | undefined {
   return SEGMENTS.find(s => s.id === id)

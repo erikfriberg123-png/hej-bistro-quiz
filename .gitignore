@@ -22,6 +22,56 @@ android/
 *.p12
 *.key
 *.mobileprovision
+.claude/.credentials.json
+apple-jwt.txt
+
+# Home-directory files that must never reach this PUBLIC repo.
+# The repo root IS C:\Users\hamma, so an unguarded `git add -A` would otherwise
+# try to publish the whole user profile. Keep this list ahead of that mistake.
+/AppData/
+/Desktop/
+/Contacts/
+/.supabase/
+/.config/
+/.bash_history
+/.node_repl_history
+/.gitconfig
+
+# Claude Code state: conversation history, memory, sessions and shell snapshots.
+# These can quote file contents and credentials verbatim — never publish them.
+/.claude/
+/.claude.json
+
+# Personal folders and synced drives.
+# NOT /Documents/ as a whole — the tracked projects live in
+# Documents/Claude/Projects — so list its personal subfolders instead.
+/OneDrive/
+/Downloads/
+/Pictures/
+/Music/
+/Videos/
+/Favorites/
+/Links/
+/Searches/
+/Saved Games/
+/Google drive/
+/Documents/Adobe/
+/Documents/Min musik/
+/Documents/Mina bilder/
+/Documents/Mina videoklipp/
+/Documents/OneNote-anteckningsböcker/
+/Documents/Anpassade Office-mallar/
+
+# Windows profile artefacts
+NTUSER.DAT*
+ntuser.dat*
+ntuser.ini
+*.regtrans-ms
+*.blf
+
+# Vendor installer logs
+AMD*.log
+AMD_*.txt
 
 # OS
 .DS_Store
@@ -34,3 +84,4 @@ yarn-error.*
 
 # Standalone sub-projects with their own git repos
 /Documents/Claude/Projects/number drop/
+/Documents/Claude/Projects/Thess/
